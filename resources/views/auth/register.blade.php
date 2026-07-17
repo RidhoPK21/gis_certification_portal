@@ -1,0 +1,161 @@
+@extends('layouts.auth')
+
+@section('title', 'Daftar Akun Klien')
+
+@section('content')
+    <section class="auth-card">
+        <div class="auth-heading">
+            <h2>Daftar akun Klien</h2>
+
+            <p>
+                Buat akun untuk mengajukan dan memantau
+                proses sertifikasi perusahaan Anda.
+            </p>
+        </div>
+
+        <form
+            method="POST"
+            action="{{ route('register') }}"
+        >
+            @csrf
+
+            <div class="form-group">
+                <label
+                    class="form-label"
+                    for="name"
+                >
+                    Nama Lengkap
+                </label>
+
+                <input
+                    class="form-control"
+                    id="name"
+                    type="text"
+                    name="name"
+                    value="{{ old('name') }}"
+                    placeholder="Nama lengkap penanggung jawab"
+                    autocomplete="name"
+                    required
+                    autofocus
+                >
+
+                @error('name')
+                    <div class="form-error">
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label
+                    class="form-label"
+                    for="email"
+                >
+                    Alamat Email
+                </label>
+
+                <input
+                    class="form-control"
+                    id="email"
+                    type="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    placeholder="nama@perusahaan.com"
+                    autocomplete="email"
+                    required
+                >
+
+                @error('email')
+                    <div class="form-error">
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label
+                    class="form-label"
+                    for="password"
+                >
+                    Kata Sandi
+                </label>
+
+                <input
+                    class="form-control"
+                    id="password"
+                    type="password"
+                    name="password"
+                    placeholder="Minimal 8 karakter"
+                    autocomplete="new-password"
+                    required
+                >
+
+                @error('password')
+                    <div class="form-error">
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label
+                    class="form-label"
+                    for="password_confirmation"
+                >
+                    Konfirmasi Kata Sandi
+                </label>
+
+                <input
+                    class="form-control"
+                    id="password_confirmation"
+                    type="password"
+                    name="password_confirmation"
+                    placeholder="Ulangi kata sandi"
+                    autocomplete="new-password"
+                    required
+                >
+            </div>
+
+            <button
+                class="login-button"
+                type="submit"
+            >
+                Daftar sebagai Klien
+            </button>
+        </form>
+
+        <div
+            class="login-help"
+            style="margin-top: 24px;"
+        >
+            Sudah memiliki akun?
+
+            <a
+                href="{{ route('login') }}"
+                style="
+                    color: #0878c9;
+                    font-weight: 700;
+                    text-decoration: none;
+                "
+            >
+                Masuk sekarang
+            </a>
+        </div>
+
+        <div
+            style="
+                margin-top: 16px;
+                padding: 12px 14px;
+                border: 1px solid #d6e2ec;
+                border-radius: 10px;
+                color: #687b8e;
+                background: #f8fbfd;
+                font-size: 12px;
+                line-height: 1.6;
+            "
+        >
+            Pendaftaran ini hanya untuk Klien.
+            Akun internal GIS dibuat oleh Superadmin.
+        </div>
+    </section>
+@endsection
