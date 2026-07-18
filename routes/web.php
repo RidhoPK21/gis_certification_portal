@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
+use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
 use App\Http\Controllers\Superadmin\SchemeController;
@@ -19,15 +22,13 @@ Route::middleware([
     Route::get('/dashboard', DashboardController::class)
         ->name('dashboard');
 
-    Route::view(
-        '/notifications',
-        'module.placeholder',
-        [
-            'title' => 'Notifikasi',
-            'description' =>
-                'Daftar notifikasi proses sertifikasi Anda.',
-        ]
-    )->name('notifications.index');
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->name('notifications.read');
+
+    Route::get('/secure-files/application-document/{document}', [ClientDocumentController::class, 'download'])
+        ->name('secure-files.application-document');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -40,35 +41,21 @@ Route::middleware([
         ->prefix('client')
         ->name('client.')
         ->group(function (): void {
-            Route::view(
-                '/applications/schemes',
-                'module.placeholder',
-                [
-                    'title' => 'Ajukan Sertifikasi',
-                    'description' =>
-                        'Pilih skema sertifikasi untuk membuat permohonan baru.',
-                ]
-            )->name('applications.schemes');
+            Route::get('/applications', [ClientApplicationController::class, 'index'])->name('applications.index');
+            Route::get('/applications/schemes', [ClientApplicationController::class, 'schemes'])->name('applications.schemes');
+            Route::get('/applications/create/{scheme:slug}', [ClientApplicationController::class, 'create'])->name('applications.create');
+            Route::post('/applications/create/{scheme:slug}', [ClientApplicationController::class, 'store'])->name('applications.store');
+            Route::get('/applications/{application}', [ClientApplicationController::class, 'show'])->name('applications.show');
+            Route::get('/applications/{application}/edit', [ClientApplicationController::class, 'edit'])->name('applications.edit');
+            Route::put('/applications/{application}', [ClientApplicationController::class, 'update'])->name('applications.update');
+            Route::post('/applications/{application}/submit', [ClientApplicationController::class, 'submit'])->name('applications.submit');
+            Route::post('/applications/{application}/documents', [ClientDocumentController::class, 'store'])->name('documents.store');
 
-            Route::view(
-                '/applications',
-                'module.placeholder',
-                [
-                    'title' => 'Permohonan Saya',
-                    'description' =>
-                        'Melihat draft, status, revisi, dan timeline permohonan.',
-                ]
-            )->name('applications.index');
-
-            Route::view(
-                '/corrective-actions',
-                'module.placeholder',
-                [
-                    'title' => 'Corrective Action',
-                    'description' =>
-                        'Mengunggah bukti perbaikan atas temuan auditor.',
-                ]
-            )->name('corrective-actions.index');
+            // Corrective Action dibangun pada Fase 6.
+            Route::view('/corrective-actions', 'module.placeholder', [
+                'title' => 'Corrective Action',
+                'description' => 'Mengunggah bukti perbaikan atas temuan auditor.',
+            ])->name('corrective-actions.index');
         });
 
     Route::middleware(

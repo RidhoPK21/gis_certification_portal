@@ -2,8 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\CertificationApplication;
 use App\Models\CertificationScheme;
 use App\Models\SchemeField;
+use App\Models\SchemeFieldOption;
+use App\Models\SchemeRequiredDocument;
+use App\Models\SchemeSection;
 use Illuminate\Support\Collection;
 
 class DynamicFormService
@@ -16,6 +20,66 @@ class DynamicFormService
     public function catalog(CertificationScheme $scheme): CertificationScheme
     {
         return $scheme->load(['sections.fields.options', 'requiredDocuments']);
+    }
+
+    /**
+     * Merekonstruksi skema dari snapshot form yang tersimpan pada permohonan,
+     * sehingga permohonan lama tetap memakai struktur form saat draft dibuat.
+     */
+    public function schemeForApplication(CertificationApplication $application): CertificationScheme
+    {
+        $snapshot = $application->form_snapshot;
+
+        if (! $snapshot || empty($snapshot['scheme'])) {
+            return $this->catalog($application->scheme);
+        }
+
+        $schemeData = $snapshot['scheme'];
+
+        $scheme = new CertificationScheme($schemeData);
+        $scheme->id = $schemeData['id'] ?? $application->certification_scheme_id;
+
+        $sections = collect($snapshot['sections'] ?? [])
+            ->map(function (array $sectionData) {
+                $fieldRows = $sectionData['fields'] ?? [];
+                unset($sectionData['fields']);
+
+                $section = new SchemeSection($sectionData);
+
+                $fields = collect($fieldRows)->map(function (array $fieldData) {
+                    $optionRows = $fieldData['options'] ?? [];
+                    unset($fieldData['options']);
+
+                    $field = new SchemeField($fieldData);
+
+                    $options = collect($optionRows)->map(
+                        fn (array $option) => new SchemeFieldOption($option)
+                    );
+
+                    $field->setRelation('options', $options);
+
+                    return $field;
+                });
+
+                $section->setRelation('fields', $fields);
+
+                return $section;
+            });
+
+        $documents = collect($snapshot['documents'] ?? [])
+            ->map(fn (array $document) => new SchemeRequiredDocument($document));
+
+        $scheme->setRelation('sections', $sections);
+        $scheme->setRelation('requiredDocuments', $documents);
+
+        return $scheme;
+    }
+
+    public function values(CertificationApplication $application): array
+    {
+        return $application->values()->get()->mapWithKeys(fn ($row) => [
+            $row->field_code => $row->value_json ?? $row->value_text,
+        ])->all();
     }
 
     public function visibleFields(CertificationScheme $scheme, array $values): Collection
@@ -69,6 +133,23 @@ class DynamicFormService
         return $scheme->requiredDocuments
             ->filter(fn ($doc) => $doc->is_active
                 && $this->conditions->passes($doc->conditional_rules, $values));
+    }
+
+    public function completion(CertificationApplication $application): int
+    {
+        $values = $this->values($application);
+        $scheme = $this->schemeForApplication($application);
+        $requiredFields = $this->visibleFields($scheme, $values)->where('is_required', true);
+        $fieldTotal = $requiredFields->count();
+        $fieldDone = $requiredFields->filter(fn ($field) => filled(data_get($values, $field->code)))->count();
+        $docs = $this->applicableDocuments($scheme, $values)->where('requirement', 'required');
+        $uploaded = $application->documents()
+            ->whereIn('document_code', $docs->pluck('code'))
+            ->whereHas('currentVersion')
+            ->count();
+        $total = $fieldTotal + $docs->count();
+
+        return $total === 0 ? 100 : (int) floor((($fieldDone + $uploaded) / $total) * 100);
     }
 
     public function snapshot(CertificationScheme $scheme): array

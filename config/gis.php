@@ -1,0 +1,34 @@
+<?php
+
+return [
+    'public_tracking_rate' => (int) env('GIS_PUBLIC_TRACKING_RATE', 15),
+    'upload_max_mb' => (int) env('GIS_UPLOAD_MAX_MB', 20),
+    'order_padding' => (int) env('GIS_ORDER_PADDING', 3),
+    'email_notifications' => filter_var(env('GIS_EMAIL_NOTIFICATIONS', false), FILTER_VALIDATE_BOOL),
+    'registration_enabled' => filter_var(env('GIS_ENABLE_REGISTRATION', true), FILTER_VALIDATE_BOOL),
+    'allowed_upload_mimes' => [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'application/zip',
+        'application/x-rar-compressed',
+        'application/vnd.rar',
+        'image/jpeg',
+        'image/png',
+    ],
+    'allowed_extensions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar', 'jpg', 'jpeg', 'png'],
+    'allowed_upload_pairs' => [
+        'pdf' => ['application/pdf'],
+        'doc' => ['application/msword', 'application/octet-stream'],
+        'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip', 'application/octet-stream'],
+        'xls' => ['application/vnd.ms-excel', 'application/octet-stream'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip', 'application/octet-stream'],
+        'zip' => ['application/zip', 'application/x-zip-compressed', 'application/octet-stream'],
+        'rar' => ['application/x-rar-compressed', 'application/vnd.rar', 'application/octet-stream'],
+        'jpg' => ['image/jpeg'],
+        'jpeg' => ['image/jpeg'],
+        'png' => ['image/png'],
+    ],
+];

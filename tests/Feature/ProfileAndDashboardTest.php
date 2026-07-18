@@ -30,14 +30,14 @@ class ProfileAndDashboardTest extends TestCase
         return $user;
     }
 
-    public function test_dashboard_menampilkan_pintasan_sesuai_role(): void
+    public function test_dashboard_klien_menampilkan_konten_sesuai_role(): void
     {
         $user = $this->makeClient();
 
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Selamat datang, Klien Uji')
+            ->assertSee('Halo, Klien Uji')
             ->assertSee('Ajukan Sertifikasi')
             ->assertDontSee('Invoice & Pembayaran');
     }

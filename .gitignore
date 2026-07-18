@@ -26,4 +26,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /database/*.sqlite
+/PLAN.md
+/PT-GIS-DASHBOARD-PLAN.md
 
