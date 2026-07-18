@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Superadmin\FormBuilderController;
+use App\Http\Controllers\Superadmin\SchemeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -145,15 +147,29 @@ Route::middleware([
                 ]
             )->name('users.index');
 
-            Route::view(
-                '/schemes',
-                'module.placeholder',
-                [
-                    'title' => 'Master Skema',
-                    'description' =>
-                        'Mengelola skema, form dinamis, field, dan dokumen wajib.',
-                ]
-            )->name('schemes.index');
+            Route::get('/schemes', [SchemeController::class, 'index'])
+                ->name('schemes.index');
+            Route::get('/schemes/{scheme}/edit', [SchemeController::class, 'edit'])
+                ->name('schemes.edit');
+            Route::put('/schemes/{scheme}', [SchemeController::class, 'update'])
+                ->name('schemes.update');
+
+            Route::get('/schemes/{scheme}/builder', [FormBuilderController::class, 'edit'])
+                ->name('form-builder.edit');
+            Route::post('/schemes/{scheme}/builder/sections', [FormBuilderController::class, 'storeSection'])
+                ->name('form-builder.sections.store');
+            Route::post('/schemes/{scheme}/builder/fields', [FormBuilderController::class, 'storeField'])
+                ->name('form-builder.fields.store');
+            Route::put('/schemes/{scheme}/builder/fields/{field}', [FormBuilderController::class, 'updateField'])
+                ->name('form-builder.fields.update');
+            Route::post('/schemes/{scheme}/builder/fields/{field}/toggle', [FormBuilderController::class, 'toggleField'])
+                ->name('form-builder.fields.toggle');
+            Route::post('/schemes/{scheme}/builder/documents', [FormBuilderController::class, 'storeDocument'])
+                ->name('form-builder.documents.store');
+            Route::put('/schemes/{scheme}/builder/documents/{document}', [FormBuilderController::class, 'updateDocument'])
+                ->name('form-builder.documents.update');
+            Route::post('/schemes/{scheme}/builder/documents/{document}/toggle', [FormBuilderController::class, 'toggleDocument'])
+                ->name('form-builder.documents.toggle');
 
             Route::view(
                 '/sni-products',

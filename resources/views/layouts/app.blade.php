@@ -227,6 +227,218 @@
                 0 10px 30px rgba(20, 53, 82, 0.06);
         }
 
+        /* ---- Utility classes untuk modul (skema, form builder, dll) ---- */
+        .page-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-head h1 {
+            margin: 0 0 8px;
+            color: var(--navy);
+            font-size: 28px;
+        }
+
+        .page-head p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .card {
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(20, 53, 82, 0.05);
+        }
+
+        .card h2 {
+            margin: 0 0 16px;
+            color: var(--navy);
+            font-size: 18px;
+        }
+
+        .grid-2 {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .grid-3 {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        }
+
+        .flex {
+            display: flex;
+            align-items: center;
+        }
+
+        .gap-1 {
+            gap: 10px;
+        }
+
+        .mt-1 {
+            margin-top: 12px;
+        }
+
+        .mt-2 {
+            margin-top: 20px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .small {
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .form-control,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #ffffff;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .form-textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            color: #ffffff;
+        }
+
+        .btn-light {
+            border-color: #cbd8e3;
+            background: #ffffff;
+            color: var(--navy);
+        }
+
+        .btn-sm {
+            padding: 7px 12px;
+            font-size: 13px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: #e2f6ea;
+            color: #1c7a45;
+        }
+
+        .badge-neutral {
+            background: #eef2f6;
+            color: #64748b;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .table th,
+        .table td {
+            padding: 11px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .table th {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: #f7fafc;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .alert {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            line-height: 1.6;
+        }
+
+        .alert-info {
+            border-color: #bfe0f5;
+            background: #eef7fd;
+            color: #0b5a92;
+        }
+
+        .alert-success {
+            border-color: #b6e0c2;
+            background: #f2fbf5;
+            color: #1c7a45;
+        }
+
+        details summary {
+            cursor: pointer;
+            padding: 6px 0;
+        }
+
+        code {
+            padding: 1px 6px;
+            border-radius: 6px;
+            background: #eef2f6;
+            font-size: 12px;
+        }
+
         @media (max-width: 900px) {
             .sidebar {
                 position: static;
@@ -347,6 +559,23 @@
             </header>
 
             <main class="page-content">
+                @if (session('success'))
+                    <div class="alert alert-success mt-1" style="margin-bottom: 20px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="alert" style="margin-bottom: 20px; border-color: #f0c2c2; background: #fdf2f2; color: #a12626;">
+                        <strong>Periksa kembali isian berikut:</strong>
+                        <ul style="margin: 8px 0 0; padding-left: 18px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>
