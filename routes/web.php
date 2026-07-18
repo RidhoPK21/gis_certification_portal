@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -12,7 +14,7 @@ Route::middleware([
     'auth',
     'active',
 ])->group(function (): void {
-    Route::view('/dashboard', 'dashboard')
+    Route::get('/dashboard', DashboardController::class)
         ->name('dashboard');
 
     Route::view(
@@ -25,15 +27,12 @@ Route::middleware([
         ]
     )->name('notifications.index');
 
-    Route::view(
-        '/profile',
-        'module.placeholder',
-        [
-            'title' => 'Profil',
-            'description' =>
-                'Kelola data profil dan keamanan akun.',
-        ]
-    )->name('profile.edit');
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'password'])
+        ->name('profile.password');
 
     Route::middleware('role:client')
         ->prefix('client')
