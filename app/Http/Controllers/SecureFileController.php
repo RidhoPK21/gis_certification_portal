@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditStageFile;
+use App\Models\CorrectiveActionFile;
 use App\Models\Invoice;
 use App\Services\AuditLogger;
 use App\Services\FileStorageService;
@@ -20,5 +22,32 @@ class SecureFileController extends Controller
         return $files->response($invoice->file_path, 'invoice-'.$invoice->invoice_number.'.'.pathinfo($invoice->file_path, PATHINFO_EXTENSION));
     }
 
-    // Catatan: auditReport() dan correctiveAction() ditambahkan pada Fase 6.
+    public function auditReport(Request $request, AuditStageFile $file, FileStorageService $files, AuditLogger $audit)
+    {
+        $file->load('auditStage.application');
+        $application = $file->auditStage->application;
+        $allowed = $request->user()->hasRole(['admin_application', 'superadmin']);
+        if ($request->user()->hasRole('auditor')) {
+            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
+        }
+        abort_unless($allowed, 403);
+        $audit->log('file.audit_report_downloaded', $file, [], ['application_id' => $application->id]);
+
+        return $files->response($file->file_path, $file->original_name);
+    }
+
+    public function correctiveAction(Request $request, CorrectiveActionFile $file, FileStorageService $files, AuditLogger $audit)
+    {
+        $file->load('correctiveAction.finding.application');
+        $application = $file->correctiveAction->finding->application;
+        $allowed = $application->client_id === $request->user()->id
+            || $request->user()->hasRole(['admin_application', 'superadmin']);
+        if ($request->user()->hasRole('auditor')) {
+            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
+        }
+        abort_unless($allowed, 403);
+        $audit->log('file.corrective_action_downloaded', $file, [], ['application_id' => $application->id]);
+
+        return $files->response($file->file_path, $file->original_name);
+    }
 }

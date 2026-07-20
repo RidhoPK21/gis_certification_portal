@@ -55,6 +55,76 @@
         </div>
     </section>
 
+    <section class="card mt-2" id="audit-assignment">
+        <div class="page-head">
+            <div>
+                <h2>Penugasan Auditor</h2>
+                <p>Auditor hanya dapat membuka dan memproses order yang ditugaskan kepadanya.</p>
+            </div>
+        </div>
+        <div class="grid-2">
+            <form method="post" action="{{ route('internal.applications.audit-assignments.store', $application) }}">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Auditor</label>
+                    <select class="form-select" name="auditor_id" required>
+                        <option value="">Pilih auditor</option>
+                        @foreach ($auditors as $auditor)
+                            <option value="{{ $auditor->id }}">{{ $auditor->name }} · {{ $auditor->email }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Peran Tim</label>
+                        <select class="form-select" name="assignment_role">
+                            <option value="LA">Lead Auditor</option>
+                            <option value="A">Auditor</option>
+                            <option value="TA">Tenaga Ahli</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tahap</label>
+                        <select class="form-select" name="stage_code">
+                            <option value="all">Semua Tahap</option>
+                            <option value="stage_1">Stage 1</option>
+                            <option value="stage_2">Stage 2</option>
+                            <option value="qms">QMS/Lapangan</option>
+                            <option value="corrective_action">Corrective Action</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Penugasan</label>
+                        <input class="form-control" type="date" name="assigned_date" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+                </div>
+                <button class="btn btn-primary">Simpan Penugasan</button>
+            </form>
+            <div>
+                <h3>Tim yang Ditugaskan</h3>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Nama</th><th>Peran</th><th>Tahap</th><th>Tanggal</th></tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($application->auditAssignments as $assignment)
+                                <tr>
+                                    <td>{{ $assignment->auditor?->name ?: '-' }}</td>
+                                    <td>{{ $assignment->assignment_role }}</td>
+                                    <td>{{ $assignment->stage_code }}</td>
+                                    <td>{{ optional($assignment->assigned_date)->format('d M Y') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="empty">Belum ada auditor yang ditugaskan.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="card mt-2" id="data-form">
         <h2>Data Form Klien</h2>
         @foreach ($application->scheme->sections as $section)

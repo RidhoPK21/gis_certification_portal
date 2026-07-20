@@ -103,4 +103,29 @@
             <div class="empty">Invoice belum diterbitkan.</div>
         @endif
     </section>
+
+    <section class="card mt-2">
+        <h2>Audit</h2>
+        @forelse ($application->auditStages as $stage)
+            <div style="padding:10px 0;border-bottom:1px solid var(--line)">
+                <strong>{{ strtoupper(str_replace('_', ' ', $stage->stage_code)) }}</strong>
+                <div class="small muted">{{ $stage->status }} · {{ optional($stage->audit_date)->format('d M Y') ?: '-' }}</div>
+            </div>
+        @empty
+            <div class="empty">Tahap audit belum dimulai.</div>
+        @endforelse
+    </section>
+
+    <section class="card mt-2">
+        <h2>Temuan &amp; Tindakan Koreksi</h2>
+        @forelse ($application->findings as $finding)
+            <div class="alert {{ $finding->status === 'closed' ? 'alert-success' : 'alert-warning' }}">
+                <strong>{{ $finding->finding_number }} · {{ ucfirst($finding->finding_type) }}</strong>
+                <p>{{ $finding->description }}</p>
+                <span class="small">Status: {{ $finding->status }} · Tenggat {{ optional($finding->due_date)->format('d M Y') }}</span>
+            </div>
+        @empty
+            <div class="empty">Tidak ada temuan.</div>
+        @endforelse
+    </section>
 @endsection

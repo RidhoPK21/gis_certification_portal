@@ -103,7 +103,7 @@ class ApplicationController extends Controller
     public function show(Request $request, CertificationApplication $application, DynamicFormService $forms)
     {
         $this->own($request, $application);
-        $application->load(['scheme', 'values', 'documents.currentVersion', 'revisions', 'statusHistory', 'invoice.payments']);
+        $application->load(['scheme', 'values', 'documents.currentVersion', 'revisions', 'statusHistory', 'invoice.payments', 'auditStages', 'findings.correctiveActions']);
 
         return view('client.applications.show', [
             'application' => $application,

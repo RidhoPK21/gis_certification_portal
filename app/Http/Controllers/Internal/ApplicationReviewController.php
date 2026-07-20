@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Internal;
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationReview;
 use App\Models\ApplicationRevisionItem;
+use App\Models\AuditAssignment;
 use App\Models\CertificationApplication;
 use App\Models\ReviewFormItem;
+use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
 use App\Services\PortalNotificationService;
@@ -34,15 +36,38 @@ class ApplicationReviewController extends Controller
 
     public function show(CertificationApplication $application, DynamicFormService $forms)
     {
-        // Catatan: relasi audit/invoice/sertifikat ditambahkan pada Fase 5-7.
+        // Catatan: relasi sertifikat/surveillance ditambahkan pada Fase 7-8.
         $application->load([
             'scheme.sections.fields.options', 'scheme.requiredDocuments', 'client', 'values',
             'documents.currentVersion', 'documents.versions', 'revisions', 'reviews.items',
-            'statusHistory', 'generatedPdfs',
+            'statusHistory', 'generatedPdfs', 'auditAssignments.auditor',
         ]);
         $application->setRelation('scheme', $forms->schemeForApplication($application));
+        $auditors = User::where('is_active', true)
+            ->whereHas('roles', fn ($query) => $query->where('code', 'auditor'))
+            ->orderBy('name')
+            ->get();
 
-        return view('internal.applications.show', compact('application'));
+        return view('internal.applications.show', compact('application', 'auditors'));
+    }
+
+    public function assignAuditor(Request $request, CertificationApplication $application, AuditLogger $audit)
+    {
+        $data = $request->validate([
+            'auditor_id' => ['required', 'integer', 'exists:users,id'],
+            'assignment_role' => ['required', Rule::in(['LA', 'A', 'TA'])],
+            'stage_code' => ['required', Rule::in(['all', 'stage_1', 'stage_2', 'qms', 'corrective_action'])],
+            'assigned_date' => ['required', 'date'],
+        ]);
+        $auditor = User::whereKey($data['auditor_id'])->where('is_active', true)
+            ->whereHas('roles', fn ($query) => $query->where('code', 'auditor'))->firstOrFail();
+        $assignment = AuditAssignment::updateOrCreate(
+            ['application_id' => $application->id, 'auditor_id' => $auditor->id, 'stage_code' => $data['stage_code']],
+            ['assignment_role' => $data['assignment_role'], 'assigned_date' => $data['assigned_date'], 'status' => 'assigned', 'assigned_by' => $request->user()->id]
+        );
+        $audit->log('audit.assignment_saved', $assignment, [], ['auditor' => $auditor->email]);
+
+        return back()->with('success', 'Auditor berhasil ditugaskan ke order ini.');
     }
 
     public function saveReview(Request $request, CertificationApplication $application, AuditLogger $audit)

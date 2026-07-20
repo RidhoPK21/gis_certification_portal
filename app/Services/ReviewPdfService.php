@@ -17,10 +17,9 @@ class ReviewPdfService
 
     public function generate(CertificationApplication $application, ?int $userId = null): GeneratedPdf
     {
-        // Catatan: relasi auditStages & findings ditambahkan pada Fase 6.
         $application->load([
             'scheme.sections.fields', 'scheme.requiredDocuments', 'values',
-            'documents.currentVersion', 'reviews.items',
+            'documents.currentVersion', 'reviews.items', 'auditStages', 'findings',
         ]);
         $application->setRelation('scheme', $this->forms->schemeForApplication($application));
         $snapshot = $this->snapshot($application);
@@ -77,7 +76,7 @@ class ReviewPdfService
             'values' => $values, 'documents' => $documents,
             'administration_review' => $adminReview ? $adminReview->toArray() : null,
             'technical_review' => $technicalReview ? $technicalReview->toArray() : null,
-            'audit_stages' => [],
+            'audit_stages' => $application->auditStages->toArray(),
         ];
     }
 

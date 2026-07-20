@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
+use App\Http\Controllers\Client\CorrectiveActionController as ClientCorrectiveActionController;
 use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Internal\ApplicationReviewController;
+use App\Http\Controllers\Internal\AuditController;
 use App\Http\Controllers\Internal\FinanceController;
 use App\Http\Controllers\Internal\GeneratedPdfController;
 use App\Http\Controllers\NotificationController;
@@ -35,6 +37,10 @@ Route::middleware([
         ->name('secure-files.application-document');
     Route::get('/secure-files/invoice/{invoice}', [SecureFileController::class, 'invoice'])
         ->name('secure-files.invoice');
+    Route::get('/secure-files/audit/{file}', [SecureFileController::class, 'auditReport'])
+        ->name('secure-files.audit');
+    Route::get('/secure-files/corrective-action/{file}', [SecureFileController::class, 'correctiveAction'])
+        ->name('secure-files.corrective-action');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -57,11 +63,8 @@ Route::middleware([
             Route::post('/applications/{application}/submit', [ClientApplicationController::class, 'submit'])->name('applications.submit');
             Route::post('/applications/{application}/documents', [ClientDocumentController::class, 'store'])->name('documents.store');
 
-            // Corrective Action dibangun pada Fase 6.
-            Route::view('/corrective-actions', 'module.placeholder', [
-                'title' => 'Corrective Action',
-                'description' => 'Mengunggah bukti perbaikan atas temuan auditor.',
-            ])->name('corrective-actions.index');
+            Route::get('/corrective-actions', [ClientCorrectiveActionController::class, 'index'])->name('corrective-actions.index');
+            Route::post('/findings/{finding}/corrective-actions', [ClientCorrectiveActionController::class, 'store'])->name('corrective-actions.store');
         });
 
     Route::middleware('role:admin_application,superadmin')
@@ -78,7 +81,7 @@ Route::middleware([
             Route::post('/{application}/generate-pdf', [ApplicationReviewController::class, 'generatePdf'])->name('applications.generate-pdf');
             Route::put('/{application}/order', [ApplicationReviewController::class, 'updateOrder'])->name('applications.order');
             Route::get('/generated-pdf/{pdf}/download', [GeneratedPdfController::class, 'download'])->name('generated-pdf.download');
-            // Penugasan auditor (audit-assignments.store) ditambahkan pada Fase 6.
+            Route::post('/{application}/audit-assignments', [ApplicationReviewController::class, 'assignAuditor'])->name('applications.audit-assignments.store');
         });
 
     Route::middleware('role:finance,superadmin')
@@ -95,15 +98,13 @@ Route::middleware([
         ->prefix('internal/audit')
         ->name('audit.')
         ->group(function (): void {
-            Route::view(
-                '/',
-                'module.placeholder',
-                [
-                    'title' => 'Audit & Corrective Action',
-                    'description' =>
-                        'Mengelola Stage 1, Stage 2, hasil audit, temuan, dan corrective action.',
-                ]
-            )->name('index');
+            Route::get('/', [AuditController::class, 'index'])->name('index');
+            Route::get('/{application}', [AuditController::class, 'show'])->name('show');
+            Route::post('/{application}/stage', [AuditController::class, 'saveStage'])->name('stage');
+            Route::post('/{application}/stage/skip', [AuditController::class, 'skipStage'])->name('stage.skip');
+            Route::post('/{application}/complete', [AuditController::class, 'completeAudit'])->name('complete');
+            Route::post('/{application}/findings', [AuditController::class, 'createFinding'])->name('findings.store');
+            Route::post('/corrective-actions/{correctiveAction}/review', [AuditController::class, 'reviewCorrectiveAction'])->name('corrective-actions.review');
         });
 
     Route::middleware('role:technical,superadmin')

@@ -48,9 +48,15 @@ class DocumentController extends Controller
         $document->load(['application', 'currentVersion']);
         $application = $document->application;
 
-        // Akses auditor (berdasarkan audit_assignments) ditambahkan pada Fase 6.
         $allowed = $application->client_id === $request->user()->id
             || $request->user()->hasRole(['admin_application', 'superadmin']);
+
+        if ($request->user()->hasRole('auditor')) {
+            $allowed = $application->auditAssignments()
+                ->where('auditor_id', $request->user()->id)
+                ->where('status', 'assigned')
+                ->exists();
+        }
 
         abort_unless($allowed, 403);
         abort_unless($document->currentVersion, 404);

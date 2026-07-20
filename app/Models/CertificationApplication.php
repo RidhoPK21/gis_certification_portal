@@ -80,6 +80,21 @@ class CertificationApplication extends Model
         return $this->hasOne(Invoice::class, 'application_id');
     }
 
+    public function auditAssignments(): HasMany
+    {
+        return $this->hasMany(AuditAssignment::class, 'application_id');
+    }
+
+    public function auditStages(): HasMany
+    {
+        return $this->hasMany(AuditStage::class, 'application_id');
+    }
+
+    public function findings(): HasMany
+    {
+        return $this->hasMany(Finding::class, 'application_id');
+    }
+
     public function workflowSteps(): HasMany
     {
         return $this->hasMany(ApplicationWorkflowStep::class, 'application_id');
