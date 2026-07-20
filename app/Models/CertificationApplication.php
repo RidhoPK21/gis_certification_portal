@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CertificationApplication extends Model
 {
@@ -72,6 +73,11 @@ class CertificationApplication extends Model
     public function generatedPdfs(): HasMany
     {
         return $this->hasMany(GeneratedPdf::class, 'application_id');
+    }
+
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class, 'application_id');
     }
 
     public function workflowSteps(): HasMany

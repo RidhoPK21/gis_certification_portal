@@ -4,9 +4,11 @@ use App\Http\Controllers\Client\ApplicationController as ClientApplicationContro
 use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Internal\ApplicationReviewController;
+use App\Http\Controllers\Internal\FinanceController;
 use App\Http\Controllers\Internal\GeneratedPdfController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SecureFileController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
 use App\Http\Controllers\Superadmin\SchemeController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +33,8 @@ Route::middleware([
 
     Route::get('/secure-files/application-document/{document}', [ClientDocumentController::class, 'download'])
         ->name('secure-files.application-document');
+    Route::get('/secure-files/invoice/{invoice}', [SecureFileController::class, 'invoice'])
+        ->name('secure-files.invoice');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -81,15 +85,10 @@ Route::middleware([
         ->prefix('internal/finance')
         ->name('finance.')
         ->group(function (): void {
-            Route::view(
-                '/',
-                'module.placeholder',
-                [
-                    'title' => 'Invoice & Pembayaran',
-                    'description' =>
-                        'Mengelola invoice, pembayaran, dan milestone pembayaran.',
-                ]
-            )->name('index');
+            Route::get('/', [FinanceController::class, 'index'])->name('index');
+            Route::get('/{application}', [FinanceController::class, 'show'])->name('show');
+            Route::post('/{application}/invoice', [FinanceController::class, 'saveInvoice'])->name('invoice');
+            Route::post('/{application}/payment', [FinanceController::class, 'addPayment'])->name('payment');
         });
 
     Route::middleware('role:auditor,superadmin')
