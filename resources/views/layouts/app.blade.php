@@ -683,6 +683,54 @@
             display: none;
         }
 
+        /* ---- Utility tambahan Fase 4 (review admin) ---- */
+        .btn-blue {
+            background: var(--navy);
+            color: #ffffff;
+        }
+
+        .btn-success {
+            background: #1c7a45;
+            color: #ffffff;
+        }
+
+        .btn-danger {
+            background: #b5342c;
+            color: #ffffff;
+        }
+
+        .btn-warning {
+            background: #cf8b1a;
+            color: #ffffff;
+        }
+
+        .text-danger {
+            color: #b5342c;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 9px 14px;
+            border-radius: 9px 9px 0 0;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .tab:hover,
+        .tab.active {
+            color: var(--navy);
+            background: var(--blue-light);
+        }
+
         @media (max-width: 720px) {
             .wizard-layout {
                 grid-template-columns: 1fr;

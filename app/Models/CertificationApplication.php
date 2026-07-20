@@ -64,6 +64,16 @@ class CertificationApplication extends Model
         return $this->hasMany(ApplicationStatusHistory::class, 'application_id')->orderBy('action_date');
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ApplicationReview::class, 'application_id');
+    }
+
+    public function generatedPdfs(): HasMany
+    {
+        return $this->hasMany(GeneratedPdf::class, 'application_id');
+    }
+
     public function workflowSteps(): HasMany
     {
         return $this->hasMany(ApplicationWorkflowStep::class, 'application_id');

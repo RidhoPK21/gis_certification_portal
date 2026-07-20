@@ -3,6 +3,8 @@
 use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
 use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Internal\ApplicationReviewController;
+use App\Http\Controllers\Internal\GeneratedPdfController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
@@ -58,21 +60,21 @@ Route::middleware([
             ])->name('corrective-actions.index');
         });
 
-    Route::middleware(
-        'role:admin_application,superadmin'
-    )
+    Route::middleware('role:admin_application,superadmin')
         ->prefix('internal/applications')
-        ->name('internal.applications.')
+        ->name('internal.')
         ->group(function (): void {
-            Route::view(
-                '/',
-                'module.placeholder',
-                [
-                    'title' => 'Review Permohonan',
-                    'description' =>
-                        'Review form, dokumen, revisi, approval, penolakan, dan PDF tinjauan.',
-                ]
-            )->name('index');
+            Route::get('/', [ApplicationReviewController::class, 'index'])->name('applications.index');
+            Route::get('/{application}', [ApplicationReviewController::class, 'show'])->name('applications.show');
+            Route::post('/{application}/review', [ApplicationReviewController::class, 'saveReview'])->name('applications.review');
+            Route::post('/{application}/request-revision', [ApplicationReviewController::class, 'requestRevision'])->name('applications.revision');
+            Route::post('/{application}/revisions/{revision}/resolve', [ApplicationReviewController::class, 'resolveRevision'])->name('applications.revisions.resolve');
+            Route::post('/{application}/approve', [ApplicationReviewController::class, 'approve'])->name('applications.approve');
+            Route::post('/{application}/reject', [ApplicationReviewController::class, 'reject'])->name('applications.reject');
+            Route::post('/{application}/generate-pdf', [ApplicationReviewController::class, 'generatePdf'])->name('applications.generate-pdf');
+            Route::put('/{application}/order', [ApplicationReviewController::class, 'updateOrder'])->name('applications.order');
+            Route::get('/generated-pdf/{pdf}/download', [GeneratedPdfController::class, 'download'])->name('generated-pdf.download');
+            // Penugasan auditor (audit-assignments.store) ditambahkan pada Fase 6.
         });
 
     Route::middleware('role:finance,superadmin')

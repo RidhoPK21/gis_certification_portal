@@ -33,17 +33,28 @@ class DashboardController extends Controller
             ]);
         }
 
-        $userRoles = $user->roles->pluck('code')->all();
+        $role = (string) ($user->roles->sortBy('sort_order')->pluck('code')->first() ?? 'client');
+        $statuses = match ($role) {
+            'admin_application' => ['submitted', 'admin_review', 'revision_requested', 'application_approved'],
+            'finance' => ['application_approved', 'invoice_process', 'payment_partial', 'payment_completed'],
+            'auditor' => ['stage_1_audit', 'stage_2_audit', 'qms_audit', 'corrective_action', 'corrective_revision'],
+            'technical' => ['certificate_review', 'final_certificate', 'completed'],
+            default => [],
+        };
 
-        $shortcuts = collect(config('navigation'))
-            ->reject(fn (array $item): bool => $item['route'] === 'dashboard')
-            ->filter(fn (array $item): bool => count(array_intersect($userRoles, $item['roles'])) > 0)
-            ->values();
+        $query = CertificationApplication::query();
 
-        return view('dashboard', [
-            'user' => $user,
-            'primaryRole' => $user->roles->sortBy('sort_order')->first(),
-            'shortcuts' => $shortcuts,
+        return view('internal.dashboard', [
+            'role' => $role,
+            'stats' => [
+                'all' => $query->count(),
+                'queue' => $statuses ? (clone $query)->whereIn('status', $statuses)->count() : $query->count(),
+                'overdue' => 0,
+                'completed' => (clone $query)->where('status', 'completed')->count(),
+            ],
+            'applications' => $statuses
+                ? $query->whereIn('status', $statuses)->with(['scheme', 'client'])->latest()->limit(10)->get()
+                : $query->with(['scheme', 'client'])->latest()->limit(10)->get(),
         ]);
     }
 }
