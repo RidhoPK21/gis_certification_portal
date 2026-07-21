@@ -7,6 +7,7 @@ use App\Models\FormConfigurationVersion;
 use App\Models\SchemeField;
 use App\Models\SchemeRequiredDocument;
 use App\Models\SchemeSection;
+use App\Models\SniProductMaster;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -106,7 +107,15 @@ class SchemeCatalogSeeder extends Seeder
             }
         });
 
-        // Catatan: master produk SNI (SniProductMaster) diseed pada Fase 9
-        // bersama modul Produk SNI dan importer-nya.
+        foreach ([
+            ['SNI-DEMO-001', 'Produk Baja Tulangan Beton', 'Bahan Konstruksi', 'SNI 2052:2017'],
+            ['SNI-DEMO-002', 'Air Minum Dalam Kemasan', 'Pangan', 'SNI 3553:2015'],
+            ['SNI-DEMO-003', 'Pupuk NPK Padat', 'Pertanian', 'SNI 2803:2012'],
+        ] as [$code, $name, $category, $number]) {
+            SniProductMaster::updateOrCreate(
+                ['product_code' => $code],
+                ['product_name' => $name, 'category' => $category, 'sni_number' => $number, 'certification_system' => 'System 5', 'is_active' => true]
+            );
+        }
     }
 }

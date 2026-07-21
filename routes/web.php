@@ -12,9 +12,13 @@ use App\Http\Controllers\Internal\GeneratedPdfController;
 use App\Http\Controllers\Internal\TechnicalController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicTrackingController;
 use App\Http\Controllers\SecureFileController;
+use App\Http\Controllers\Superadmin\AuditTrailController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
 use App\Http\Controllers\Superadmin\SchemeController;
+use App\Http\Controllers\Superadmin\SniProductController;
+use App\Http\Controllers\Superadmin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,6 +26,9 @@ Route::get('/', function () {
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 });
+
+Route::get('/cek-status', [PublicTrackingController::class, 'index'])->name('public.home');
+Route::post('/cek-status', [PublicTrackingController::class, 'track'])->middleware('throttle:15,1')->name('public.track');
 
 Route::prefix('certificate')->group(function (): void {
     Route::get('/draft/{token}', [CertificateShareController::class, 'previewDraft'])->name('certificate.draft.preview');
@@ -135,15 +142,8 @@ Route::middleware([
         ->prefix('superadmin')
         ->name('superadmin.')
         ->group(function (): void {
-            Route::view(
-                '/users',
-                'module.placeholder',
-                [
-                    'title' => 'User & Role',
-                    'description' =>
-                        'Mengelola pengguna, status akun, dan role.',
-                ]
-            )->name('users.index');
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
 
             Route::get('/schemes', [SchemeController::class, 'index'])
                 ->name('schemes.index');
@@ -169,25 +169,12 @@ Route::middleware([
             Route::post('/schemes/{scheme}/builder/documents/{document}/toggle', [FormBuilderController::class, 'toggleDocument'])
                 ->name('form-builder.documents.toggle');
 
-            Route::view(
-                '/sni-products',
-                'module.placeholder',
-                [
-                    'title' => 'Produk SNI',
-                    'description' =>
-                        'Mengelola master produk SNI dan data import.',
-                ]
-            )->name('sni-products.index');
+            Route::get('/sni-products', [SniProductController::class, 'index'])->name('sni-products.index');
+            Route::post('/sni-products', [SniProductController::class, 'store'])->name('sni-products.store');
+            Route::put('/sni-products/{product}', [SniProductController::class, 'update'])->name('sni-products.update');
+            Route::post('/sni-products/import', [SniProductController::class, 'import'])->name('sni-products.import');
 
-            Route::view(
-                '/audit-trail',
-                'module.placeholder',
-                [
-                    'title' => 'Audit Trail',
-                    'description' =>
-                        'Melihat riwayat aktivitas dan perubahan sistem.',
-                ]
-            )->name('audit-trail.index');
+            Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail.index');
 
             Route::view(
                 '/settings',
