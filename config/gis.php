@@ -6,6 +6,9 @@ return [
     'order_padding' => (int) env('GIS_ORDER_PADDING', 3),
     'draft_link_hours' => (int) env('GIS_DRAFT_LINK_HOURS', 72),
     'final_link_days' => (int) env('GIS_FINAL_LINK_DAYS', 30),
+    'surveillance_interval_months' => (int) env('GIS_SURVEILLANCE_INTERVAL_MONTHS', 12),
+    'surveillance_lead_days' => (int) env('GIS_SURVEILLANCE_LEAD_DAYS', 30),
+    'surveillance_max_cycles' => (int) env('GIS_SURVEILLANCE_MAX_CYCLES', 4),
     'email_notifications' => filter_var(env('GIS_EMAIL_NOTIFICATIONS', false), FILTER_VALIDATE_BOOL),
     'registration_enabled' => filter_var(env('GIS_ENABLE_REGISTRATION', true), FILTER_VALIDATE_BOOL),
     'allowed_upload_mimes' => [

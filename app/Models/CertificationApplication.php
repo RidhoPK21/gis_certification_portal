@@ -105,6 +105,11 @@ class CertificationApplication extends Model
         return $this->hasOne(CertificateFinal::class, 'application_id')->latestOfMany();
     }
 
+    public function surveillanceSchedules(): HasMany
+    {
+        return $this->hasMany(SurveillanceSchedule::class, 'application_id')->orderBy('cycle');
+    }
+
     public function workflowSteps(): HasMany
     {
         return $this->hasMany(ApplicationWorkflowStep::class, 'application_id');

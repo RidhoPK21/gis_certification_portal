@@ -142,4 +142,29 @@
             <div class="empty">Belum ada draft atau sertifikat final.</div>
         @endif
     </section>
+
+    @if ($application->surveillanceSchedules->isNotEmpty())
+        <section class="card mt-2">
+            <h2>Rencana Surveillance</h2>
+            <p class="muted">Tanggal planning dihitung sistem dan dapat dikonfirmasi oleh Tim GIS.</p>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Siklus</th><th>Planning</th><th>Jadwal</th><th>Aktual</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($application->surveillanceSchedules as $schedule)
+                            <tr>
+                                <td>Surveillance {{ $schedule->cycle }}</td>
+                                <td>{{ $schedule->planned_date->format('d M Y') }}</td>
+                                <td>{{ optional($schedule->scheduled_date)->format('d M Y') ?: 'Belum ditetapkan' }}</td>
+                                <td>{{ optional($schedule->actual_date)->format('d M Y') ?: '-' }}</td>
+                                <td><span class="badge badge-info">{{ ucfirst($schedule->status) }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    @endif
 @endsection

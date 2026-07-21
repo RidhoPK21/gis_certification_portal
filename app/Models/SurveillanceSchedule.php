@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class CertificateFinal extends Model
+class SurveillanceSchedule extends Model
 {
     protected $guarded = [];
 
     protected function casts(): array
     {
         return [
-            'issued_date' => 'date',
-            'expiry_date' => 'date',
+            'planned_date' => 'date',
+            'scheduled_date' => 'date',
+            'actual_date' => 'date',
+            'calculation_snapshot' => 'array',
         ];
     }
 
@@ -23,8 +24,8 @@ class CertificateFinal extends Model
         return $this->belongsTo(CertificationApplication::class, 'application_id');
     }
 
-    public function surveillanceSchedules(): HasMany
+    public function certificateFinal(): BelongsTo
     {
-        return $this->hasMany(SurveillanceSchedule::class);
+        return $this->belongsTo(CertificateFinal::class);
     }
 }

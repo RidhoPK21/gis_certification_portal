@@ -120,7 +120,9 @@ class CertificateTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertSame('completed', $app->refresh()->status);
+        // Upload final membuat rencana surveillance (Fase 8), sehingga penyelesaian
+        // otomatis mengaktifkan status surveillance.
+        $this->assertSame('surveillance', $app->refresh()->status);
     }
 
     public function test_akses_publik_sertifikat_final_butuh_password_benar(): void

@@ -130,6 +130,63 @@
         </div>
     </section>
 
+    @if ($application->certificateFinal)
+        <section class="card mt-2">
+            <div class="page-head">
+                <div>
+                    <h2>Surveillance Planner</h2>
+                    <p>Perhitungan rule-assisted yang dapat diaudit; tanggal dapat dikonfirmasi atau disesuaikan Tim Teknis.</p>
+                </div>
+                <span class="badge badge-info">GIS-SURV-1.0</span>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Siklus</th><th>Rencana Otomatis</th><th>Jadwal / Aktual / Status / Catatan</th></tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($application->surveillanceSchedules as $schedule)
+                            <tr>
+                                <td>Surveillance {{ $schedule->cycle }}</td>
+                                <td>{{ $schedule->planned_date->format('d M Y') }}</td>
+                                <td>
+                                    <form method="post" action="{{ route('technical.surveillance.update', $schedule) }}">
+                                        @csrf
+                                        <div class="flex gap-1 wrap" style="align-items:flex-end">
+                                            <div>
+                                                <label class="small muted">Jadwal</label>
+                                                <input class="form-control" type="date" name="scheduled_date" value="{{ optional($schedule->scheduled_date)->format('Y-m-d') }}">
+                                            </div>
+                                            <div>
+                                                <label class="small muted">Aktual</label>
+                                                <input class="form-control" type="date" name="actual_date" value="{{ optional($schedule->actual_date)->format('Y-m-d') }}">
+                                            </div>
+                                            <div>
+                                                <label class="small muted">Status</label>
+                                                <select class="form-select" name="status">
+                                                    @foreach (['planned' => 'Planning', 'scheduled' => 'Terjadwal', 'completed' => 'Realisasi', 'cancelled' => 'Dibatalkan'] as $value => $label)
+                                                        <option value="{{ $value }}" @selected($schedule->status === $value)>{{ $label }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div style="min-width:220px;flex:1">
+                                                <label class="small muted">Catatan</label>
+                                                <input class="form-control" name="notes" value="{{ $schedule->notes }}">
+                                            </div>
+                                            <button class="btn btn-light btn-sm">Simpan</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="empty">Rencana surveillance dibuat otomatis saat sertifikat final diunggah.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    @endif
+
     @if ($application->status === 'final_certificate')
         <section class="card mt-2">
             <h2>Tutup Proses Sertifikasi</h2>

@@ -128,7 +128,7 @@ Route::middleware([
             Route::post('/final/{final}/link', [TechnicalController::class, 'createFinalLink'])->name('final.link');
             Route::post('/{application}/complete', [TechnicalController::class, 'complete'])->name('complete');
             Route::post('/link/{link}/revoke', [TechnicalController::class, 'revoke'])->name('link.revoke');
-            // Surveillance (surveillance.update) ditambahkan pada Fase 8.
+            Route::post('/surveillance/{schedule}', [TechnicalController::class, 'updateSurveillance'])->name('surveillance.update');
         });
 
     Route::middleware('role:superadmin')

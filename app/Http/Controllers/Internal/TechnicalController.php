@@ -7,13 +7,16 @@ use App\Models\CertificateDraft;
 use App\Models\CertificateFinal;
 use App\Models\CertificateShareLink;
 use App\Models\CertificationApplication;
+use App\Models\SurveillanceSchedule;
 use App\Services\AuditLogger;
 use App\Services\CertificateLinkService;
 use App\Services\FileStorageService;
 use App\Services\PortalNotificationService;
+use App\Services\SurveillancePlannerService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class TechnicalController extends Controller
 {
@@ -32,7 +35,7 @@ class TechnicalController extends Controller
     public function show(CertificationApplication $application)
     {
         abort_unless(in_array($application->status, self::TECHNICAL_STATUSES, true), 422, 'Order belum berada pada tahap Tim Teknis.');
-        $application->load(['scheme', 'client', 'certificateDrafts', 'certificateFinal', 'generatedPdfs']);
+        $application->load(['scheme', 'client', 'certificateDrafts', 'certificateFinal', 'generatedPdfs', 'surveillanceSchedules']);
         $links = CertificateShareLink::where('application_id', $application->id)->latest()->get();
 
         return view('internal.technical.show', compact('application', 'links'));
@@ -69,7 +72,7 @@ class TechnicalController extends Controller
         return back()->with('generated_link', ['url' => $url, 'password' => null])->with('success', 'Link preview draft berhasil dibuat. Salin link sebelum meninggalkan halaman.');
     }
 
-    public function uploadFinal(Request $request, CertificationApplication $application, FileStorageService $files, WorkflowService $workflow, AuditLogger $audit)
+    public function uploadFinal(Request $request, CertificationApplication $application, FileStorageService $files, WorkflowService $workflow, SurveillancePlannerService $planner, AuditLogger $audit)
     {
         abort_unless(in_array($application->status, ['certificate_review', 'final_certificate'], true), 422, 'Sertifikat final hanya dapat diunggah setelah tahap audit selesai.');
         $data = $request->validate([
@@ -91,8 +94,8 @@ class TechnicalController extends Controller
         if ($application->status === 'certificate_review') {
             $workflow->transition($application, 'final_certificate', 'final_certificate_uploaded', 'Sertifikat final diunggah.', $request->user()->id, new \DateTime($data['issued_date']));
         }
-        // Catatan: pembuatan rencana surveillance otomatis ditambahkan pada Fase 8.
-        $audit->log('certificate.final_uploaded', $final);
+        $planner->generate($final, $request->user()->id);
+        $audit->log('certificate.final_uploaded', $final, [], ['surveillance_plans_generated' => true]);
 
         return back()->with('success', 'Sertifikat final berhasil diunggah. Buat link aman untuk klien.');
     }
@@ -115,10 +118,27 @@ class TechnicalController extends Controller
         abort_unless($application->status === 'final_certificate', 422, 'Order hanya dapat diselesaikan setelah sertifikat final diunggah.');
         abort_unless($application->certificateFinal()->exists(), 422, 'Sertifikat final belum tersedia.');
         $workflow->transition($application, 'completed', 'certification_completed', $data['notes'], $request->user()->id, new \DateTime($data['action_date']));
-        // Catatan: aktivasi status surveillance ditambahkan pada Fase 8.
-        $audit->log('application.completed', $application);
+        if ($application->surveillanceSchedules()->exists()) {
+            $workflow->transition($application->refresh(), 'surveillance', 'surveillance_activated', 'Rencana surveillance otomatis diaktifkan.', $request->user()->id, new \DateTime($data['action_date']));
+        }
+        $audit->log('application.completed', $application, [], ['surveillance_activated' => $application->surveillanceSchedules()->exists()]);
 
-        return back()->with('success', 'Proses sertifikasi ditutup.');
+        return back()->with('success', 'Proses sertifikasi ditutup dan rencana surveillance diaktifkan.');
+    }
+
+    public function updateSurveillance(Request $request, SurveillanceSchedule $schedule, AuditLogger $audit)
+    {
+        $data = $request->validate([
+            'scheduled_date' => ['nullable', 'date'],
+            'actual_date' => ['nullable', 'date'],
+            'status' => ['required', Rule::in(['planned', 'scheduled', 'completed', 'cancelled'])],
+            'notes' => ['nullable', 'string', 'max:3000'],
+        ]);
+        $old = $schedule->toArray();
+        $schedule->update($data + ['updated_by' => $request->user()->id]);
+        $audit->log('surveillance.updated', $schedule, $old, $schedule->fresh()->toArray());
+
+        return back()->with('success', 'Jadwal surveillance berhasil diperbarui.');
     }
 
     public function revoke(Request $request, CertificateShareLink $link, AuditLogger $audit)
