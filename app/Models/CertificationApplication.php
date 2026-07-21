@@ -95,6 +95,16 @@ class CertificationApplication extends Model
         return $this->hasMany(Finding::class, 'application_id');
     }
 
+    public function certificateDrafts(): HasMany
+    {
+        return $this->hasMany(CertificateDraft::class, 'application_id');
+    }
+
+    public function certificateFinal(): HasOne
+    {
+        return $this->hasOne(CertificateFinal::class, 'application_id')->latestOfMany();
+    }
+
     public function workflowSteps(): HasMany
     {
         return $this->hasMany(ApplicationWorkflowStep::class, 'application_id');

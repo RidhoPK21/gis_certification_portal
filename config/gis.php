@@ -4,6 +4,8 @@ return [
     'public_tracking_rate' => (int) env('GIS_PUBLIC_TRACKING_RATE', 15),
     'upload_max_mb' => (int) env('GIS_UPLOAD_MAX_MB', 20),
     'order_padding' => (int) env('GIS_ORDER_PADDING', 3),
+    'draft_link_hours' => (int) env('GIS_DRAFT_LINK_HOURS', 72),
+    'final_link_days' => (int) env('GIS_FINAL_LINK_DAYS', 30),
     'email_notifications' => filter_var(env('GIS_EMAIL_NOTIFICATIONS', false), FILTER_VALIDATE_BOOL),
     'registration_enabled' => filter_var(env('GIS_ENABLE_REGISTRATION', true), FILTER_VALIDATE_BOOL),
     'allowed_upload_mimes' => [

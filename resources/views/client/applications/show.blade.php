@@ -128,4 +128,18 @@
             <div class="empty">Tidak ada temuan.</div>
         @endforelse
     </section>
+
+    <section class="card mt-2">
+        <h2>Sertifikat</h2>
+        @if ($application->certificateFinal)
+            <div class="alert alert-success">
+                <strong>Sertifikat final telah dirilis.</strong>
+                <p>Nomor {{ $application->certificateFinal->certificate_number }}. Gunakan link aman dan password yang dikirim Tim Teknis untuk mengunduh.</p>
+            </div>
+        @elseif ($application->certificateDrafts->count())
+            <div class="alert alert-info">Draft sertifikat sudah tersedia. Link preview akan muncul pada notifikasi setelah dibuat Tim Teknis.</div>
+        @else
+            <div class="empty">Belum ada draft atau sertifikat final.</div>
+        @endif
+    </section>
 @endsection

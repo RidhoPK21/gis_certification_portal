@@ -3,11 +3,13 @@
 use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
 use App\Http\Controllers\Client\CorrectiveActionController as ClientCorrectiveActionController;
 use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
+use App\Http\Controllers\CertificateShareController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Internal\ApplicationReviewController;
 use App\Http\Controllers\Internal\AuditController;
 use App\Http\Controllers\Internal\FinanceController;
 use App\Http\Controllers\Internal\GeneratedPdfController;
+use App\Http\Controllers\Internal\TechnicalController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SecureFileController;
@@ -19,6 +21,13 @@ Route::get('/', function () {
     return auth()->check()
         ? redirect()->route('dashboard')
         : redirect()->route('login');
+});
+
+Route::prefix('certificate')->group(function (): void {
+    Route::get('/draft/{token}', [CertificateShareController::class, 'previewDraft'])->name('certificate.draft.preview');
+    Route::get('/draft/{token}/stream', [CertificateShareController::class, 'streamDraft'])->middleware('throttle:30,1')->name('certificate.draft.stream');
+    Route::get('/final/{token}', [CertificateShareController::class, 'finalAccess'])->name('certificate.final.access');
+    Route::post('/final/{token}/download', [CertificateShareController::class, 'downloadFinal'])->middleware('throttle:8,1')->name('certificate.final.download');
 });
 
 Route::middleware([
@@ -111,15 +120,15 @@ Route::middleware([
         ->prefix('internal/technical')
         ->name('technical.')
         ->group(function (): void {
-            Route::view(
-                '/',
-                'module.placeholder',
-                [
-                    'title' => 'Sertifikat',
-                    'description' =>
-                        'Mengelola draft sertifikat, sertifikat final, link, expiry, dan surveillance.',
-                ]
-            )->name('index');
+            Route::get('/', [TechnicalController::class, 'index'])->name('index');
+            Route::get('/{application}', [TechnicalController::class, 'show'])->name('show');
+            Route::post('/{application}/draft', [TechnicalController::class, 'uploadDraft'])->name('draft.upload');
+            Route::post('/draft/{draft}/link', [TechnicalController::class, 'createDraftLink'])->name('draft.link');
+            Route::post('/{application}/final', [TechnicalController::class, 'uploadFinal'])->name('final.upload');
+            Route::post('/final/{final}/link', [TechnicalController::class, 'createFinalLink'])->name('final.link');
+            Route::post('/{application}/complete', [TechnicalController::class, 'complete'])->name('complete');
+            Route::post('/link/{link}/revoke', [TechnicalController::class, 'revoke'])->name('link.revoke');
+            // Surveillance (surveillance.update) ditambahkan pada Fase 8.
         });
 
     Route::middleware('role:superadmin')
