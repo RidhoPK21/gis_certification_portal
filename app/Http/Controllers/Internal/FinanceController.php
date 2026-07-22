@@ -44,7 +44,6 @@ class FinanceController extends Controller
             'invoice_number' => ['required', 'string', 'max:100', Rule::unique('invoices', 'invoice_number')->ignore($application->invoice?->id)],
             'amount' => ['required', 'numeric', 'min:0'],
             'invoice_date' => ['required', 'date'],
-            'due_date' => ['nullable', 'date', 'after_or_equal:invoice_date'],
             'notes' => ['nullable', 'string'],
             'invoice_file' => ['nullable', 'file'],
         ]);

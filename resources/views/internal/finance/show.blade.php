@@ -29,10 +29,6 @@
                         <label class="form-label">Tanggal Invoice</label>
                         <input class="form-control" type="date" name="invoice_date" value="{{ old('invoice_date', optional($application->invoice?->invoice_date)->format('Y-m-d') ?: now()->format('Y-m-d')) }}" required>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Jatuh Tempo</label>
-                        <input class="form-control" type="date" name="due_date" value="{{ old('due_date', optional($application->invoice?->due_date)->format('Y-m-d')) }}">
-                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">File Invoice</label>
