@@ -85,10 +85,15 @@
                     id="password"
                     type="password"
                     name="password"
-                    placeholder="Minimal 8 karakter"
+                    placeholder="Minimal 12 karakter, kombinasi huruf & angka"
                     autocomplete="new-password"
+                    minlength="12"
                     required
                 >
+
+                <div class="form-help" style="margin-top: 6px; color: #687b8e; font-size: 12px;">
+                    Minimal 12 karakter dan harus mengandung huruf serta angka.
+                </div>
 
                 @error('password')
                     <div class="form-error">
@@ -158,4 +163,23 @@
             Akun internal GIS dibuat oleh Superadmin.
         </div>
     </section>
+
+    @if ($errors->any())
+        @push('scripts')
+        <script>
+            (function(){
+                const errors=@json($errors->all());
+                if(!errors.length)return;
+                if(typeof window.Swal==='undefined')return; // pesan per-kolom tetap tampil sebagai fallback
+                window.Swal.fire({
+                    icon:'error',
+                    title:'Akun gagal dibuat',
+                    html:'<ul style="text-align:left;margin:0;padding-left:18px">'+errors.map(m=>'<li>'+m+'</li>').join('')+'</ul>',
+                    confirmButtonText:'Perbaiki',
+                    confirmButtonColor:'#b42318',
+                });
+            })();
+        </script>
+        @endpush
+    @endif
 @endsection

@@ -13,7 +13,7 @@
 
     <section class="card">
         <h2>Stage 1 / Stage 2 / Audit Lapangan</h2>
-        <form method="post" action="{{ route('audit.stage', $application) }}" enctype="multipart/form-data">
+        <form method="post" action="{{ route('audit.stage', $application) }}" enctype="multipart/form-data" data-ajax>
             @csrf
             <div class="grid-3">
                 <div class="form-group">
@@ -202,7 +202,10 @@
         <section class="card mt-2">
             <h2>Selesaikan Audit Tanpa Temuan Terbuka</h2>
             <p class="muted">Gunakan tindakan ini hanya setelah laporan audit lengkap dan tidak ada temuan yang masih terbuka. Order akan diteruskan ke Tim Teknis.</p>
-            <form method="post" action="{{ route('audit.complete', $application) }}">
+            <form method="post" action="{{ route('audit.complete', $application) }}"
+                  data-confirm="Selesaikan audit dan teruskan order ke Tim Teknis?"
+                  data-confirm-title="Selesai Audit"
+                  data-confirm-yes="Ya, selesaikan">
                 @csrf
                 <div class="grid-2">
                     <div class="form-group">

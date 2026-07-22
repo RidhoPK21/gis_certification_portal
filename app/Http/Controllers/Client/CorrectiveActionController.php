@@ -57,6 +57,6 @@ class CorrectiveActionController extends Controller
         }
         $audit->log('corrective_action.submitted', $ca);
 
-        return back()->with('success', 'Tindakan koreksi berhasil dikirim kepada auditor.');
+        return $this->savedResponse($request, 'Tindakan koreksi berhasil dikirim kepada auditor.');
     }
 }

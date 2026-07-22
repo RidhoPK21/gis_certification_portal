@@ -34,9 +34,10 @@ class RegisterResponse implements RegisterResponseContract
 
         return redirect()
             ->route('login')
+            ->with('registered', true)
             ->with(
                 'status',
-                'Pendaftaran berhasil. Silakan masuk menggunakan email dan kata sandi yang telah didaftarkan.'
+                'Akun berhasil dibuat. Silakan masuk menggunakan email dan kata sandi Anda.'
             );
     }
 }

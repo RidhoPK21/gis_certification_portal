@@ -62,7 +62,7 @@ class FinanceController extends Controller
         $audit->log('finance.invoice_saved', $invoice);
         $notifications->send($application->client_id, 'invoice_issued', 'Invoice diterbitkan', 'Invoice '.$invoice->invoice_number.' untuk order '.$application->order_number.' telah tersedia.', route('client.applications.show', $application));
 
-        return back()->with('success', 'Invoice berhasil disimpan.');
+        return $this->savedResponse($request, 'Invoice berhasil disimpan.');
     }
 
     public function addPayment(Request $request, CertificationApplication $application, WorkflowService $workflow, FileStorageService $files, PortalNotificationService $notifications, AuditLogger $audit)
@@ -111,6 +111,6 @@ class FinanceController extends Controller
         $notifications->send($application->client_id, 'payment_updated', 'Status pembayaran diperbarui', 'Pembayaran order '.$application->order_number.' kini berstatus '.$status.'.', route('client.applications.show', $application));
         $audit->log('finance.payment_recorded', $payment);
 
-        return back()->with('success', 'Pembayaran berhasil dicatat.');
+        return $this->savedResponse($request, 'Pembayaran berhasil dicatat.');
     }
 }

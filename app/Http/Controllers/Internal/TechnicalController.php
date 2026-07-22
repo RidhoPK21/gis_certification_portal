@@ -57,7 +57,7 @@ class TechnicalController extends Controller
         ]);
         $audit->log('certificate.draft_uploaded', $draft);
 
-        return back()->with('success', 'Draft sertifikat versi '.$version.' berhasil diunggah.');
+        return $this->savedResponse($request, 'Draft sertifikat versi '.$version.' berhasil diunggah.');
     }
 
     public function createDraftLink(Request $request, CertificateDraft $draft, CertificateLinkService $links, PortalNotificationService $notifications, AuditLogger $audit)
@@ -97,7 +97,7 @@ class TechnicalController extends Controller
         $planner->generate($final, $request->user()->id);
         $audit->log('certificate.final_uploaded', $final, [], ['surveillance_plans_generated' => true]);
 
-        return back()->with('success', 'Sertifikat final berhasil diunggah. Buat link aman untuk klien.');
+        return $this->savedResponse($request, 'Sertifikat final berhasil diunggah. Buat link aman untuk klien.');
     }
 
     public function createFinalLink(Request $request, CertificateFinal $final, CertificateLinkService $links, PortalNotificationService $notifications, AuditLogger $audit)

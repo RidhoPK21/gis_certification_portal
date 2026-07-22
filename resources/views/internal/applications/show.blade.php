@@ -360,7 +360,10 @@
 
     @if ($application->status === 'admin_review')
         <section class="grid-2 mt-2">
-            <form class="card" method="post" action="{{ route('internal.applications.approve', $application) }}" onsubmit="return confirm('Setujui permohonan dan teruskan ke Finance?')">
+            <form class="card" method="post" action="{{ route('internal.applications.approve', $application) }}"
+                  data-confirm="Setujui permohonan dan teruskan ke Finance? PDF keputusan akan digenerate."
+                  data-confirm-title="Setujui Permohonan"
+                  data-confirm-yes="Ya, setujui">
                 @csrf
                 <h2>Setujui Permohonan</h2>
                 <div class="form-group">
@@ -373,7 +376,11 @@
                 </div>
                 <button class="btn btn-success">Setujui &amp; Generate PDF</button>
             </form>
-            <form class="card" method="post" action="{{ route('internal.applications.reject', $application) }}" onsubmit="return confirm('Tolak permohonan ini?')">
+            <form class="card" method="post" action="{{ route('internal.applications.reject', $application) }}"
+                  data-confirm="Tolak permohonan ini? Tindakan ini menghentikan proses sertifikasi."
+                  data-confirm-title="Tolak Permohonan"
+                  data-confirm-type="danger"
+                  data-confirm-yes="Ya, tolak">
                 @csrf
                 <h2>Tolak Permohonan</h2>
                 <div class="form-group">

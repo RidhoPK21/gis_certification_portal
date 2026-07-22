@@ -41,20 +41,17 @@
             </form>
         </section>
 
-        <section class="card">
+        <section class="card" id="sni-import" data-import-url="{{ route('superadmin.sni-products.import') }}">
             <h2>Import CSV/XLSX</h2>
-            <p class="muted">Header: <code>kode_produk,nama_produk,kategori,nomor_sni,sistem_sertifikasi,status_aktif,dokumen_tambahan,catatan</code>.</p>
-            <form method="post" action="{{ route('superadmin.sni-products.import') }}" enctype="multipart/form-data">
-                @csrf
-                <div class="form-group">
-                    <input class="form-control" type="file" name="file" accept=".csv,.xlsx" required>
-                </div>
-                <button class="btn btn-success">Import &amp; Sinkronkan</button>
-            </form>
+            <p class="muted">Header: <code>kode_produk,nama_produk,kategori,nomor_sni,sistem_sertifikasi,status_aktif,dokumen_tambahan,catatan</code>. Pilih file dan import langsung berjalan tanpa memuat ulang halaman.</p>
+            <div class="form-group">
+                <input class="form-control" id="sni-import-input" type="file" accept=".csv,.xlsx">
+            </div>
+            <div class="small" id="sni-import-status" style="display:none"></div>
         </section>
     </div>
 
-    <section class="card mt-2">
+    <section class="card mt-2" id="sni-product-list">
         <div class="page-head">
             <div>
                 <h2>Daftar Produk</h2>
@@ -93,4 +90,75 @@
         </div>
         {{ $products->links() }}
     </section>
+
+    @push('scripts')
+    <script>
+    /*
+     * Live import produk SNI: pilih file langsung diproses lewat AJAX,
+     * tanpa reload. Ringkasan hasil tampil inline dan daftar produk
+     * diperbarui otomatis.
+     */
+    (function(){
+        const section=document.getElementById('sni-import');
+        const input=document.getElementById('sni-import-input');
+        const statusEl=document.getElementById('sni-import-status');
+        if(!section||!input)return;
+        const url=section.dataset.importUrl;
+        const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        input.addEventListener('change',async function(){
+            const file=input.files&&input.files[0];
+            if(!file)return;
+
+            input.disabled=true;
+            statusEl.style.display='block';
+            statusEl.style.color='var(--muted)';
+            statusEl.textContent='Mengimpor '+file.name+'...';
+
+            const fd=new FormData();
+            fd.append('file',file);
+
+            try{
+                const res=await fetch(url,{
+                    method:'POST',
+                    body:fd,
+                    headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest','X-CSRF-TOKEN':token}
+                });
+                const data=await res.json().catch(()=>({}));
+
+                if(!res.ok){
+                    const msg=data.errors?.file?.[0]||data.message||'Gagal mengimpor file.';
+                    statusEl.style.color='var(--danger,#b42318)';
+                    statusEl.textContent='✕ '+msg;
+                }else{
+                    statusEl.style.color='#17663a';
+                    statusEl.textContent='✓ '+(data.message||'Import selesai.');
+                    await refreshList();
+                }
+            }catch(e){
+                statusEl.style.color='var(--danger,#b42318)';
+                statusEl.textContent='✕ Koneksi gagal. Coba lagi.';
+            }finally{
+                input.disabled=false;
+                input.value='';
+            }
+        });
+
+        /*
+         * Ambil ulang halaman ini dan tukar hanya blok daftar produk,
+         * sehingga produk baru muncul tanpa memuat ulang seluruh halaman.
+         */
+        async function refreshList(){
+            try{
+                const res=await fetch(window.location.href,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+                const html=await res.text();
+                const doc=new DOMParser().parseFromString(html,'text/html');
+                const fresh=doc.getElementById('sni-product-list');
+                const current=document.getElementById('sni-product-list');
+                if(fresh&&current)current.replaceWith(fresh);
+            }catch(e){/* biarkan; ringkasan sudah tampil */}
+        }
+    })();
+    </script>
+    @endpush
 @endsection

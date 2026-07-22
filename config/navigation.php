@@ -20,14 +20,24 @@ return [
         'section' => 'Permohonan Klien',
         'label' => 'Ajukan Sertifikasi',
         'route' => 'client.applications.schemes',
-        'active' => 'client.applications.schemes',
+        'active' => [
+            'client.applications.schemes',
+            'client.applications.create',
+            'client.applications.store',
+        ],
         'roles' => ['client'],
     ],
     [
         'section' => 'Permohonan Klien',
         'label' => 'Permohonan Saya',
         'route' => 'client.applications.index',
-        'active' => 'client.applications.*',
+        'active' => [
+            'client.applications.index',
+            'client.applications.show',
+            'client.applications.edit',
+            'client.applications.update',
+            'client.applications.submit',
+        ],
         'roles' => ['client'],
     ],
     [

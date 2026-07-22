@@ -822,7 +822,7 @@
 
                         @foreach ($items as $item)
                             <a
-                                class="navigation-link {{ request()->routeIs($item['active']) ? 'active' : '' }}"
+                                class="navigation-link {{ request()->routeIs(...(array) $item['active']) ? 'active' : '' }}"
                                 href="{{ route($item['route']) }}"
                             >
                                 {{ $item['label'] }}
@@ -867,15 +867,18 @@
                 </div>
             </header>
 
-            <main class="page-content">
+            <main class="page-content" id="page-content">
+                {{-- Data flash untuk SweetAlert (sukses/gagal setelah reload). --}}
+                <script type="application/json" id="flash-data">@json(['success' => session('success'), 'errors' => $errors->all()])</script>
+
                 @if (session('success'))
-                    <div class="alert alert-success mt-1" style="margin-bottom: 20px;">
+                    <div class="alert alert-success mt-1" id="flash-success-banner" style="margin-bottom: 20px;">
                         {{ session('success') }}
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="alert" style="margin-bottom: 20px; border-color: #f0c2c2; background: #fdf2f2; color: #a12626;">
+                    <div class="alert" id="flash-error-banner" style="margin-bottom: 20px; border-color: #f0c2c2; background: #fdf2f2; color: #a12626;">
                         <strong>Periksa kembali isian berikut:</strong>
                         <ul style="margin: 8px 0 0; padding-left: 18px;">
                             @foreach ($errors->all() as $error)
@@ -891,5 +894,193 @@
     </div>
 
     @stack('scripts')
+
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+    <script>
+    /*
+     * Satu handler submit untuk seluruh form:
+     *  - data-confirm  : tampilkan dialog konfirmasi SweetAlert dulu untuk
+     *                    tombol aksi akhir/konsekuensial.
+     *  - data-ajax     : kirim tanpa reload; konten halaman diperbarui otomatis
+     *                    dan sukses ditampilkan sebagai toast SweetAlert.
+     */
+    (function(){
+        const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const hasSwal=()=>typeof window.Swal!=='undefined';
+
+        function clearAlerts(form){
+            form.querySelectorAll('.ajax-alert').forEach(el=>el.remove());
+        }
+
+        function showAlert(form,type,message,list){
+            const box=document.createElement('div');
+            box.className='ajax-alert alert '+(type==='success'?'alert-success':'');
+            if(type!=='success'){
+                box.style.borderColor='#f0c2c2';
+                box.style.background='#fdf2f2';
+                box.style.color='#a12626';
+            }
+            box.style.marginBottom='16px';
+            let html='<strong>'+message+'</strong>';
+            if(list&&list.length){
+                html+='<ul style="margin:8px 0 0;padding-left:18px">'+list.map(m=>'<li>'+m+'</li>').join('')+'</ul>';
+            }
+            box.innerHTML=html;
+            form.prepend(box);
+            box.scrollIntoView({behavior:'smooth',block:'center'});
+        }
+
+        function flashSuccess(message){
+            if(hasSwal()){
+                window.Swal.fire({toast:true,position:'top-end',icon:'success',title:message,showConfirmButton:false,timer:2600,timerProgressBar:true});
+                return;
+            }
+            const current=document.getElementById('page-content');
+            if(!current)return;
+            const box=document.createElement('div');
+            box.className='alert alert-success';
+            box.style.marginBottom='20px';
+            box.textContent=message;
+            current.prepend(box);
+        }
+
+        /* Notifikasi gagal via SweetAlert (modal), fallback ke banner form. */
+        function flashError(message,list,form){
+            if(hasSwal()){
+                let html='';
+                if(list&&list.length){
+                    html='<ul style="text-align:left;margin:0;padding-left:18px">'+list.map(m=>'<li>'+m+'</li>').join('')+'</ul>';
+                }
+                window.Swal.fire({icon:'error',title:message,html:html,confirmButtonText:'Mengerti',confirmButtonColor:'#b42318'});
+                return;
+            }
+            if(form)showAlert(form,'error',message,list);
+        }
+
+        async function refreshContent(){
+            try{
+                const res=await fetch(window.location.href,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+                const html=await res.text();
+                const doc=new DOMParser().parseFromString(html,'text/html');
+                const fresh=doc.getElementById('page-content');
+                const current=document.getElementById('page-content');
+                if(fresh&&current){
+                    current.innerHTML=fresh.innerHTML;
+                    current.scrollIntoView({behavior:'smooth',block:'start'});
+                }else{
+                    window.location.reload();
+                }
+            }catch(e){
+                window.location.reload();
+            }
+        }
+
+        /*
+         * Dialog konfirmasi untuk tombol aksi akhir. Mengembalikan true bila
+         * pengguna menekan tombol lanjut. Jatuh ke confirm() bawaan bila
+         * SweetAlert gagal dimuat.
+         */
+        async function askConfirm(form){
+            const message=form.getAttribute('data-confirm');
+            const danger=form.getAttribute('data-confirm-type')==='danger';
+            if(!hasSwal()){
+                return window.confirm(message);
+            }
+            const result=await window.Swal.fire({
+                title:form.getAttribute('data-confirm-title')||'Konfirmasi',
+                text:message,
+                icon:danger?'warning':'question',
+                showCancelButton:true,
+                confirmButtonText:form.getAttribute('data-confirm-yes')||'Ya, lanjut',
+                cancelButtonText:'Batal',
+                confirmButtonColor:danger?'#b42318':'#0878c9',
+                cancelButtonColor:'#8595a5',
+                reverseButtons:true,
+            });
+            return result.isConfirmed;
+        }
+
+        document.addEventListener('submit',async function(event){
+            const form=event.target.closest('form');
+            if(!form)return;
+
+            const needsConfirm=form.hasAttribute('data-confirm')&&form.dataset.confirmed!=='1';
+            const isAjax=form.hasAttribute('data-ajax');
+            if(!needsConfirm&&!isAjax)return; // biarkan submit biasa
+
+            // Tahap 1: konfirmasi (untuk tombol akhir).
+            if(needsConfirm){
+                event.preventDefault();
+                if(await askConfirm(form)){
+                    form.dataset.confirmed='1';
+                    if(form.requestSubmit)form.requestSubmit();else form.submit();
+                }
+                return;
+            }
+
+            // Tahap 2: kirim biasa (sudah dikonfirmasi, bukan AJAX).
+            if(!isAjax)return;
+
+            // Tahap 2b: kirim via AJAX tanpa reload.
+            event.preventDefault();
+            delete form.dataset.confirmed;
+            clearAlerts(form);
+
+            const btn=form.querySelector('button[type="submit"], button:not([type="button"]):not([type="reset"])');
+            const originalText=btn?btn.innerHTML:'';
+            if(btn){btn.disabled=true;btn.innerHTML='Menyimpan...';}
+
+            try{
+                const res=await fetch(form.action,{
+                    method:'POST',
+                    body:new FormData(form),
+                    headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest','X-CSRF-TOKEN':token}
+                });
+
+                if(res.status===422){
+                    const data=await res.json().catch(()=>({}));
+                    const msgs=[];
+                    Object.values(data.errors||{}).forEach(arr=>arr.forEach(m=>msgs.push(m)));
+                    flashError(data.message||'Periksa kembali isian berikut:',msgs,form);
+                }else if(!res.ok){
+                    const data=await res.json().catch(()=>({}));
+                    flashError(data.message||'Terjadi kesalahan. Coba lagi.',null,form);
+                }else{
+                    const data=await res.json().catch(()=>({}));
+                    await refreshContent();
+                    flashSuccess(data.message||'Berhasil disimpan.');
+                }
+            }catch(e){
+                flashError('Koneksi gagal. Coba lagi.',null,form);
+            }finally{
+                if(btn){btn.disabled=false;btn.innerHTML=originalText;}
+            }
+        });
+
+        /*
+         * Setelah reload (form non-AJAX), ubah flash server jadi SweetAlert:
+         * sukses -> toast hijau, gagal/validasi -> modal merah. Banner server
+         * tetap ada sebagai fallback bila SweetAlert tidak termuat.
+         */
+        function showFlashOnLoad(){
+            if(!hasSwal())return; // banner server sudah tampil sebagai fallback
+            let data={};
+            try{data=JSON.parse(document.getElementById('flash-data')?.textContent||'{}');}catch(e){}
+            if(data.success){
+                document.getElementById('flash-success-banner')?.remove();
+                flashSuccess(data.success);
+            }
+            if(data.errors&&data.errors.length){
+                document.getElementById('flash-error-banner')?.remove();
+                flashError('Periksa kembali isian berikut:',data.errors);
+            }
+        }
+        if(document.readyState==='loading'){
+            document.addEventListener('DOMContentLoaded',showFlashOnLoad);
+        }else{
+            showFlashOnLoad();
+        }
+    })();
+    </script>
 </body>
 </html>

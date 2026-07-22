@@ -94,7 +94,7 @@ class AuditController extends Controller
 
         $audit->log('audit.stage_saved', $stage);
 
-        return back()->with('success', 'Tahap audit berhasil disimpan.');
+        return $this->savedResponse($request, 'Tahap audit berhasil disimpan.');
     }
 
     public function skipStage(Request $request, CertificationApplication $application, WorkflowService $workflow, AuditLogger $audit)

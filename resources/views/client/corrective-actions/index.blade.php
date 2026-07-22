@@ -38,7 +38,10 @@
             @if ($finding->status !== 'closed')
                 <details class="mt-2" open>
                     <summary><strong>Kirim tindakan koreksi</strong></summary>
-                    <form method="post" action="{{ route('client.corrective-actions.store', $finding) }}" enctype="multipart/form-data" class="mt-2">
+                    <form method="post" action="{{ route('client.corrective-actions.store', $finding) }}" enctype="multipart/form-data" class="mt-2" data-ajax
+                          data-confirm="Kirim tindakan koreksi ini kepada auditor?"
+                          data-confirm-title="Kirim ke Auditor"
+                          data-confirm-yes="Ya, kirim">
                         @csrf
                         <div class="form-group">
                             <label class="form-label">Analisis akar penyebab <span class="required">*</span></label>

@@ -107,9 +107,10 @@
                 @endforeach
             </form>
 
-            <section class="card form-section" id="documents" style="margin-bottom:16px;">
+            <section class="card form-section" id="documents" style="margin-bottom:16px;"
+                     data-upload-url="{{ route('client.documents.store', $application) }}">
                 <h2>Upload Dokumen</h2>
-                <p class="muted">File lama tidak dihapus saat revisi. Sistem membuat versi baru dan menyimpan checksum SHA-256.</p>
+                <p class="muted">Pilih file dan dokumen langsung terunggah tanpa perlu memuat ulang halaman. Anda bisa memilih ulang untuk mengganti versi. File lama tidak dihapus saat revisi; sistem membuat versi baru dan menyimpan checksum SHA-256.</p>
                 <div class="doc-list">
                     @foreach ($applicableDocuments as $required)
                         @php($doc = $application->documents->firstWhere('document_code', $required->code))
@@ -121,16 +122,19 @@
                                     @elseif ($required->requirement === 'conditional')<span class="badge badge-warning">Conditional</span>@endif
                                 </h4>
                                 <p>{{ $required->description }} · Format: {{ implode(', ', $required->allowed_extensions ?? config('gis.allowed_extensions')) }} · Maks. {{ $required->max_size_mb }} MB</p>
-                                @if ($doc?->currentVersion)
-                                    <div class="small text-success">✓ {{ $doc->currentVersion->original_name }} · versi {{ $doc->currentVersion->version }} · kajian: {{ $doc->review_status }}</div>
-                                @endif
+                                <div class="small text-success doc-current" id="doc-current-{{ $required->code }}"
+                                     style="{{ $doc?->currentVersion ? '' : 'display:none' }}">
+                                    @if ($doc?->currentVersion)
+                                        ✓ {{ $doc->currentVersion->original_name }} · versi {{ $doc->currentVersion->version }} · kajian: {{ $doc->review_status }}
+                                    @endif
+                                </div>
+                                <div class="small doc-status" id="doc-status-{{ $required->code }}" style="display:none;margin-top:4px"></div>
                             </div>
-                            <form method="post" action="{{ route('client.documents.store', $application) }}" enctype="multipart/form-data">
-                                @csrf
-                                <input type="hidden" name="document_code" value="{{ $required->code }}">
-                                <input class="form-control" type="file" name="file" required>
-                                <button class="btn btn-light btn-sm mt-1">{{ $doc ? 'Unggah Versi Baru' : 'Unggah' }}</button>
-                            </form>
+                            <div>
+                                <input class="form-control doc-upload-input" type="file"
+                                       data-doc-code="{{ $required->code }}"
+                                       data-doc-name="{{ $required->name }}">
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -139,7 +143,10 @@
             <section class="card form-section" id="submit">
                 <h2>Pernyataan &amp; Submit</h2>
                 <div class="alert alert-info">Pastikan data dan dokumen benar. Setelah submit, form terkunci sampai Admin meminta revisi spesifik.</div>
-                <form method="post" action="{{ route('client.applications.submit', $application) }}" onsubmit="return confirm('Kirim permohonan ke tim GIS sekarang?')">
+                <form method="post" action="{{ route('client.applications.submit', $application) }}"
+                      data-confirm="Setelah dikirim, form terkunci sampai Admin meminta revisi. Kirim permohonan ke tim GIS sekarang?"
+                      data-confirm-title="Kirim Permohonan"
+                      data-confirm-yes="Ya, kirim">
                     @csrf
                     <label class="flex gap-1"><input type="checkbox" required> Saya menyatakan data yang disampaikan benar dan saya berwenang mengajukan permohonan ini.</label>
                     <button class="btn btn-primary mt-2">Submit Permohonan</button>
@@ -152,5 +159,64 @@
 @push('scripts')
 <script>
 (function(){const form=document.getElementById('application-form'),status=document.getElementById('autosave-status');if(!form)return;let timer;const values=()=>{const out={};new FormData(form).forEach((v,k)=>{const m=k.match(/^fields\[([^\]]+)\](?:\[\])?$/);if(!m)return;if(k.endsWith('[]')){out[m[1]]=out[m[1]]||[];out[m[1]].push(v)}else out[m[1]]=v});return out};const passes=(r,v)=>{if(!r||Object.keys(r).length===0)return true;if(r.all)return r.all.every(x=>passes(x,v));if(r.any)return r.any.some(x=>passes(x,v));const a=v[r.field],e=r.value;switch(r.operator||'equals'){case'equals':return String(a??'')===String(e??'');case'not_equals':return String(a??'')!==String(e??'');case'in':return (e||[]).includes(a);case'truthy':return !!a;case'falsy':return !a;case'contains':return Array.isArray(a)?a.includes(e):String(a||'').includes(String(e));default:return true}};const refresh=()=>{const v=values();document.querySelectorAll('.dynamic-field').forEach(el=>{let r={};try{r=JSON.parse(el.dataset.condition||'{}')}catch(e){}el.classList.toggle('hidden',!passes(r,v))})};const autosave=()=>{clearTimeout(timer);status.textContent='Perubahan belum disimpan...';timer=setTimeout(async()=>{status.textContent='Menyimpan draft...';const fd=new FormData(form);fd.set('_method','PUT');try{const res=await fetch(form.action,{method:'POST',body:fd,headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}});if(!res.ok)throw new Error();status.textContent='Draft tersimpan otomatis '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}catch(e){status.textContent='Autosave gagal. Gunakan tombol Simpan Draft.'}},1300)};form.addEventListener('input',()=>{refresh();autosave()});form.addEventListener('change',()=>{refresh();autosave()});refresh()})();
+
+/*
+ * Live upload dokumen: pilih file langsung terunggah lewat AJAX,
+ * tanpa reload halaman, dan input dikosongkan agar bisa memilih ulang.
+ */
+(function(){
+    const section=document.getElementById('documents');
+    if(!section)return;
+    const url=section.dataset.uploadUrl;
+    const token=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    section.addEventListener('change',async function(event){
+        const input=event.target;
+        if(!input.classList.contains('doc-upload-input'))return;
+        const file=input.files&&input.files[0];
+        if(!file)return;
+
+        const code=input.dataset.docCode;
+        const name=input.dataset.docName;
+        const statusEl=document.getElementById('doc-status-'+code);
+        const currentEl=document.getElementById('doc-current-'+code);
+
+        input.disabled=true;
+        statusEl.style.display='block';
+        statusEl.className='small doc-status';
+        statusEl.style.color='var(--muted)';
+        statusEl.textContent='Mengunggah '+file.name+'...';
+
+        const fd=new FormData();
+        fd.append('document_code',code);
+        fd.append('file',file);
+
+        try{
+            const res=await fetch(url,{
+                method:'POST',
+                body:fd,
+                headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest','X-CSRF-TOKEN':token}
+            });
+            const data=await res.json().catch(()=>({}));
+
+            if(!res.ok){
+                const msg=data.errors?.file?.[0]||data.message||'Gagal mengunggah dokumen.';
+                statusEl.style.color='var(--danger,#b42318)';
+                statusEl.textContent='✕ '+msg;
+            }else{
+                currentEl.style.display='block';
+                currentEl.textContent='✓ '+data.original_name+' · versi '+data.version+' · kajian: '+data.review_status;
+                statusEl.style.color='#17663a';
+                statusEl.textContent='Berhasil diunggah '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+'. Anda bisa memilih file lagi untuk mengganti versi.';
+            }
+        }catch(e){
+            statusEl.style.color='var(--danger,#b42318)';
+            statusEl.textContent='✕ Koneksi gagal. Coba lagi.';
+        }finally{
+            input.disabled=false;
+            input.value='';
+        }
+    });
+})();
 </script>
 @endpush

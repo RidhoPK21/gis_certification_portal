@@ -15,7 +15,10 @@
     <div class="card" style="max-width:850px">
         <h2>Identitas Permohonan</h2>
         <p class="muted">Data ini menjadi identitas awal order. Detail teknis diisi pada wizard berikutnya.</p>
-        <form method="post" action="{{ route('client.applications.store', $scheme) }}">
+        <form method="post" action="{{ route('client.applications.store', $scheme) }}"
+              data-confirm="Buat draft permohonan untuk skema ini dan lanjut mengisi form?"
+              data-confirm-title="Buat Draft Permohonan"
+              data-confirm-yes="Ya, buat draft">
             @csrf
             <div class="grid-2">
                 <div class="form-group">

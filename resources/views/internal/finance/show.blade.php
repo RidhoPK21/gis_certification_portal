@@ -14,7 +14,7 @@
     <div class="grid-2">
         <section class="card">
             <h2>Invoice</h2>
-            <form method="post" action="{{ route('finance.invoice', $application) }}" enctype="multipart/form-data">
+            <form method="post" action="{{ route('finance.invoice', $application) }}" enctype="multipart/form-data" data-ajax>
                 @csrf
                 <div class="grid-2">
                     <div class="form-group">
@@ -67,7 +67,7 @@
     @if ($application->invoice)
         <section class="card mt-2">
             <h2>Catat Pembayaran</h2>
-            <form method="post" action="{{ route('finance.payment', $application) }}" enctype="multipart/form-data">
+            <form method="post" action="{{ route('finance.payment', $application) }}" enctype="multipart/form-data" data-ajax>
                 @csrf
                 <div class="grid-3">
                     <div class="form-group">

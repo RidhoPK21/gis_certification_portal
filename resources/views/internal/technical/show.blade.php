@@ -25,7 +25,7 @@
     <div class="grid-2">
         <section class="card">
             <h2>Upload Draft Sertifikat</h2>
-            <form method="post" action="{{ route('technical.draft.upload', $application) }}" enctype="multipart/form-data">
+            <form method="post" action="{{ route('technical.draft.upload', $application) }}" enctype="multipart/form-data" data-ajax>
                 @csrf
                 <div class="form-group">
                     <label class="form-label">File Draft PDF</label>
@@ -60,7 +60,10 @@
 
         <section class="card">
             <h2>Upload Sertifikat Final</h2>
-            <form method="post" action="{{ route('technical.final.upload', $application) }}" enctype="multipart/form-data">
+            <form method="post" action="{{ route('technical.final.upload', $application) }}" enctype="multipart/form-data" data-ajax
+                  data-confirm="Terbitkan sertifikat final untuk order ini?"
+                  data-confirm-title="Upload Sertifikat Final"
+                  data-confirm-yes="Ya, terbitkan">
                 @csrf
                 <div class="form-group">
                     <label class="form-label">Nomor Sertifikat</label>
@@ -115,7 +118,11 @@
                             <td>{{ $link->access_count }}</td>
                             <td>
                                 @if ($link->is_active)
-                                    <form method="post" action="{{ route('technical.link.revoke', $link) }}">
+                                    <form method="post" action="{{ route('technical.link.revoke', $link) }}"
+                                          data-confirm="Nonaktifkan link sertifikat ini? Klien tidak akan bisa mengaksesnya lagi."
+                                          data-confirm-title="Nonaktifkan Link"
+                                          data-confirm-type="danger"
+                                          data-confirm-yes="Ya, nonaktifkan">
                                         @csrf
                                         <button class="btn btn-danger btn-sm">Nonaktifkan</button>
                                     </form>
@@ -191,7 +198,10 @@
         <section class="card mt-2">
             <h2>Tutup Proses Sertifikasi</h2>
             <p class="muted">Pastikan nomor sertifikat, file final, dan link aman sudah diperiksa.</p>
-            <form method="post" action="{{ route('technical.complete', $application) }}">
+            <form method="post" action="{{ route('technical.complete', $application) }}"
+                  data-confirm="Tutup proses sertifikasi dan aktifkan rencana surveillance?"
+                  data-confirm-title="Tandai Selesai"
+                  data-confirm-yes="Ya, selesai">
                 @csrf
                 <div class="grid-2">
                     <div class="form-group">

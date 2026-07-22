@@ -28,6 +28,30 @@
             --danger: #b42318;
         }
 
+        @font-face {
+            font-family: "Poppins";
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url("{{ asset('fonts/poppins/poppins-400.woff2') }}") format("woff2");
+        }
+
+        @font-face {
+            font-family: "Poppins";
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url("{{ asset('fonts/poppins/poppins-600.woff2') }}") format("woff2");
+        }
+
+        @font-face {
+            font-family: "Poppins";
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url("{{ asset('fonts/poppins/poppins-700.woff2') }}") format("woff2");
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -89,65 +113,74 @@
         .auth-side-content {
             position: relative;
             z-index: 1;
-            width: min(520px, 100%);
+            width: min(560px, 100%);
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-family: "Poppins", Inter, ui-sans-serif, system-ui, sans-serif;
         }
 
         .brand {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 14px;
-            margin-bottom: 54px;
+            gap: 20px;
+            margin-bottom: 40px;
         }
 
         .brand-mark {
             display: grid;
             place-items: center;
-            width: 56px;
-            height: 56px;
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.12);
-            font-weight: 800;
+            width: 156px;
+            height: 156px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+            overflow: hidden;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         .brand-title {
-            font-size: 18px;
-            font-weight: 800;
+            font-family: "Poppins", sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
         }
 
         .brand-subtitle {
             display: block;
-            margin-top: 3px;
-            font-size: 12px;
+            margin-top: 4px;
+            font-size: 14px;
             font-weight: 400;
-            opacity: 0.75;
+            opacity: 0.8;
         }
 
         .auth-side h1 {
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 0 20px;
-            font-size: clamp(36px, 4vw, 54px);
-            line-height: 1.08;
-            letter-spacing: -0.035em;
+            font-family: "Poppins", sans-serif;
+            font-size: clamp(30px, 3.2vw, 42px);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
         }
 
         .auth-side p {
-            max-width: 480px;
-            margin: 0;
-            color: rgba(255, 255, 255, 0.78);
+            max-width: 460px;
+            margin: 0 auto;
+            font-family: "Poppins", sans-serif;
+            color: rgba(255, 255, 255, 0.82);
             font-size: 16px;
-            line-height: 1.75;
-        }
-
-        .security-note {
-            margin-top: 40px;
-            padding: 16px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.84);
-            font-size: 13px;
-            line-height: 1.6;
+            font-weight: 400;
+            line-height: 1.8;
         }
 
         .auth-content {
@@ -213,6 +246,16 @@
             border-color: var(--blue);
             box-shadow:
                 0 0 0 4px rgba(8, 120, 201, 0.11);
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger);
+            background: #fff7f6;
+        }
+
+        .form-control.is-invalid:focus {
+            box-shadow:
+                0 0 0 4px rgba(180, 35, 24, 0.12);
         }
 
         .form-error {
@@ -294,7 +337,10 @@
             <div class="auth-side-content">
                 <div class="brand">
                     <div class="brand-mark">
-                        GIS
+                        <img
+                            src="{{ asset('images/gis-logo.png') }}"
+                            alt="Logo GIS"
+                        >
                     </div>
 
                     <div class="brand-title">
@@ -315,12 +361,6 @@
                     pembayaran, audit, hingga penerbitan
                     sertifikat dalam satu sistem.
                 </p>
-
-                <div class="security-note">
-                    Gunakan akun resmi yang diberikan oleh
-                    administrator. Aktivitas penting pada sistem
-                    akan dicatat untuk keamanan dan ketertelusuran.
-                </div>
             </div>
         </aside>
 
@@ -330,5 +370,8 @@
             </div>
         </main>
     </div>
+
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+    @stack('scripts')
 </body>
 </html>

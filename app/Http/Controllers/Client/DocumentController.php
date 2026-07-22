@@ -40,7 +40,20 @@ class DocumentController extends Controller
         $document->update(['review_status' => 'pending', 'review_note' => null, 'reviewed_by' => null, 'reviewed_at' => null]);
         $audit->log('application.document_uploaded', $document, [], ['version' => $version->version, 'original_name' => $version->original_name]);
 
-        return back()->with('success', 'Dokumen ' . $required->name . ' berhasil diunggah sebagai versi ' . $version->version . '.');
+        $message = 'Dokumen ' . $required->name . ' berhasil diunggah sebagai versi ' . $version->version . '.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'document_code' => $required->code,
+                'original_name' => $version->original_name,
+                'version' => $version->version,
+                'review_status' => $document->review_status,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     public function download(Request $request, ApplicationDocument $document, FileStorageService $files, AuditLogger $audit)

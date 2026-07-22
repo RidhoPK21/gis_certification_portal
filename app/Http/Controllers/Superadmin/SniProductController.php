@@ -62,6 +62,16 @@ class SniProductController extends Controller
         $result = $service->import($request->file('file'));
         $audit->log('sni_product.imported', null, [], $result);
 
-        return back()->with('success', "Import selesai: {$result['created']} baru, {$result['updated']} diperbarui, {$result['skipped']} dilewati.");
+        $message = "Import selesai: {$result['created']} baru, {$result['updated']} diperbarui, {$result['skipped']} dilewati.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'result' => $result,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 }

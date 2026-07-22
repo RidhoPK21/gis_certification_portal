@@ -92,6 +92,7 @@
             </h2>
             <p style="margin: 0 0 18px; color: #6a7c8d; font-size: 13px;">
                 Gunakan kata sandi yang kuat dan tidak dipakai di layanan lain.
+                Minimal 12 karakter serta mengandung huruf dan angka.
             </p>
 
             <form method="POST" action="{{ route('profile.password') }}">
