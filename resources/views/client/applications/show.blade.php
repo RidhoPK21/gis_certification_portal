@@ -92,7 +92,7 @@
             <dl class="detail-list">
                 <dt>Nomor Invoice</dt><dd>{{ $application->invoice->invoice_number }}</dd>
                 <dt>Nilai</dt><dd>Rp {{ number_format((float) $application->invoice->amount, 0, ',', '.') }}</dd>
-                <dt>Status</dt><dd>{{ $application->invoice->payment_status }}</dd>
+                <dt>Status</dt><dd>{{ $application->invoice->stageLabel() }}</dd>
                 @if ($application->invoice->file_path)
                     <dt>Dokumen Invoice</dt>
                     <dd><a class="btn btn-light btn-sm" href="{{ route('secure-files.invoice', $application->invoice) }}">Download Invoice</a></dd>

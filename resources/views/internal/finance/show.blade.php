@@ -29,6 +29,14 @@
                         <label class="form-label">Tanggal Invoice</label>
                         <input class="form-control" type="date" name="invoice_date" value="{{ old('invoice_date', optional($application->invoice?->invoice_date)->format('Y-m-d') ?: now()->format('Y-m-d')) }}" required>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Status Pembayaran <span class="required">*</span></label>
+                        <select class="form-select" name="payment_stage" required>
+                            @foreach (\App\Models\Invoice::STAGES as $val => $label)
+                                <option value="{{ $val }}" @selected(old('payment_stage', $application->invoice?->payment_stage) === $val)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">File Invoice</label>
@@ -45,7 +53,7 @@
             <h2>Ringkasan Pembayaran</h2>
             @if ($application->invoice)
                 <dl class="detail-list">
-                    <dt>Status Invoice</dt><dd>{{ $application->invoice->payment_status }}</dd>
+                    <dt>Status (Finance)</dt><dd>{{ $application->invoice->stageLabel() }}</dd>
                     <dt>Milestone Saat Ini</dt><dd>Tahap {{ $application->invoice->current_milestone }}</dd>
                     <dt>Total Invoice</dt><dd>Rp {{ number_format((float) $application->invoice->amount, 0, ',', '.') }}</dd>
                     <dt>Total Terverifikasi</dt><dd>Rp {{ number_format((float) $application->invoice->payments->where('status', 'verified')->sum('amount'), 0, ',', '.') }}</dd>

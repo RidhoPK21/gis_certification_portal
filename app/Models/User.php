@@ -48,8 +48,12 @@ class User extends Authenticatable
         ->withTimestamps();
 }
 
-public function hasRole(string $roleCode): bool
+public function hasRole(array|string $roleCode): bool
 {
+    if (is_array($roleCode)) {
+        return $this->hasAnyRole($roleCode);
+    }
+
     return $this
         ->roles()
         ->where('code', $roleCode)

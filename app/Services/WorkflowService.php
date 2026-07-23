@@ -31,6 +31,11 @@ class WorkflowService
         'completed' => ['surveillance'],
     ];
 
+    public function allows(string $from, string $to): bool
+    {
+        return in_array($to, self::ALLOWED[$from] ?? [], true);
+    }
+
     public function transition(
         CertificationApplication $application,
         string $to,

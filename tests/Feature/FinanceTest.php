@@ -89,11 +89,58 @@ class FinanceTest extends TestCase
                 'invoice_number' => 'INV-2026-001',
                 'amount' => 5000000,
                 'invoice_date' => now()->format('Y-m-d'),
+                'payment_stage' => 'belum_lunas',
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('invoices', ['application_id' => $app->id, 'invoice_number' => 'INV-2026-001']);
+        $this->assertDatabaseHas('invoices', ['application_id' => $app->id, 'invoice_number' => 'INV-2026-001', 'payment_stage' => 'belum_lunas']);
         $this->assertDatabaseHas('notifications', ['user_id' => $client->id, 'type' => 'invoice_issued']);
+    }
+
+    public function test_status_pembayaran_manual_memicu_workflow(): void
+    {
+        $this->seedAll();
+        $finance = $this->user('finance');
+        $app = $this->applicationInFinance($this->user('client'));
+
+        // Tahap 2 -> order menjadi payment_partial & milestone tercatat.
+        $this->actingAs($finance)->post(route('finance.invoice', $app), [
+            'invoice_number' => 'INV-STAGE-001',
+            'amount' => 3000000,
+            'invoice_date' => now()->format('Y-m-d'),
+            'payment_stage' => 'tahap_2',
+        ])->assertRedirect();
+
+        $app->refresh();
+        $this->assertSame('payment_partial', $app->status);
+        $this->assertSame('tahap_2', $app->invoice->payment_stage);
+        $this->assertSame(2, (int) $app->invoice->current_milestone);
+
+        // Sudah Lunas -> order menjadi payment_completed.
+        $this->actingAs($finance)->post(route('finance.invoice', $app), [
+            'invoice_number' => 'INV-STAGE-001',
+            'amount' => 3000000,
+            'invoice_date' => now()->format('Y-m-d'),
+            'payment_stage' => 'lunas',
+        ])->assertRedirect();
+
+        $this->assertSame('payment_completed', $app->refresh()->status);
+        $this->assertSame('lunas', $app->invoice->fresh()->payment_stage);
+    }
+
+    public function test_status_pembayaran_wajib_diisi(): void
+    {
+        $this->seedAll();
+        $finance = $this->user('finance');
+        $app = $this->applicationInFinance($this->user('client'));
+
+        $this->actingAs($finance)->post(route('finance.invoice', $app), [
+            'invoice_number' => 'INV-NOSTAGE',
+            'amount' => 1000000,
+            'invoice_date' => now()->format('Y-m-d'),
+        ])->assertSessionHasErrors('payment_stage');
+
+        $this->assertDatabaseMissing('invoices', ['invoice_number' => 'INV-NOSTAGE']);
     }
 
     public function test_pembayaran_lunas_memindahkan_status_ke_payment_completed(): void
@@ -107,6 +154,7 @@ class FinanceTest extends TestCase
             'invoice_number' => 'INV-2026-002',
             'amount' => 1000000,
             'invoice_date' => now()->format('Y-m-d'),
+            'payment_stage' => 'belum_lunas',
         ])->assertRedirect();
 
         $this->actingAs($finance)->post(route('finance.payment', $app), [
@@ -132,6 +180,7 @@ class FinanceTest extends TestCase
             'invoice_number' => 'INV-2026-003',
             'amount' => 2000000,
             'invoice_date' => now()->format('Y-m-d'),
+            'payment_stage' => 'belum_lunas',
         ])->assertRedirect();
 
         $this->actingAs($finance)->post(route('finance.payment', $app), [

@@ -37,13 +37,14 @@ class FinanceController extends Controller
         return view('internal.finance.show', compact('application'));
     }
 
-    public function saveInvoice(Request $request, CertificationApplication $application, FileStorageService $files, AuditLogger $audit, PortalNotificationService $notifications)
+    public function saveInvoice(Request $request, CertificationApplication $application, WorkflowService $workflow, FileStorageService $files, AuditLogger $audit, PortalNotificationService $notifications)
     {
         abort_unless(in_array($application->status, self::FINANCE_STATUSES, true), 422, 'Order belum berada pada tahap Finance.');
         $data = $request->validate([
             'invoice_number' => ['required', 'string', 'max:100', Rule::unique('invoices', 'invoice_number')->ignore($application->invoice?->id)],
             'amount' => ['required', 'numeric', 'min:0'],
             'invoice_date' => ['required', 'date'],
+            'payment_stage' => ['required', Rule::in(array_keys(Invoice::STAGES))],
             'notes' => ['nullable', 'string'],
             'invoice_file' => ['nullable', 'file'],
         ]);
@@ -58,10 +59,29 @@ class FinanceController extends Controller
             ['application_id' => $application->id],
             $data + ['payment_status' => $application->invoice?->payment_status ?? 'unpaid', 'file_path' => $path, 'created_by' => $request->user()->id]
         );
+        $this->applyStageWorkflow($application, $invoice, $data['payment_stage'], $workflow, $request);
         $audit->log('finance.invoice_saved', $invoice);
         $notifications->send($application->client_id, 'invoice_issued', 'Invoice diterbitkan', 'Invoice '.$invoice->invoice_number.' untuk order '.$application->order_number.' telah tersedia.', route('client.applications.show', $application));
 
         return $this->savedResponse($request, 'Invoice berhasil disimpan.');
+    }
+
+    private function applyStageWorkflow(CertificationApplication $application, Invoice $invoice, string $stage, WorkflowService $workflow, Request $request): void
+    {
+        $target = match ($stage) {
+            'tahap_1', 'tahap_2', 'tahap_3' => 'payment_partial',
+            'lunas' => 'payment_completed',
+            default => null,
+        };
+
+        if (in_array($stage, ['tahap_1', 'tahap_2', 'tahap_3'], true)) {
+            $milestone = (int) substr($stage, -1);
+            $invoice->update(['current_milestone' => max($invoice->current_milestone, $milestone)]);
+        }
+
+        if ($target && $workflow->allows($application->status, $target)) {
+            $workflow->transition($application, $target, $target, 'Status pembayaran diperbarui ke '.Invoice::STAGES[$stage].'.', $request->user()->id);
+        }
     }
 
     public function addPayment(Request $request, CertificationApplication $application, WorkflowService $workflow, FileStorageService $files, PortalNotificationService $notifications, AuditLogger $audit)

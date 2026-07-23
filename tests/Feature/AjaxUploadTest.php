@@ -133,6 +133,7 @@ class AjaxUploadTest extends TestCase
             'invoice_number' => 'INV-AJAX-1',
             'amount' => 1000000,
             'invoice_date' => now()->format('Y-m-d'),
+            'payment_stage' => 'belum_lunas',
         ], $this->ajax)
             ->assertOk()
             ->assertJson(['success' => true]);

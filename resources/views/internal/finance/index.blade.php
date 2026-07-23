@@ -31,8 +31,8 @@
                         <td>{{ $app->scheme->short_name }}</td>
                         <td>{{ $app->invoice?->invoice_number ?: 'Belum dibuat' }}</td>
                         <td>
-                            <span class="badge badge-{{ $app->invoice?->payment_status === 'paid' ? 'success' : ($app->invoice ? 'warning' : 'neutral') }}">
-                                {{ $app->invoice?->payment_status ?: '-' }}
+                            <span class="badge badge-{{ $app->invoice?->payment_stage === 'lunas' ? 'success' : ($app->invoice ? 'warning' : 'neutral') }}">
+                                {{ $app->invoice?->stageLabel() ?: '-' }}
                             </span>
                         </td>
                         <td>{{ $app->invoice?->current_milestone ?: 0 }}</td>

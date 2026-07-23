@@ -8,7 +8,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
+    public const STAGES = [
+        'belum_lunas' => 'Belum Lunas',
+        'tahap_1' => 'Pembayaran Tahap 1',
+        'tahap_2' => 'Pembayaran Tahap 2',
+        'tahap_3' => 'Pembayaran Tahap 3',
+        'lunas' => 'Sudah Lunas',
+    ];
+
     protected $guarded = [];
+
+    public function stageLabel(): string
+    {
+        return self::STAGES[$this->payment_stage] ?? $this->payment_stage;
+    }
 
     protected function casts(): array
     {
