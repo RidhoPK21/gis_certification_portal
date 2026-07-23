@@ -11,6 +11,12 @@ return [
     'surveillance_max_cycles' => (int) env('GIS_SURVEILLANCE_MAX_CYCLES', 4),
     'email_notifications' => filter_var(env('GIS_EMAIL_NOTIFICATIONS', false), FILTER_VALIDATE_BOOL),
     'registration_enabled' => filter_var(env('GIS_ENABLE_REGISTRATION', true), FILTER_VALIDATE_BOOL),
+    /*
+     * Daftar sistem sertifikasi yang tersedia. Dipakai bersama agar pilihan
+     * di form produk SNI (superadmin) selaras dengan dropdown pada form
+     * permohonan skema SNI.
+     */
+    'certification_systems' => ['System 1', 'System 5'],
     'allowed_upload_mimes' => [
         'application/pdf',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

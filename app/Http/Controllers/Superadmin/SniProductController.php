@@ -7,6 +7,7 @@ use App\Models\SniProductMaster;
 use App\Services\AuditLogger;
 use App\Services\SniProductImportService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class SniProductController extends Controller
 {
@@ -31,7 +32,7 @@ class SniProductController extends Controller
             'product_name' => ['required', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:150'],
             'sni_number' => ['nullable', 'string', 'max:150'],
-            'certification_system' => ['required', 'string', 'max:100'],
+            'certification_system' => ['required', 'string', 'max:100', Rule::in(config('gis.certification_systems'))],
         ]);
         $product = SniProductMaster::create($data + ['is_active' => true]);
         $audit->log('sni_product.created', $product);

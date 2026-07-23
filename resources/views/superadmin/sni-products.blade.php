@@ -35,7 +35,11 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Sistem Sertifikasi</label>
-                    <input class="form-control" name="certification_system" value="System 5" required>
+                    <select class="form-select" name="certification_system" required>
+                        @foreach (config('gis.certification_systems') as $system)
+                            <option value="{{ $system }}" @selected(old('certification_system', 'System 5') === $system)>{{ $system }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <button class="btn btn-primary">Tambah Produk</button>
             </form>
@@ -77,7 +81,14 @@
                                 <td><input class="form-control" name="product_name" value="{{ $product->product_name }}" required></td>
                                 <td><input class="form-control" name="category" value="{{ $product->category }}"></td>
                                 <td><input class="form-control" name="sni_number" value="{{ $product->sni_number }}"></td>
-                                <td><input class="form-control" name="certification_system" value="{{ $product->certification_system }}" required></td>
+                                <td>
+                                    @php($systems = collect(config('gis.certification_systems'))->push($product->certification_system)->filter()->unique())
+                                    <select class="form-select" name="certification_system" required>
+                                        @foreach ($systems as $system)
+                                            <option value="{{ $system }}" @selected($product->certification_system === $system)>{{ $system }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td><label><input type="checkbox" name="is_active" value="1" @checked($product->is_active)> Aktif</label></td>
                                 <td><button class="btn btn-light btn-sm">Simpan</button></td>
                             </form>

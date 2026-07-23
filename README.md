@@ -1,58 +1,155 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GIS Certification Portal
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Portal sertifikasi **PT Global Inspeksi Sertifikasi (GIS)** — aplikasi web untuk mengelola alur permohonan sertifikasi dari klien mengajukan permohonan, review admin, penerbitan invoice & pembayaran (Finance), audit, penerbitan sertifikat, sampai surveillance.
 
-## About Laravel
+Dibangun dengan **Laravel 13 (PHP 8.3+)**, Blade + Vite/Tailwind, dan Laravel Fortify untuk autentikasi.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 1. Kebutuhan (Prasyarat)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Pastikan sudah terpasang di komputer masing-masing:
 
-## Learning Laravel
+| Tool | Versi minimal | Cek |
+|------|---------------|-----|
+| PHP | 8.3+ (disarankan 8.3/8.4) dengan ekstensi `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo` | `php -v` |
+| Composer | 2.x | `composer -V` |
+| Node.js + npm | Node 18+ | `node -v` |
+| Git | — | `git --version` |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Database default = **SQLite** (tidak perlu install server DB). Bisa diganti MySQL bila mau (lihat bagian 5).
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 2. Setup Cepat (dev, dengan akun demo)
 
-## Agentic Development
+> Contoh perintah memakai **PowerShell (Windows)**. Untuk macOS/Linux, ganti `Copy-Item` → `cp` dan `New-Item ... database.sqlite` → `touch database/database.sqlite`.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+```powershell
+# 1. Clone & masuk folder
+git clone <URL-REPO> gis_certification_portal
+cd gis_certification_portal
 
-```bash
-composer require laravel/boost --dev
+# 2. Install dependency PHP & JS
+composer install
+npm install
 
-php artisan boost:install
+# 3. Siapkan file environment
+Copy-Item .env.example .env
+php artisan key:generate
+
+# 4. Buat file database SQLite kosong
+New-Item -ItemType File database/database.sqlite
+
+# 5. Aktifkan akun demo di .env (lihat bagian 3)
+#    - set SYSTEMGIS_SEED_DEMO_ACCOUNTS=true
+#    - set SYSTEMGIS_DEMO_PASSWORD=DemoGis12345
+
+# 6. Migrasi + seed (buat tabel, data skema, role, dan akun demo)
+php artisan gis:install --fresh --demo
+
+# 7. Build asset front-end
+npm run build
+
+# 8. Jalankan aplikasi
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Buka **http://127.0.0.1:8000** → login dengan salah satu akun demo di bagian 4.
 
-## Contributing
+Saat sedang aktif mengembangkan front-end (hot reload), jalankan `npm run dev` di terminal terpisah menggantikan langkah build.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 3. Konfigurasi `.env` penting
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Setelah `Copy-Item .env.example .env`, cukup ubah/isi bagian ini agar akun demo ikut dibuat saat seeding:
 
-## Security Vulnerabilities
+```dotenv
+APP_ENV=local
+APP_DEBUG=true
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+DB_CONNECTION=sqlite
+# (biarkan default SQLite; path otomatis ke database/database.sqlite)
 
-## License
+# Akun demo hanya dibuat jika kedua baris ini diisi & environment local/testing
+SYSTEMGIS_SEED_DEMO_ACCOUNTS=true
+SYSTEMGIS_DEMO_PASSWORD=DemoGis12345
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> ⚠️ **Keamanan:** akun demo TIDAK akan pernah dibuat di `APP_ENV=production`. Password demo bebas ditentukan lewat `SYSTEMGIS_DEMO_PASSWORD`; contoh di dokumen ini memakai `DemoGis12345`.
+
+---
+
+## 4. Akun demo untuk development
+
+Semua akun memakai password yang kamu isi di `SYSTEMGIS_DEMO_PASSWORD` (contoh: **`DemoGis12345`**).
+
+| Peran | Email | Fungsi utama |
+|-------|-------|--------------|
+| Klien | `client@systemgis.local` | Mengisi & submit permohonan, upload dokumen, tindakan koreksi |
+| Admin Permohonan | `admin.application@systemgis.local` | Review permohonan, revisi, approve/reject → teruskan ke Finance |
+| Finance | `finance@systemgis.local` | Terbitkan invoice, catat pembayaran, atur status pembayaran |
+| Auditor | `auditor@systemgis.local` | Input tahap audit, temuan, review tindakan koreksi |
+| Teknis | `technical@systemgis.local` | Sertifikat (draft/final), review, jadwal surveillance |
+| Superadmin | `superadmin@systemgis.local` | Kelola skema/Form Builder, produk SNI, user & role, audit trail |
+
+### Alur uji singkat klien → Finance (2 klik saja)
+1. Login **client** → `/client/applications/schemes` → pilih skema → isi draft → **Submit** (status: draft → admin_review otomatis).
+2. Login **admin.application** → `/internal/applications` → buka order → **Setujui & Generate PDF** (status → invoice_process).
+3. Login **finance** → `/internal/finance` → **Proses** order → terbitkan invoice & atur status pembayaran.
+
+---
+
+## 5. (Opsional) Pakai MySQL alih-alih SQLite
+
+Isi `.env`:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gis_portal
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Buat database `gis_portal` di MySQL, lalu jalankan ulang `php artisan gis:install --fresh --demo`.
+
+---
+
+## 6. Perintah yang sering dipakai
+
+| Perintah | Fungsi |
+|----------|--------|
+| `php artisan serve` | Menjalankan server dev di http://127.0.0.1:8000 |
+| `npm run dev` | Vite hot-reload (front-end) |
+| `npm run build` | Build asset produksi |
+| `php artisan gis:install --fresh --demo` | Reset DB + migrasi + seed lengkap (termasuk akun demo) |
+| `php artisan migrate` | Jalankan migrasi baru saja (tanpa reset) |
+| `php artisan db:seed --class=SchemeCatalogSeeder` | Re-seed katalog skema/form (mis. setelah ubah `schemes.json`) |
+| `php artisan test` | Jalankan seluruh test suite |
+| `php artisan gis:import-sni-products <file>` | Import master produk SNI dari CSV/XLSX |
+| `php artisan gis:generate-review <id-order>` | Generate PDF tinjauan permohonan (ID/UUID/nomor order) |
+| `php artisan gis:weekly-backup` | Backup mingguan (arsip DB & storage privat) |
+
+---
+
+## 7. Struktur singkat & catatan
+
+- **Seeder inti** (aman di semua environment): `RolePermissionSeeder`, `SchemeCatalogSeeder`, `WorkflowSeeder`. Akun demo dari `SystemAccountsSeeder` hanya jalan di local/testing bila diaktifkan di `.env`.
+- **Definisi form permohonan** ada di `database/seeders/data/schemes.json` — setelah diubah, jalankan `php artisan db:seed --class=SchemeCatalogSeeder` agar tersimpan ke database.
+- **File privat** (dokumen, invoice, sertifikat, backup) disimpan di `storage/app/private/...` dan diakses lewat route aman, bukan URL publik.
+- **Test**: 56 test (PHPUnit). Jalankan `php artisan test` sebelum push.
+
+---
+
+## 8. Troubleshooting
+
+| Gejala | Solusi |
+|--------|--------|
+| `could not find driver` saat migrate | Aktifkan ekstensi `pdo_sqlite` di `php.ini` |
+| Halaman tampil tanpa style | Jalankan `npm run build` (atau `npm run dev`) |
+| Akun demo tidak ada setelah seed | Pastikan `APP_ENV=local`, `SYSTEMGIS_SEED_DEMO_ACCOUNTS=true`, dan `SYSTEMGIS_DEMO_PASSWORD` terisi, lalu seed ulang |
+| `419 Page Expired` saat submit | Refresh halaman (token CSRF kedaluwarsa) lalu ulangi |
+| Perubahan `.env` tidak terbaca | `php artisan config:clear` |
