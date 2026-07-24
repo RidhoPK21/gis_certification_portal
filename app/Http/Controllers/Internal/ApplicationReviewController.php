@@ -140,9 +140,12 @@ class ApplicationReviewController extends Controller
         $data = $request->validate(['notes' => ['nullable', 'string'], 'action_date' => ['required', 'date']]);
         $open = $application->revisions()->whereIn('status', ['open', 'submitted'])->count();
         abort_if($open > 0, 422, 'Masih ada item revisi terbuka. Tutup item sebelum menyetujui.');
-        $review = $application->reviews()->where('review_type', 'administration')->latest()->first();
-        if ($review) {
-            $review->update(['status' => 'approved', 'completed_at' => now(), 'action_date' => $data['action_date'], 'notes' => $data['notes'] ?? $review->notes]);
+        // Menyetujui permohonan = kedua bagian kajian (administrasi & teknis) diterima.
+        foreach (['administration', 'technical'] as $type) {
+            $review = $application->reviews()->where('review_type', $type)->latest()->first();
+            if ($review) {
+                $review->update(['status' => 'approved', 'completed_at' => now(), 'action_date' => $data['action_date'], 'notes' => $data['notes'] ?? $review->notes]);
+            }
         }
         $application = $workflow->transition($application, 'application_approved', 'admin_approve', $data['notes'] ?? 'Permohonan disetujui.', $request->user()->id, new \DateTime($data['action_date']));
         $application->update(['approved_at' => now()]);
@@ -157,9 +160,12 @@ class ApplicationReviewController extends Controller
     {
         abort_unless($application->status === 'admin_review', 422);
         $data = $request->validate(['reason' => ['required', 'string'], 'action_date' => ['required', 'date']]);
-        $review = $application->reviews()->where('review_type', 'administration')->latest()->first();
-        if ($review) {
-            $review->update(['status' => 'rejected', 'rejection_reason' => $data['reason'], 'completed_at' => now(), 'action_date' => $data['action_date']]);
+        // Menolak permohonan = kedua bagian kajian (administrasi & teknis) ditolak.
+        foreach (['administration', 'technical'] as $type) {
+            $review = $application->reviews()->where('review_type', $type)->latest()->first();
+            if ($review) {
+                $review->update(['status' => 'rejected', 'rejection_reason' => $data['reason'], 'completed_at' => now(), 'action_date' => $data['action_date']]);
+            }
         }
         $workflow->transition($application, 'rejected', 'admin_reject', $data['reason'], $request->user()->id, new \DateTime($data['action_date']));
         $notifications->send($application->client_id, 'application_rejected', 'Permohonan ditolak', 'Permohonan '.$application->order_number.' tidak dapat dilanjutkan. Lihat alasan pada dashboard.', route('client.applications.show', $application));

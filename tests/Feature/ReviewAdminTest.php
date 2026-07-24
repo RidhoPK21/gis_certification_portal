@@ -173,4 +173,28 @@ class ReviewAdminTest extends TestCase
         $this->assertDatabaseHas('application_reviews', ['application_id' => $app->id, 'review_type' => 'administration']);
         $this->assertDatabaseHas('review_form_items', ['item_code' => 'nib', 'review_status' => 'sufficient']);
     }
+
+    public function test_menyetujui_menandai_kajian_administrasi_dan_teknis_diterima(): void
+    {
+        Storage::fake('private');
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $app = $this->applicationInReview($this->user('client'));
+
+        foreach (['administration', 'technical'] as $type) {
+            $this->actingAs($admin)->post(route('internal.applications.review', $app), [
+                'review_type' => $type,
+                'action_date' => now()->format('Y-m-d'),
+                'signed_name' => 'Reviewer',
+            ])->assertRedirect();
+        }
+
+        $this->actingAs($admin)->post(route('internal.applications.approve', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'notes' => 'Lengkap.',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('application_reviews', ['application_id' => $app->id, 'review_type' => 'administration', 'status' => 'approved']);
+        $this->assertDatabaseHas('application_reviews', ['application_id' => $app->id, 'review_type' => 'technical', 'status' => 'approved']);
+    }
 }
