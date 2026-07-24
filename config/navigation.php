@@ -115,6 +115,13 @@ return [
     ],
     [
         'section' => 'Superadmin',
+        'label' => 'Produk & Kategori SNI',
+        'route' => 'superadmin.sni-taxonomy.index',
+        'active' => 'superadmin.sni-taxonomy.*',
+        'roles' => ['superadmin'],
+    ],
+    [
+        'section' => 'Superadmin',
         'label' => 'Audit Trail',
         'route' => 'superadmin.audit-trail.index',
         'active' => 'superadmin.audit-trail.*',

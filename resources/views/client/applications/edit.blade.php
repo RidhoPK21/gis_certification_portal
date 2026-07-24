@@ -64,7 +64,23 @@
                                         @if ($field->is_required)<span class="required">*</span>@endif
                                         @if ($field->unit)<span class="muted">({{ $field->unit }})</span>@endif
                                     </label>
-                                    @if ($field->type === 'textarea')
+                                    @if (($productGroups ?? null) && $field->code === 'product_name')
+                                        <select class="form-select sni-product-group" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]">
+                                            <option value="">Pilih produk...</option>
+                                            @foreach ($productGroups as $group)
+                                                <option value="{{ $group->name }}" @selected((string) $value === (string) $group->name)>{{ $group->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    @elseif (($productGroups ?? null) && $field->code === 'product_category')
+                                        <select class="form-select sni-product-category" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]" data-selected="{{ $value }}">
+                                            <option value="">Pilih kategori...</option>
+                                            @foreach ($productGroups as $group)
+                                                @foreach ($group->categories as $cat)
+                                                    <option value="{{ $cat->name }}" data-group="{{ $group->name }}" @selected((string) $value === (string) $cat->name)>{{ $cat->name }}</option>
+                                                @endforeach
+                                            @endforeach
+                                        </select>
+                                    @elseif ($field->type === 'textarea')
                                         <textarea class="form-textarea" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]" placeholder="{{ $field->placeholder }}">{{ $value }}</textarea>
                                     @elseif ($field->type === 'select')
                                         <select class="form-select" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]">
@@ -217,6 +233,37 @@
             input.value='';
         }
     });
+})();
+
+/*
+ * Dropdown bertingkat khusus skema SNI: pilih Produk (grup) -> pilihan
+ * Kategori otomatis terfilter sesuai grup terpilih.
+ */
+(function(){
+    const groupSel=document.querySelector('.sni-product-group');
+    const catSel=document.querySelector('.sni-product-category');
+    if(!groupSel||!catSel)return;
+    const options=Array.from(catSel.querySelectorAll('option[data-group]'));
+    const preselect=catSel.getAttribute('data-selected')||'';
+
+    function refilter(keepValue){
+        const group=groupSel.value;
+        const current=keepValue?catSel.value:'';
+        let hasCurrent=false;
+        options.forEach(opt=>{
+            const match=opt.getAttribute('data-group')===group;
+            opt.hidden=!match;
+            opt.disabled=!match;
+            if(match&&opt.value===current)hasCurrent=true;
+        });
+        if(!hasCurrent)catSel.value='';
+    }
+
+    // Pemuatan awal: jika ada nilai kategori tersimpan, pertahankan.
+    if(preselect){catSel.value=preselect;refilter(true);}
+    else refilter(false);
+
+    groupSel.addEventListener('change',()=>refilter(false));
 })();
 </script>
 @endpush

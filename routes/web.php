@@ -18,6 +18,7 @@ use App\Http\Controllers\Superadmin\AuditTrailController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
 use App\Http\Controllers\Superadmin\SchemeController;
 use App\Http\Controllers\Superadmin\SniProductController;
+use App\Http\Controllers\Superadmin\SniProductTaxonomyController;
 use App\Http\Controllers\Superadmin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -179,6 +180,12 @@ Route::middleware([
             Route::post('/sni-products', [SniProductController::class, 'store'])->name('sni-products.store');
             Route::put('/sni-products/{product}', [SniProductController::class, 'update'])->name('sni-products.update');
             Route::post('/sni-products/import', [SniProductController::class, 'import'])->name('sni-products.import');
+
+            Route::get('/sni-taxonomy', [SniProductTaxonomyController::class, 'index'])->name('sni-taxonomy.index');
+            Route::post('/sni-taxonomy/groups', [SniProductTaxonomyController::class, 'storeGroup'])->name('sni-taxonomy.groups.store');
+            Route::put('/sni-taxonomy/groups/{group}', [SniProductTaxonomyController::class, 'updateGroup'])->name('sni-taxonomy.groups.update');
+            Route::post('/sni-taxonomy/categories', [SniProductTaxonomyController::class, 'storeCategory'])->name('sni-taxonomy.categories.store');
+            Route::put('/sni-taxonomy/categories/{category}', [SniProductTaxonomyController::class, 'updateCategory'])->name('sni-taxonomy.categories.update');
 
             Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail.index');
 

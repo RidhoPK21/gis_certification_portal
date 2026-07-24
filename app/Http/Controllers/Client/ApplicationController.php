@@ -64,11 +64,17 @@ class ApplicationController extends Controller
         $application->load(['scheme.sections.fields.options', 'scheme.requiredDocuments', 'values', 'documents.currentVersion', 'revisions']);
         $application->setRelation('scheme', $forms->schemeForApplication($application));
 
+        // Khusus skema SNI (LSPro): dropdown bertingkat Produk -> Kategori dari taksonomi.
+        $productGroups = $application->scheme->review_template === 'sni'
+            ? \App\Models\SniProductGroup::with('categories')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get()
+            : null;
+
         return view('client.applications.edit', [
             'application' => $application,
             'values' => $forms->values($application),
             'applicableDocuments' => $forms->applicableDocuments($application->scheme, $forms->values($application)),
             'completion' => $forms->completion($application),
+            'productGroups' => $productGroups,
         ]);
     }
 
