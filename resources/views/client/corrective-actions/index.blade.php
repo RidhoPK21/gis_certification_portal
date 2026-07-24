@@ -73,4 +73,6 @@
     @empty
         <div class="card empty">Belum ada temuan yang memerlukan tindakan koreksi.</div>
     @endforelse
+
+    {{ $findings->links() }}
 @endsection

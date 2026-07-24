@@ -18,7 +18,8 @@ class CorrectiveActionController extends Controller
         $findings = Finding::whereHas('application', fn ($q) => $q->where('client_id', $request->user()->id))
             ->with(['correctiveActions.files', 'correctiveActions.reviews', 'application.scheme'])
             ->latest()
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         return view('client.corrective-actions.index', compact('findings'));
     }

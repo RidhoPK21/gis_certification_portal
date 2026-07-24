@@ -14,7 +14,8 @@ class SniProductTaxonomyController extends Controller
     public function index()
     {
         return view('superadmin.sni-product-taxonomy', [
-            'groups' => SniProductGroup::with('categories')->orderBy('sort_order')->orderBy('name')->get(),
+            'groups' => SniProductGroup::with('categories')->orderBy('sort_order')->orderBy('name')->paginate(8)->withQueryString(),
+            'allGroups' => SniProductGroup::orderBy('name')->get(['id', 'name']),
         ]);
     }
 

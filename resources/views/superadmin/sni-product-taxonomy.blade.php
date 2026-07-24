@@ -40,7 +40,7 @@
                     <label class="form-label">Produk (Grup) <span class="required">*</span></label>
                     <select class="form-select" name="sni_product_group_id" required>
                         <option value="">Pilih produk...</option>
-                        @foreach ($groups as $group)
+                        @foreach ($allGroups as $group)
                             <option value="{{ $group->id }}">{{ $group->name }}</option>
                         @endforeach
                     </select>
@@ -56,8 +56,17 @@
     </div>
 
     @forelse ($groups as $group)
-        <section class="card mt-2">
-            <form method="post" action="{{ route('superadmin.sni-taxonomy.groups.update', $group) }}" class="flex gap-1 wrap items-center">
+        <details class="card mt-2">
+            <summary style="cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <strong>{{ $group->name }}</strong>
+                <span class="badge badge-neutral">{{ $group->categories->count() }} kategori</span>
+                @if ($group->mandatory_type)
+                    <span class="badge badge-{{ $group->mandatory_type === 'wajib' ? 'warning' : 'info' }}">SNI {{ ucfirst($group->mandatory_type) }}</span>
+                @endif
+                @unless ($group->is_active)<span class="badge badge-neutral">Nonaktif</span>@endunless
+            </summary>
+
+            <form method="post" action="{{ route('superadmin.sni-taxonomy.groups.update', $group) }}" class="flex gap-1 wrap items-center mt-2">
                 @csrf
                 @method('PUT')
                 <input class="form-control" name="name" value="{{ $group->name }}" required style="max-width:320px">
@@ -68,7 +77,6 @@
                 </select>
                 <label><input type="checkbox" name="is_active" value="1" @checked($group->is_active)> Aktif</label>
                 <button class="btn btn-light btn-sm">Simpan Produk</button>
-                <span class="muted small">{{ $group->categories->count() }} kategori</span>
             </form>
 
             <div class="table-wrap mt-1">
@@ -93,8 +101,10 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+        </details>
     @empty
         <section class="card mt-2"><div class="empty">Belum ada produk. Tambahkan di atas.</div></section>
     @endforelse
+
+    {{ $groups->links() }}
 @endsection

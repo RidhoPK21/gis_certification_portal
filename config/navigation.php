@@ -137,20 +137,6 @@ return [
 
     [
         'section' => 'Akun',
-        'label' => 'Notifikasi',
-        'route' => 'notifications.index',
-        'active' => 'notifications.*',
-        'roles' => [
-            'client',
-            'admin_application',
-            'finance',
-            'auditor',
-            'technical',
-            'superadmin',
-        ],
-    ],
-    [
-        'section' => 'Akun',
         'label' => 'Profil',
         'route' => 'profile.edit',
         'active' => 'profile.*',

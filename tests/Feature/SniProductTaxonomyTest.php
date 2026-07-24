@@ -86,6 +86,17 @@ class SniProductTaxonomyTest extends TestCase
         ]);
     }
 
+    public function test_halaman_kelola_taksonomi_terpaginate(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('superadmin');
+
+        // 12 grup ter-seed, paginate 8 per halaman -> ada halaman ke-2.
+        $this->actingAs($admin)->get(route('superadmin.sni-taxonomy.index'))
+            ->assertOk()
+            ->assertSee('Halaman 1 / 2');
+    }
+
     public function test_non_superadmin_tidak_bisa_akses_kelola_taksonomi(): void
     {
         $this->seedAll();
