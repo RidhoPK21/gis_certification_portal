@@ -278,7 +278,7 @@ class ReviewPdfService
 
     private function renderSni(SimplePdf $pdf, array $s): void
     {
-        $this->renderHeader($pdf, 'TINJAUAN PERMOHONAN SERTIFIKASI S-5', 'Fr.7201/GIS-4');
+        $this->renderHeader($pdf, 'TINJAUAN PERMOHONAN SERTIFIKASI PRODUK (LSPro)', 'Fr.7201/GIS-4');
         $v = $s['values']; $a = $s['application'];
         $this->infoRows($pdf, [
             ['Hari/tanggal', $a['review_date'].'   |   No Order: '.$a['order_number'].'   |   Tanggal Order: '.$a['order_date']],

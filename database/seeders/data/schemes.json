@@ -7370,14 +7370,14 @@
   },
   {
     "code": "SNI",
-    "slug": "sni-lspro-system-5",
-    "name": "Sertifikasi Produk SNI / LSPro Sistem 5",
-    "short_name": "SNI / LSPro System 5",
+    "slug": "sni-lspro",
+    "name": "Sertifikasi Produk SNI / LSPro",
+    "short_name": "SNI / LSPro",
     "category": "product",
-    "standard": "SNI Produk - System 5",
+    "standard": "SNI Produk (LSPro)",
     "prefix": "LSPro-GIS",
     "template": "sni",
-    "description": "Permohonan sertifikasi produk Sistem 5 untuk produsen lokal, importir, atau pemegang merek.",
+    "description": "Permohonan sertifikasi produk untuk produsen lokal, importir, atau pemegang merek.",
     "sections": [
       {
         "code": "applicant",
