@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CertificationApplication;
 use App\Models\GeneratedPdf;
+use App\Models\User;
 use App\Support\SimplePdf;
 use Illuminate\Support\Facades\Storage;
 
@@ -74,10 +75,28 @@ class ReviewPdfService
             ],
             'scheme' => $application->scheme->only(['code', 'name', 'standard', 'review_template']),
             'values' => $values, 'documents' => $documents,
-            'administration_review' => $adminReview ? $adminReview->toArray() : null,
-            'technical_review' => $technicalReview ? $technicalReview->toArray() : null,
+            'administration_review' => $this->reviewArray($adminReview),
+            'technical_review' => $this->reviewArray($technicalReview),
             'audit_stages' => $application->auditStages->toArray(),
         ];
+    }
+
+    /**
+     * Ubah review menjadi array + lampirkan path tanda tangan milik
+     * penanda tangan (reviewed_by) untuk disisipkan ke PDF.
+     */
+    private function reviewArray(mixed $review): ?array
+    {
+        if (! $review) {
+            return null;
+        }
+
+        $data = $review->toArray();
+        $data['signature_path'] = $review->reviewed_by
+            ? optional(User::find($review->reviewed_by))->signature_path
+            : null;
+
+        return $data;
     }
 
     private function renderHeader(SimplePdf $pdf, string $title, string $code): void
@@ -147,7 +166,7 @@ class ReviewPdfService
 
     private function decisionBox(SimplePdf $pdf, string $title, ?array $review): void
     {
-        $pdf->ensureSpace(120);
+        $pdf->ensureSpace(160);
         $x = 34; $w = $pdf->contentWidth(); $status = $review['status'] ?? 'in_progress';
         $decision = in_array($status, ['approved', 'accepted'], true) ? 'Diterima' : ($status === 'rejected' ? 'Ditolak' : 'Belum Diputuskan');
         $notes = $review['rejection_reason'] ?? $review['notes'] ?? '-';
@@ -157,9 +176,50 @@ class ReviewPdfService
         $pdf->cell($x, $y, $w - 175, 28, $title, 8, true);
         $pdf->cell($x + $w - 175, $y, 175, 28, $decision, 9, true, 'center');
         $pdf->moveY(28); $y = $pdf->y();
-        $pdf->cell($x, $y, $w - 175, 78, 'Alasan/catatan: '.$this->dash($notes), 8, false);
-        $pdf->cell($x + $w - 175, $y, 175, 78, "Tanggal: {$date}\nNama dan tanda tangan:\n\n{$name}", 8, true);
-        $pdf->moveY(88);
+
+        $boxH = 108; $rx = $x + $w - 175; $rw = 175;
+        $pdf->cell($x, $y, $w - 175, $boxH, 'Alasan/catatan: '.$this->dash($notes), 8, false);
+        // Kolom kanan: tanggal, area tanda tangan (gambar), garis, lalu nama.
+        $pdf->rect($rx, $y, $rw, $boxH);
+        $pdf->text($rx + 6, $y + 16, "Tanggal: {$date}", 8, true);
+        $pdf->text($rx + 6, $y + 30, 'Nama dan tanda tangan:', 8, true);
+        $this->drawSignature($pdf, $review['signature_path'] ?? null, $rx + 8, $y + 36, $rw - 16, 46);
+        $pdf->line($rx + 6, $y + $boxH - 18, $rx + $rw - 6, $y + $boxH - 18, 0.4);
+        $pdf->text($rx + 6, $y + $boxH - 6, $name, 8, true);
+        $pdf->moveY($boxH + 12);
+    }
+
+    /**
+     * Sisipkan gambar tanda tangan (JPEG) di dalam kotak keputusan bila
+     * penanda tangan sudah mengunggah e-sign. Ukuran diskalakan mengikuti
+     * rasio asli agar pas di dalam area (maks $maxW x $maxH) tanpa menimpa
+     * teks. Gagal diam-diam agar pembuatan PDF tidak pernah terganggu.
+     */
+    private function drawSignature(SimplePdf $pdf, ?string $relativePath, float $x, float $y, float $maxW, float $maxH): void
+    {
+        if (! $relativePath) {
+            return;
+        }
+
+        $absolute = Storage::disk('private')->path($relativePath);
+        if (! is_file($absolute)) {
+            return;
+        }
+
+        $info = @getimagesize($absolute);
+        if (! $info || (int) $info[0] <= 0 || (int) $info[1] <= 0) {
+            return;
+        }
+
+        $scale = min($maxW / (int) $info[0], $maxH / (int) $info[1]);
+        $drawW = (int) $info[0] * $scale;
+        $drawH = (int) $info[1] * $scale;
+
+        try {
+            $pdf->imageJpeg($absolute, $x, $y, $drawW, $drawH);
+        } catch (\Throwable $e) {
+            // abaikan: tetap tampil nama ketik saja
+        }
     }
 
     private function renderLssm(SimplePdf $pdf, array $s): void

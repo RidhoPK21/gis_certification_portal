@@ -64,6 +64,12 @@ Route::middleware([
         ->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])
         ->name('profile.password');
+    Route::post('/profile/signature', [ProfileController::class, 'signature'])
+        ->name('profile.signature');
+    Route::delete('/profile/signature', [ProfileController::class, 'removeSignature'])
+        ->name('profile.signature.remove');
+    Route::get('/profile/signature/preview', [ProfileController::class, 'signaturePreview'])
+        ->name('profile.signature.preview');
 
     Route::middleware('role:client')
         ->prefix('client')

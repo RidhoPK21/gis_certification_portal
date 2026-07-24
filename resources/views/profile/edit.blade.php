@@ -128,5 +128,46 @@
                 </button>
             </form>
         </section>
+
+        @if ($user->canManageSignature())
+            <section class="content-card">
+                <h2 style="margin: 0 0 4px; color: #082f54; font-size: 18px;">
+                    Tanda Tangan Elektronik
+                </h2>
+                <p style="margin: 0 0 18px; color: #6a7c8d; font-size: 13px;">
+                    Unggah tanda tangan Anda (format JPG/PNG, maks. 2 MB). Disimpan
+                    permanen dan otomatis dipakai pada dokumen resmi yang Anda tanda tangani.
+                    Unggah ulang kapan saja untuk memperbarui.
+                </p>
+
+                @if ($user->hasSignature())
+                    <div style="margin-bottom: 16px;">
+                        <div style="color: #6a7c8d; font-size: 12px; margin-bottom: 6px;">Tanda tangan tersimpan:</div>
+                        <img
+                            src="{{ route('profile.signature.preview') }}"
+                            alt="Tanda tangan"
+                            style="max-height: 90px; max-width: 100%; border: 1px solid #d9e2ec; border-radius: 8px; background: #fff; padding: 6px;"
+                        >
+                        <form method="POST" action="{{ route('profile.signature.remove') }}" style="margin-top: 10px;"
+                              data-confirm="Hapus tanda tangan elektronik Anda?" data-confirm-title="Hapus Tanda Tangan"
+                              data-confirm-type="danger" data-confirm-yes="Ya, hapus">
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-light btn-sm" type="submit">Hapus Tanda Tangan</button>
+                        </form>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('profile.signature') }}" enctype="multipart/form-data">
+                    @csrf
+                    <div class="form-group">
+                        <label class="form-label">{{ $user->hasSignature() ? 'Ganti Tanda Tangan' : 'Unggah Tanda Tangan' }}</label>
+                        <input class="form-control" type="file" name="signature" accept="image/png,image/jpeg" required>
+                        @error('signature')<div class="error-text">{{ $message }}</div>@enderror
+                    </div>
+                    <button class="login-button" type="submit">Simpan Tanda Tangan</button>
+                </form>
+            </section>
+        @endif
     </div>
 @endsection

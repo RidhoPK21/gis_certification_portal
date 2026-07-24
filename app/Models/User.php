@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -19,10 +20,17 @@ class User extends Authenticatable
         'company_name',
         'job_title',
         'locale',
+        'signature_path',
         'password',
         'is_active',
         'last_login_at',
     ];
+
+    /**
+     * Role internal yang menandatangani dokumen resmi dan boleh
+     * mengelola tanda tangan elektronik di profil.
+     */
+    public const SIGNATURE_ROLES = ['admin_application', 'technical', 'auditor', 'superadmin'];
 
     protected $hidden = [
         'password',
@@ -102,6 +110,33 @@ public function primaryRole(): ?Role
         ->where('is_active', true)
         ->orderBy('sort_order')
         ->first();
+}
+
+/**
+ * Apakah user boleh mengelola tanda tangan elektronik di profil.
+ */
+public function canManageSignature(): bool
+{
+    return $this->hasAnyRole(self::SIGNATURE_ROLES);
+}
+
+/**
+ * Apakah user punya file tanda tangan yang tersimpan.
+ */
+public function hasSignature(): bool
+{
+    return filled($this->signature_path)
+        && Storage::disk('private')->exists($this->signature_path);
+}
+
+/**
+ * Path absolut file tanda tangan (untuk disisipkan ke PDF), null bila tidak ada.
+ */
+public function signatureAbsolutePath(): ?string
+{
+    return $this->hasSignature()
+        ? Storage::disk('private')->path($this->signature_path)
+        : null;
 }
 
 }
