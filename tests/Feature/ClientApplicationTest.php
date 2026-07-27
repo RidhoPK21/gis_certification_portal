@@ -166,4 +166,90 @@ class ClientApplicationTest extends TestCase
             ->get(route('client.applications.show', $app))
             ->assertForbidden();
     }
+
+    public function test_klien_dapat_menghapus_draft_miliknya(): void
+    {
+        $client = $this->client();
+        $scheme = CertificationScheme::orderBy('sort_order')->firstOrFail();
+        $app = $this->draftFor($client, $scheme);
+
+        $this->actingAs($client)
+            ->delete(route('client.applications.destroy', $app))
+            ->assertRedirect(route('client.applications.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('applications', ['id' => $app->id]);
+
+        // Data anak ikut terhapus lewat cascade FK.
+        $this->assertDatabaseMissing('application_values', ['application_id' => $app->id]);
+        $this->assertDatabaseMissing('application_status_history', ['application_id' => $app->id]);
+    }
+
+    public function test_menghapus_draft_ikut_menghapus_file_dokumen(): void
+    {
+        Storage::fake('private');
+        $client = $this->client();
+        $scheme = CertificationScheme::orderBy('sort_order')->firstOrFail();
+        $app = $this->draftFor($client, $scheme);
+
+        $forms = app(\App\Services\DynamicFormService::class);
+        $doc = $forms->applicableDocuments($forms->schemeForApplication($app), [])->firstOrFail();
+
+        $this->actingAs($client)->post(route('client.documents.store', $app), [
+            'document_code' => $doc->code,
+            'file' => UploadedFile::fake()->create('dok.pdf', 100, 'application/pdf'),
+        ]);
+
+        $path = $app->documents()->firstOrFail()->currentVersion->file_path;
+        Storage::disk('private')->assertExists($path);
+
+        $this->actingAs($client)
+            ->delete(route('client.applications.destroy', $app))
+            ->assertRedirect(route('client.applications.index'));
+
+        Storage::disk('private')->assertMissing($path);
+        $this->assertDatabaseMissing('application_documents', ['application_id' => $app->id]);
+    }
+
+    public function test_klien_lain_tidak_bisa_menghapus_draft(): void
+    {
+        $client = $this->client();
+        $scheme = CertificationScheme::orderBy('sort_order')->firstOrFail();
+        $app = $this->draftFor($client, $scheme);
+
+        $lain = User::create([
+            'name' => 'Klien Lain',
+            'email' => 'lain@example.com',
+            'password' => 'RahasiaKuat123',
+            'is_active' => true,
+        ]);
+        $lain->roles()->attach(Role::where('code', 'client')->value('id'));
+
+        $this->actingAs($lain)
+            ->delete(route('client.applications.destroy', $app))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('applications', ['id' => $app->id]);
+    }
+
+    /*
+     * Status revisi tetap bisa diedit klien, tapi ordernya sudah berjalan
+     * di tim GIS sehingga tidak boleh dihapus.
+     */
+    public function test_permohonan_yang_sudah_dikirim_tidak_bisa_dihapus(): void
+    {
+        $client = $this->client();
+        $scheme = CertificationScheme::orderBy('sort_order')->firstOrFail();
+
+        foreach (['admin_review', 'client_revision', 'revision_requested'] as $status) {
+            $app = $this->draftFor($client, $scheme);
+            $app->update(['status' => $status, 'order_number' => 'UJI/' . $status]);
+
+            $this->actingAs($client)
+                ->delete(route('client.applications.destroy', $app))
+                ->assertForbidden();
+
+            $this->assertDatabaseHas('applications', ['id' => $app->id]);
+        }
+    }
 }

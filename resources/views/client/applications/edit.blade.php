@@ -8,7 +8,20 @@
             <h1>{{ $application->scheme->short_name }}</h1>
             <p>{{ $application->order_number ?: 'Draft #' . $application->id }} · {{ $application->company_name }}</p>
         </div>
-        <a class="btn btn-light" href="{{ route('client.applications.show', $application) }}">Lihat Ringkasan</a>
+        <div class="flex gap-1 wrap">
+            <a class="btn btn-light" href="{{ route('client.applications.show', $application) }}">Lihat Ringkasan</a>
+            @if ($application->canBeDeletedByClient())
+                <form method="post" action="{{ route('client.applications.destroy', $application) }}"
+                      data-confirm="Draft ini beserta seluruh isian dan dokumen yang sudah diunggah akan dihapus permanen."
+                      data-confirm-title="Hapus Draft Permohonan"
+                      data-confirm-type="danger"
+                      data-confirm-yes="Ya, hapus">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-light text-danger" type="submit">Hapus Draft</button>
+                </form>
+            @endif
+        </div>
     </div>
 
     <div class="card mb-0">

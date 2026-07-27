@@ -128,4 +128,14 @@ class CertificationApplication extends Model
     {
         return in_array($this->status, ['draft', 'revision_requested', 'client_revision'], true);
     }
+
+    /*
+     * Hanya draft yang belum pernah dikirim yang boleh dihapus klien.
+     * Status revisi juga bisa diedit klien, tapi ordernya sudah berjalan
+     * di tim GIS sehingga tidak boleh ikut terhapus.
+     */
+    public function canBeDeletedByClient(): bool
+    {
+        return $this->status === 'draft' && $this->order_number === null;
+    }
 }

@@ -44,6 +44,17 @@
                                     <a class="btn btn-primary btn-sm" href="{{ route('client.applications.edit', $app) }}">Lanjutkan</a>
                                 @endif
                                 <a class="btn btn-light btn-sm" href="{{ route('client.applications.show', $app) }}">Detail</a>
+                                @if ($app->canBeDeletedByClient())
+                                    <form method="post" action="{{ route('client.applications.destroy', $app) }}"
+                                          data-confirm="Draft ini beserta seluruh isian dan dokumen yang sudah diunggah akan dihapus permanen."
+                                          data-confirm-title="Hapus Draft Permohonan"
+                                          data-confirm-type="danger"
+                                          data-confirm-yes="Ya, hapus">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-light btn-sm text-danger" type="submit">Hapus</button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

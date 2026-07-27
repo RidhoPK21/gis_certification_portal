@@ -14,7 +14,7 @@
             Modul sedang disiapkan.
         </strong>
 
-        <p style="margin: 10px 0 0; color: #6a7c8d;">
+        <p style="margin: 10px 0 0; color: var(--muted);">
             Hak akses dan route halaman ini sudah aktif.
             Fitur bisnis akan dibangun sesuai urutan workflow.
         </p>

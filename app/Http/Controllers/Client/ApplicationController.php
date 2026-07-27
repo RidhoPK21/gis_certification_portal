@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\CertificationApplication;
 use App\Models\CertificationScheme;
 use App\Services\ApplicationSubmissionService;
+use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationController extends Controller
 {
@@ -104,6 +106,22 @@ class ApplicationController extends Controller
 
         return redirect()->route('client.applications.show', $application)
             ->with('success', 'Permohonan berhasil dikirim ke tim GIS.');
+    }
+
+    public function destroy(Request $request, CertificationApplication $application, AuditLogger $audit)
+    {
+        $this->own($request, $application);
+        abort_unless($application->canBeDeletedByClient(), 403, 'Hanya draft yang belum dikirim yang dapat dihapus.');
+
+        // Dicatat sebelum baris hilang; activity_logs tanpa FK jadi jejak tetap ada.
+        $audit->log('application.draft_deleted_by_client', $application, $application->toArray());
+
+        // Tabel anak ikut terhapus lewat cascade FK, tapi file fisik tidak.
+        Storage::disk('private')->deleteDirectory('applications/' . $application->id);
+        $application->delete();
+
+        return redirect()->route('client.applications.index')
+            ->with('success', 'Draft permohonan berhasil dihapus.');
     }
 
     public function show(Request $request, CertificationApplication $application, DynamicFormService $forms)

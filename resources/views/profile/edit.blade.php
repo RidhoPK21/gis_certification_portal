@@ -13,8 +13,8 @@
 
     @if (session('success'))
         <section
-            class="content-card"
-            style="margin-bottom: 20px; border-color: #b6e0c2; background: #f2fbf5;"
+            class="alert alert-success"
+            style="margin-bottom: 20px;"
         >
             {{ session('success') }}
         </section>
@@ -29,10 +29,10 @@
         "
     >
         <section class="content-card">
-            <h2 style="margin: 0 0 4px; color: #082f54; font-size: 18px;">
+            <h2 style="margin: 0 0 4px; color: var(--navy); font-size: 18px;">
                 Data Akun
             </h2>
-            <p style="margin: 0 0 18px; color: #6a7c8d; font-size: 13px;">
+            <p style="margin: 0 0 18px; color: var(--muted); font-size: 13px;">
                 Informasi kontak dan perusahaan Anda.
             </p>
 
@@ -80,17 +80,17 @@
                     'required' => false,
                 ])
 
-                <button class="login-button" type="submit">
+                <button class="btn btn-primary" type="submit">
                     Simpan Perubahan
                 </button>
             </form>
         </section>
 
         <section class="content-card">
-            <h2 style="margin: 0 0 4px; color: #082f54; font-size: 18px;">
+            <h2 style="margin: 0 0 4px; color: var(--navy); font-size: 18px;">
                 Ubah Kata Sandi
             </h2>
-            <p style="margin: 0 0 18px; color: #6a7c8d; font-size: 13px;">
+            <p style="margin: 0 0 18px; color: var(--muted); font-size: 13px;">
                 Gunakan kata sandi yang kuat dan tidak dipakai di layanan lain.
                 Minimal 12 karakter serta mengandung huruf dan angka.
             </p>
@@ -123,7 +123,7 @@
                     'required' => true,
                 ])
 
-                <button class="login-button" type="submit">
+                <button class="btn btn-primary" type="submit">
                     Ganti Kata Sandi
                 </button>
             </form>
@@ -131,10 +131,10 @@
 
         @if ($user->canManageSignature())
             <section class="content-card">
-                <h2 style="margin: 0 0 4px; color: #082f54; font-size: 18px;">
+                <h2 style="margin: 0 0 4px; color: var(--navy); font-size: 18px;">
                     Tanda Tangan Elektronik
                 </h2>
-                <p style="margin: 0 0 18px; color: #6a7c8d; font-size: 13px;">
+                <p style="margin: 0 0 18px; color: var(--muted); font-size: 13px;">
                     Unggah tanda tangan Anda (format JPG/PNG, maks. 2 MB). Disimpan
                     permanen dan otomatis dipakai pada dokumen resmi yang Anda tanda tangani.
                     Unggah ulang kapan saja untuk memperbarui.
@@ -142,11 +142,11 @@
 
                 @if ($user->hasSignature())
                     <div style="margin-bottom: 16px;">
-                        <div style="color: #6a7c8d; font-size: 12px; margin-bottom: 6px;">Tanda tangan tersimpan:</div>
+                        <div style="color: var(--muted); font-size: 12px; margin-bottom: 6px;">Tanda tangan tersimpan:</div>
                         <img
                             src="{{ route('profile.signature.preview') }}"
                             alt="Tanda tangan"
-                            style="max-height: 90px; max-width: 100%; border: 1px solid #d9e2ec; border-radius: 8px; background: #fff; padding: 6px;"
+                            style="max-height: 90px; max-width: 100%; border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 6px;"
                         >
                         <form method="POST" action="{{ route('profile.signature.remove') }}" style="margin-top: 10px;"
                               data-confirm="Hapus tanda tangan elektronik Anda?" data-confirm-title="Hapus Tanda Tangan"
@@ -165,7 +165,7 @@
                         <input class="form-control" type="file" name="signature" accept="image/png,image/jpeg" required>
                         @error('signature')<div class="error-text">{{ $message }}</div>@enderror
                     </div>
-                    <button class="login-button" type="submit">Simpan Tanda Tangan</button>
+                    <button class="btn btn-primary" type="submit">Simpan Tanda Tangan</button>
                 </form>
             </section>
         @endif

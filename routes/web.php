@@ -84,6 +84,7 @@ Route::middleware([
             Route::get('/applications/{application}/edit', [ClientApplicationController::class, 'edit'])->name('applications.edit');
             Route::put('/applications/{application}', [ClientApplicationController::class, 'update'])->name('applications.update');
             Route::post('/applications/{application}/submit', [ClientApplicationController::class, 'submit'])->name('applications.submit');
+            Route::delete('/applications/{application}', [ClientApplicationController::class, 'destroy'])->name('applications.destroy');
             Route::post('/applications/{application}/documents', [ClientDocumentController::class, 'store'])->name('documents.store');
 
             Route::get('/corrective-actions', [ClientCorrectiveActionController::class, 'index'])->name('corrective-actions.index');

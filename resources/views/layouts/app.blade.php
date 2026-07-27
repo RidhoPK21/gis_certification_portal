@@ -17,6 +17,16 @@
         @yield('title', 'Dashboard') — {{ config('app.name') }}
     </title>
 
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <style>
         :root {
             --navy: #082f54;
@@ -27,6 +37,23 @@
             --text: #152a3d;
             --muted: #6a7c8d;
             --white: #ffffff;
+            --surface: #ffffff;
+            --surface-alt: #f3f7fb;
+            --shadow: rgba(20, 53, 82, 0.06);
+            color-scheme: light;
+        }
+
+        :root[data-theme="dark"] {
+            --navy: #8ec9f2;
+            --blue-light: rgba(11, 112, 184, 0.20);
+            --background: #0d1b2a;
+            --border: #263b52;
+            --text: #e7eef5;
+            --muted: #93a7ba;
+            --surface: #17293c;
+            --surface-alt: #1c3149;
+            --shadow: rgba(0, 0, 0, 0.35);
+            color-scheme: dark;
         }
 
         * {
@@ -159,7 +186,7 @@
             min-height: 72px;
             padding: 0 30px;
             border-bottom: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.96);
+            background: var(--surface);
         }
 
         .topbar-role {
@@ -188,10 +215,10 @@
 
         .logout-button {
             padding: 9px 14px;
-            border: 1px solid #cbd8e3;
+            border: 1px solid var(--border);
             border-radius: 9px;
             color: var(--navy);
-            background: #ffffff;
+            background: var(--surface);
             font-weight: 700;
             cursor: pointer;
         }
@@ -200,6 +227,7 @@
             position: relative;
         }
 
+        .theme-toggle,
         .notif-toggle {
             position: relative;
             display: flex;
@@ -209,13 +237,30 @@
             height: 40px;
             border: 1px solid var(--border);
             border-radius: 10px;
-            background: #ffffff;
+            background: var(--surface);
             color: var(--navy);
             cursor: pointer;
         }
 
+        .theme-toggle:hover,
         .notif-toggle:hover {
             background: var(--blue-light);
+        }
+
+        .theme-toggle svg {
+            display: block;
+        }
+
+        .theme-toggle .icon-moon {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-sun {
+            display: none;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-moon {
+            display: block;
         }
 
         .notif-badge {
@@ -240,10 +285,10 @@
             right: 0;
             width: 340px;
             max-width: 86vw;
-            background: #ffffff;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            box-shadow: 0 12px 32px rgba(8, 47, 84, 0.16);
+            box-shadow: 0 12px 32px var(--shadow);
             overflow: hidden;
             z-index: 30;
         }
@@ -271,7 +316,7 @@
         }
 
         .notif-item {
-            border-bottom: 1px solid #eef3f8;
+            border-bottom: 1px solid var(--border);
         }
 
         .notif-item button {
@@ -289,7 +334,7 @@
         }
 
         .notif-item:hover button {
-            background: #f3f7fb;
+            background: var(--surface-alt);
         }
 
         .notif-title {
@@ -355,9 +400,9 @@
             padding: 26px;
             border: 1px solid var(--border);
             border-radius: 17px;
-            background: #ffffff;
+            background: var(--surface);
             box-shadow:
-                0 10px 30px rgba(20, 53, 82, 0.06);
+                0 10px 30px var(--shadow);
         }
 
         /* ---- Utility classes untuk modul (skema, form builder, dll) ---- */
@@ -385,8 +430,8 @@
             padding: 22px;
             border: 1px solid var(--border);
             border-radius: 15px;
-            background: #ffffff;
-            box-shadow: 0 8px 24px rgba(20, 53, 82, 0.05);
+            background: var(--surface);
+            box-shadow: 0 8px 24px var(--shadow);
         }
 
         .card h2 {
@@ -451,7 +496,7 @@
             padding: 10px 12px;
             border: 1px solid var(--border);
             border-radius: 10px;
-            background: #ffffff;
+            background: var(--surface);
             color: var(--text);
             font-size: 14px;
         }
@@ -481,8 +526,8 @@
         }
 
         .btn-light {
-            border-color: #cbd8e3;
-            background: #ffffff;
+            border-color: var(--border);
+            background: var(--surface);
             color: var(--navy);
         }
 
@@ -534,7 +579,7 @@
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            background: #f7fafc;
+            background: var(--surface-alt);
         }
 
         .table tr:last-child td {
@@ -558,6 +603,12 @@
             border-color: #b6e0c2;
             background: #f2fbf5;
             color: #1c7a45;
+        }
+
+        .alert-danger {
+            border-color: #f0c2c2;
+            background: #fdf2f2;
+            color: #a12626;
         }
 
         details summary {
@@ -645,7 +696,7 @@
             padding: 18px 20px;
             border: 1px solid var(--border);
             border-radius: 14px;
-            background: #ffffff;
+            background: var(--surface);
         }
 
         .stat-card small {
@@ -673,7 +724,7 @@
             padding: 20px;
             border: 1px solid var(--border);
             border-radius: 15px;
-            background: #ffffff;
+            background: var(--surface);
         }
 
         .scheme-card h3 {
@@ -696,6 +747,10 @@
             color: var(--blue);
             font-size: 12px;
             font-weight: 700;
+        }
+
+        .card-cta {
+            color: var(--blue);
         }
 
         .detail-list {
@@ -818,7 +873,7 @@
 
         /* ---- Utility tambahan Fase 4 (review admin) ---- */
         .btn-blue {
-            background: var(--navy);
+            background: #082f54;
             color: #ffffff;
         }
 
@@ -905,6 +960,103 @@
                 width: min(100% - 28px, 1320px);
             }
         }
+
+        /* ---- Mode gelap: override warna literal yang tidak lewat variable ---- */
+        [data-theme="dark"] .notif-readall,
+        [data-theme="dark"] .scheme-code,
+        [data-theme="dark"] .card-cta {
+            color: #7fc4f2;
+        }
+
+        [data-theme="dark"] .progress {
+            background: #24384d;
+        }
+
+        [data-theme="dark"] code {
+            background: #24384d;
+            color: var(--text);
+        }
+
+        [data-theme="dark"] .error-text,
+        [data-theme="dark"] .required,
+        [data-theme="dark"] .text-danger {
+            color: #f28b82;
+        }
+
+        [data-theme="dark"] .badge-success {
+            background: rgba(28, 122, 69, 0.25);
+            color: #7fdba0;
+        }
+
+        [data-theme="dark"] .badge-neutral {
+            background: rgba(100, 116, 139, 0.25);
+            color: #b7c2cc;
+        }
+
+        [data-theme="dark"] .badge-warning {
+            background: rgba(207, 139, 26, 0.22);
+            color: #f0be6c;
+        }
+
+        [data-theme="dark"] .badge-info {
+            background: rgba(11, 90, 146, 0.25);
+            color: #7fc4f2;
+        }
+
+        [data-theme="dark"] .badge-danger {
+            background: rgba(180, 35, 24, 0.22);
+            color: #f28b82;
+        }
+
+        [data-theme="dark"] .alert-info {
+            border-color: #164b6e;
+            background: rgba(11, 90, 146, 0.18);
+            color: #7fc4f2;
+        }
+
+        [data-theme="dark"] .alert-success {
+            border-color: #1c5e3a;
+            background: rgba(28, 122, 69, 0.18);
+            color: #7fdba0;
+        }
+
+        [data-theme="dark"] .alert-warning {
+            border-color: #6b4e12;
+            background: rgba(207, 139, 26, 0.18);
+            color: #f0be6c;
+        }
+
+        [data-theme="dark"] .alert-danger {
+            border-color: #6e2020;
+            background: rgba(180, 35, 24, 0.18);
+            color: #f28b82;
+        }
+
+        /*
+         * SweetAlert menyuntikkan CSS-nya sendiri saat runtime, jadi selector
+         * di bawah sengaja dibuat lebih spesifik agar tidak tertimpa.
+         */
+        [data-theme="dark"] .swal2-container .swal2-popup {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        [data-theme="dark"] .swal2-container .swal2-title,
+        [data-theme="dark"] .swal2-container .swal2-html-container,
+        [data-theme="dark"] .swal2-container .swal2-toast .swal2-title {
+            color: var(--text);
+        }
+
+        [data-theme="dark"] .swal2-container .swal2-close {
+            color: var(--muted);
+        }
+
+        [data-theme="dark"] .swal2-container .swal2-input,
+        [data-theme="dark"] .swal2-container .swal2-textarea {
+            border-color: var(--border);
+            background: var(--surface-alt);
+            color: var(--text);
+        }
     </style>
 </head>
 
@@ -988,6 +1140,16 @@
                 </div>
 
                 <div class="topbar-user">
+                    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Ganti mode gelap/terang">
+                        <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="4.5"></circle>
+                            <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path>
+                        </svg>
+                        <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path>
+                        </svg>
+                    </button>
+
                     <div class="notif-bell" id="notif-bell">
                         <button type="button" class="notif-toggle" id="notif-toggle" aria-label="Notifikasi">
                             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1058,7 +1220,7 @@
                 @endif
 
                 @if ($errors->any())
-                    <div class="alert" id="flash-error-banner" style="margin-bottom: 20px; border-color: #f0c2c2; background: #fdf2f2; color: #a12626;">
+                    <div class="alert alert-danger" id="flash-error-banner" style="margin-bottom: 20px;">
                         <strong>Periksa kembali isian berikut:</strong>
                         <ul style="margin: 8px 0 0; padding-left: 18px;">
                             @foreach ($errors->all() as $error)
@@ -1094,12 +1256,7 @@
 
         function showAlert(form,type,message,list){
             const box=document.createElement('div');
-            box.className='ajax-alert alert '+(type==='success'?'alert-success':'');
-            if(type!=='success'){
-                box.style.borderColor='#f0c2c2';
-                box.style.background='#fdf2f2';
-                box.style.color='#a12626';
-            }
+            box.className='ajax-alert alert '+(type==='success'?'alert-success':'alert-danger');
             box.style.marginBottom='16px';
             let html='<strong>'+message+'</strong>';
             if(list&&list.length){
@@ -1277,6 +1434,22 @@
         });
         document.addEventListener('keydown',function(e){
             if(e.key==='Escape')dropdown.hidden=true;
+        });
+    })();
+
+    /* Toggle mode gelap/terang: simpan pilihan di localStorage, default terang. */
+    (function(){
+        const toggle=document.getElementById('theme-toggle');
+        if(!toggle)return;
+        toggle.addEventListener('click',function(){
+            const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+            if(isDark){
+                document.documentElement.removeAttribute('data-theme');
+                try{localStorage.setItem('theme','light');}catch(e){}
+            }else{
+                document.documentElement.setAttribute('data-theme','dark');
+                try{localStorage.setItem('theme','dark');}catch(e){}
+            }
         });
     })();
     </script>
