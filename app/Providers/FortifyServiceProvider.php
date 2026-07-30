@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
 use App\Http\Responses\RegisterResponse as SystemGISRegisterResponse;
 use Laravel\Fortify\Contracts\RegisterResponse as FortifyRegisterResponse;
@@ -88,6 +89,18 @@ class FortifyServiceProvider extends ServiceProvider
                     return null;
                 }
 
+                /*
+                 * Pesan spesifik ini baru muncul setelah kata sandi
+                 * terbukti benar, agar keberadaan akun tidak bocor
+                 * ke orang yang hanya menebak-nebak email.
+                 */
+                if ($user->email_verified_at === null) {
+                    throw ValidationException::withMessages([
+                        'email' =>
+                            'Email belum diverifikasi. Masukkan kode verifikasi yang telah dikirim ke email Anda.',
+                    ]);
+                }
+
                 $user->forceFill([
                     'last_login_at' => now(),
                 ])->save();
@@ -112,6 +125,41 @@ class FortifyServiceProvider extends ServiceProvider
                 return Limit::perMinute(5)->by(
                     $email . '|' . $request->ip()
                 );
+            }
+        );
+
+        /*
+         * Kirim ulang OTP registrasi diikat ke sesi, karena
+         * formulirnya tidak memuat alamat email sama sekali.
+         */
+        RateLimiter::for(
+            'otp-resend-registration',
+            function (Request $request): array {
+                $key = $request->session()->getId()
+                    . '|' . $request->ip();
+
+                return [
+                    Limit::perMinute(1)->by($key),
+                    Limit::perHour(5)->by($key),
+                ];
+            }
+        );
+
+        /*
+         * Kirim ulang undangan staf diikat ke email yang dikirim,
+         * karena endpoint-nya publik dan tanpa sesi.
+         */
+        RateLimiter::for(
+            'otp-resend-invite',
+            function (Request $request): array {
+                $key = Str::lower(
+                    trim((string) $request->input('email'))
+                ) . '|' . $request->ip();
+
+                return [
+                    Limit::perMinute(1)->by($key),
+                    Limit::perHour(5)->by($key),
+                ];
             }
         );
     }

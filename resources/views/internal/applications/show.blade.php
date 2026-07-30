@@ -233,49 +233,44 @@
         </form>
     </section>
 
+    @php($techReview = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first())
     <section class="card mt-2" id="tinjauan">
         <h2>Tinjauan Teknis &amp; PDF Otomatis</h2>
-        <form method="post" action="{{ route('internal.applications.review', $application) }}">
-            @csrf
-            <input type="hidden" name="review_type" value="technical">
-            @php($techFields = ['scope_review_result' => 'Kesesuaian ruang lingkup', 'audit_capability' => 'Kemampuan GIS melakukan audit', 'audit_mandays' => 'Mandays audit', 'required_auditor_competence' => 'Kompetensi auditor', 'assigned_auditor_team' => 'Tim auditor', 'assigned_panelists' => 'Panelis'])
-            @foreach ($techFields as $code => $label)
-                @php($val = $application->value($code))
-                <input type="hidden" name="items[{{ $loop->index }}][type]" value="checklist">
-                <input type="hidden" name="items[{{ $loop->index }}][code]" value="{{ $code }}">
-                <input type="hidden" name="items[{{ $loop->index }}][label]" value="{{ $label }}">
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label class="form-label">{{ $label }}</label>
-                        <input class="form-control" value="{{ is_array($val) ? implode(', ', $val) : $val }}" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Hasil kajian</label>
-                        <select class="form-select" name="items[{{ $loop->index }}][status]">
-                            <option value="pending">Belum dikaji</option>
-                            <option value="sufficient">Cukup/Sesuai</option>
-                            <option value="insufficient">Belum cukup/Tidak sesuai</option>
-                        </select>
-                        <input class="form-control mt-1" name="items[{{ $loop->index }}][notes]" placeholder="Keterangan">
-                    </div>
-                </div>
-            @endforeach
-            <div class="grid-3">
-                <div class="form-group">
-                    <label class="form-label">Tanggal</label>
-                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Peninjau Teknis</label>
-                    <input class="form-control" name="signed_name" value="{{ auth()->user()->name }}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Catatan</label>
-                    <input class="form-control" name="notes">
-                </div>
+        <p class="muted">Bagian teknis diisi oleh Tim Teknis. Admin meneruskan permohonan, lalu menyetujui setelah tinjauan teknis selesai.</p>
+
+        @if ($techReview && $techReview->completed_at)
+            <div class="alert alert-success">Tinjauan teknis selesai oleh <strong>{{ $techReview->signed_name }}</strong> pada {{ $techReview->completed_at->format('d M Y') }}.</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Aspek Teknis</th><th>Hasil</th><th>Keterangan</th></tr></thead>
+                    <tbody>
+                        @forelse ($techReview->items as $item)
+                            <tr>
+                                <td>{{ $item->item_label }}</td>
+                                <td>{{ \App\Enums\ApplicationStatus::labelFor($item->review_status) }}</td>
+                                <td>{{ $item->notes ?: '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="muted">Tidak ada rincian item.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-            <button class="btn btn-primary">Simpan Tinjauan Teknis</button>
-        </form>
+        @elseif ($application->status === 'technical_review')
+            <div class="alert alert-warning">Sedang ditinjau oleh Tim Teknis. Persetujuan tersedia setelah tinjauan teknis selesai.</div>
+        @else
+            <p class="muted">Belum ditinjau Tim Teknis. Simpan kajian administrasi lalu klik "Teruskan ke Tinjauan Teknis".</p>
+        @endif
+
+        @if ($application->status === 'admin_review')
+            <form method="post" action="{{ route('internal.applications.forward-technical', $application) }}"
+                  data-confirm="Teruskan permohonan ke Tim Teknis untuk tinjauan teknis?"
+                  data-confirm-title="Teruskan ke Tim Teknis" data-confirm-yes="Ya, teruskan">
+                @csrf
+                <button class="btn btn-blue mt-2">{{ $techReview && $techReview->completed_at ? 'Kirim Ulang ke Tim Teknis' : 'Teruskan ke Tinjauan Teknis' }}</button>
+            </form>
+        @endif
+
         <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
         <div class="flex gap-1 wrap">
             <form method="post" action="{{ route('internal.applications.generate-pdf', $application) }}">
@@ -382,22 +377,29 @@
 
     @if ($application->status === 'admin_review')
         <section class="grid-2 mt-2">
-            <form class="card" method="post" action="{{ route('internal.applications.approve', $application) }}"
-                  data-confirm="Setujui permohonan dan teruskan ke Finance? PDF keputusan akan digenerate."
-                  data-confirm-title="Setujui Permohonan"
-                  data-confirm-yes="Ya, setujui">
-                @csrf
-                <h2>Setujui Permohonan</h2>
-                <div class="form-group">
-                    <label class="form-label">Tanggal Keputusan</label>
-                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
+            @if ($techReview && $techReview->completed_at)
+                <form class="card" method="post" action="{{ route('internal.applications.approve', $application) }}"
+                      data-confirm="Setujui permohonan dan teruskan ke Finance? PDF keputusan akan digenerate."
+                      data-confirm-title="Setujui Permohonan"
+                      data-confirm-yes="Ya, setujui">
+                    @csrf
+                    <h2>Setujui Permohonan</h2>
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Keputusan</label>
+                        <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Catatan</label>
+                        <textarea class="form-textarea" name="notes"></textarea>
+                    </div>
+                    <button class="btn btn-success">Setujui &amp; Generate PDF</button>
+                </form>
+            @else
+                <div class="card">
+                    <h2>Setujui Permohonan</h2>
+                    <p class="muted">Persetujuan tersedia setelah Tim Teknis menyelesaikan tinjauan teknis. Klik "Teruskan ke Tinjauan Teknis" pada bagian di atas.</p>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Catatan</label>
-                    <textarea class="form-textarea" name="notes"></textarea>
-                </div>
-                <button class="btn btn-success">Setujui &amp; Generate PDF</button>
-            </form>
+            @endif
             <form class="card" method="post" action="{{ route('internal.applications.reject', $application) }}"
                   data-confirm="Tolak permohonan ini? Tindakan ini menghentikan proses sertifikasi."
                   data-confirm-title="Tolak Permohonan"

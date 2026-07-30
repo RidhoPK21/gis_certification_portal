@@ -83,6 +83,8 @@ SYSTEMGIS_DEMO_PASSWORD=DemoGis12345
 
 ## 4. Akun demo untuk development
 
+> ⚠️ Akun di tabel ini **hanya untuk development** (dibuat oleh `SystemAccountsSeeder`, hanya jalan di `local`/`testing` dengan `SYSTEMGIS_SEED_DEMO_ACCOUNTS=true`). Jangan dipakai di server produksi — untuk produksi ikuti bagian 5.
+
 Semua akun memakai password yang kamu isi di `SYSTEMGIS_DEMO_PASSWORD` (contoh: **`DemoGis12345`**).
 
 | Peran | Email | Fungsi utama |
@@ -101,7 +103,41 @@ Semua akun memakai password yang kamu isi di `SYSTEMGIS_DEMO_PASSWORD` (contoh: 
 
 ---
 
-## 5. (Opsional) Pakai MySQL alih-alih SQLite
+## 5. Deploy produksi: akun superadmin & email OTP
+
+Di produksi tidak ada akun bawaan sama sekali — tidak ada kredensial apa pun di dalam repo. Urutannya:
+
+**1) Isi `.env` produksi**, minimal: `APP_ENV=production`, `APP_DEBUG=false`, koneksi database, lalu SMTP asli agar kode OTP benar-benar terkirim ke email pendaftar:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.penyedia-anda.com
+MAIL_PORT=587
+MAIL_SCHEME=tls
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS="no-reply@domain-perusahaan.com"
+
+GIS_ADMIN_NAME="Nama Superadmin"
+GIS_ADMIN_EMAIL=superadmin@domain-perusahaan.com   # wajib email asli yang bisa diakses
+GIS_ADMIN_PASSWORD=                                # kosong = digenerate acak & ditampilkan sekali
+```
+
+**2) Buat superadmin pertama** (tanpa `--demo`, jadi tidak ada akun demo yang ikut dibuat):
+
+```powershell
+php artisan gis:install
+```
+
+Perintah ini menjalankan migrasi + seeder inti, lalu membuat satu akun superadmin ber-role lengkap. Bila `GIS_ADMIN_EMAIL` kosong ia akan menanyakannya; bila `GIS_ADMIN_PASSWORD` kosong ia mencetak password acak **sekali saja** — simpan segera.
+
+**3) Akun staf lain dibuat dari UI, bukan seeder.** Login sebagai superadmin → menu **User & Role** → **Tambah Akun** → isi nama, email asli staf, dan rolenya. Staf menerima email berisi kode OTP, lalu membuka halaman aktivasi untuk memasukkan kode itu dan menentukan password sendiri (password tidak pernah diketahui superadmin).
+
+**4) Klien mendaftar sendiri** di `/register` dengan email asli, menerima kode OTP 6 digit, dan baru bisa login setelah kode itu dimasukkan. Masa berlaku & batas percobaan kode diatur lewat `SYSTEMGIS_OTP_TTL_MINUTES` dan `SYSTEMGIS_OTP_MAX_ATTEMPTS`.
+
+---
+
+## 6. (Opsional) Pakai MySQL alih-alih SQLite
 
 Isi `.env`:
 
@@ -118,14 +154,15 @@ Buat database `gis_portal` di MySQL, lalu jalankan ulang `php artisan gis:instal
 
 ---
 
-## 6. Perintah yang sering dipakai
+## 7. Perintah yang sering dipakai
 
 | Perintah | Fungsi |
 |----------|--------|
 | `php artisan serve` | Menjalankan server dev di http://127.0.0.1:8000 |
 | `npm run dev` | Vite hot-reload (front-end) |
 | `npm run build` | Build asset produksi |
-| `php artisan gis:install --fresh --demo` | Reset DB + migrasi + seed lengkap (termasuk akun demo) |
+| `php artisan gis:install --fresh --demo` | Reset DB + migrasi + seed lengkap (termasuk akun demo, khusus dev) |
+| `php artisan gis:install` | Migrasi + seeder inti + buat satu superadmin dari `.env` (dipakai saat deploy) |
 | `php artisan migrate` | Jalankan migrasi baru saja (tanpa reset) |
 | `php artisan db:seed --class=SchemeCatalogSeeder` | Re-seed katalog skema/form (mis. setelah ubah `schemes.json`) |
 | `php artisan test` | Jalankan seluruh test suite |
@@ -135,7 +172,7 @@ Buat database `gis_portal` di MySQL, lalu jalankan ulang `php artisan gis:instal
 
 ---
 
-## 7. Struktur singkat & catatan
+## 8. Struktur singkat & catatan
 
 - **Seeder inti** (aman di semua environment): `RolePermissionSeeder`, `SchemeCatalogSeeder`, `WorkflowSeeder`. Akun demo dari `SystemAccountsSeeder` hanya jalan di local/testing bila diaktifkan di `.env`.
 - **Definisi form permohonan** ada di `database/seeders/data/schemes.json` — setelah diubah, jalankan `php artisan db:seed --class=SchemeCatalogSeeder` agar tersimpan ke database.
@@ -144,7 +181,7 @@ Buat database `gis_portal` di MySQL, lalu jalankan ulang `php artisan gis:instal
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Gejala | Solusi |
 |--------|--------|

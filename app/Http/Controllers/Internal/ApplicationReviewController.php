@@ -3,19 +3,17 @@
 namespace App\Http\Controllers\Internal;
 
 use App\Http\Controllers\Controller;
-use App\Models\ApplicationReview;
 use App\Models\ApplicationRevisionItem;
 use App\Models\AuditAssignment;
 use App\Models\CertificationApplication;
-use App\Models\ReviewFormItem;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
 use App\Services\PortalNotificationService;
 use App\Services\ReviewPdfService;
+use App\Services\ReviewService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ApplicationReviewController extends Controller
@@ -77,37 +75,40 @@ class ApplicationReviewController extends Controller
         return back()->with('success', 'Auditor berhasil ditugaskan ke order ini.');
     }
 
-    public function saveReview(Request $request, CertificationApplication $application, AuditLogger $audit)
+    public function saveReview(Request $request, CertificationApplication $application, AuditLogger $audit, ReviewService $reviews)
     {
+        // Bagian teknis kini diisi oleh Tim Teknis (TechnicalController), bukan admin.
         $data = $request->validate([
-            'review_type' => ['required', Rule::in(['administration', 'technical'])],
+            'review_type' => ['required', Rule::in(['administration'])],
             'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['required', 'string', 'max:150'],
             'items' => ['nullable', 'array'], 'items.*.type' => ['required_with:items', 'string'], 'items.*.code' => ['required_with:items', 'string'],
             'items.*.label' => ['required_with:items', 'string'], 'items.*.presence' => ['nullable', 'string'],
             'items.*.status' => ['required_with:items', Rule::in(['pending', 'sufficient', 'insufficient', 'meets', 'not_meets'])],
             'items.*.notes' => ['nullable', 'string'],
         ]);
-        $review = DB::transaction(function () use ($application, $request, $data) {
-            $round = ((int) $application->reviews()->where('review_type', $data['review_type'])->max('round')) ?: 1;
-            $review = ApplicationReview::updateOrCreate(
-                ['application_id' => $application->id, 'review_type' => $data['review_type'], 'round' => $round, 'status' => 'in_progress'],
-                ['notes' => $data['notes'] ?? null, 'action_date' => $data['action_date'], 'signed_name' => $data['signed_name'], 'reviewed_by' => $request->user()->id]
-            );
-            foreach ($data['items'] ?? [] as $index => $item) {
-                ReviewFormItem::updateOrCreate(
-                    ['application_review_id' => $review->id, 'item_type' => $item['type'], 'item_code' => $item['code']],
-                    ['item_label' => $item['label'], 'presence_status' => $item['presence'] ?? null, 'review_status' => $item['status'], 'notes' => $item['notes'] ?? null, 'sort_order' => $index]
-                );
-                if ($item['type'] === 'document') {
-                    $application->documents()->where('document_code', $item['code'])->update(['review_status' => $item['status'], 'review_note' => $item['notes'] ?? null, 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
-                }
-            }
-
-            return $review;
-        });
+        $review = $reviews->save($application, $data['review_type'], $data, $request->user()->id);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => $data['review_type']]);
 
-        return back()->with('success', 'Hasil kajian '.$data['review_type'].' berhasil disimpan.');
+        return back()->with('success', 'Hasil kajian administrasi berhasil disimpan.');
+    }
+
+    public function forwardToTechnical(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
+    {
+        abort_unless($application->status === 'admin_review', 422, 'Permohonan tidak berada pada tahap review admin.');
+        $hasAdminReview = $application->reviews()->where('review_type', 'administration')->exists();
+        abort_unless($hasAdminReview, 422, 'Simpan kajian administrasi terlebih dahulu sebelum meneruskan ke Tim Teknis.');
+        $open = $application->revisions()->whereIn('status', ['open', 'submitted'])->count();
+        abort_if($open > 0, 422, 'Masih ada item revisi terbuka. Tutup item sebelum meneruskan ke Tim Teknis.');
+
+        // Bila diteruskan ulang untuk koreksi, tinjauan teknis harus diselesaikan
+        // kembali oleh Tim Teknis sebelum admin dapat menyetujui.
+        $application->reviews()->where('review_type', 'technical')->whereNotNull('completed_at')->update(['completed_at' => null]);
+
+        $workflow->transition($application, 'technical_review', 'admin_forward_technical', 'Diteruskan ke Tim Teknis untuk tinjauan teknis.', $request->user()->id);
+        $notifications->sendToRole('technical', 'technical_review_pending', 'Tinjauan Teknis Baru', 'Permohonan '.$application->order_number.' menunggu tinjauan teknis.', route('technical.reviews.show', $application));
+        $audit->log('application.forwarded_technical', $application, [], ['application_id' => $application->id]);
+
+        return back()->with('success', 'Permohonan diteruskan ke Tim Teknis untuk tinjauan teknis.');
     }
 
     public function requestRevision(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
@@ -158,6 +159,8 @@ class ApplicationReviewController extends Controller
         $data = $request->validate(['notes' => ['nullable', 'string'], 'action_date' => ['required', 'date']]);
         $open = $application->revisions()->whereIn('status', ['open', 'submitted'])->count();
         abort_if($open > 0, 422, 'Masih ada item revisi terbuka. Tutup item sebelum menyetujui.');
+        $technicalDone = $application->reviews()->where('review_type', 'technical')->whereNotNull('completed_at')->exists();
+        abort_unless($technicalDone, 422, 'Tinjauan teknis belum selesai oleh Tim Teknis. Teruskan ke Tim Teknis lebih dahulu.');
         // Menyetujui permohonan = kedua bagian kajian (administrasi & teknis) diterima.
         foreach (['administration', 'technical'] as $type) {
             $review = $application->reviews()->where('review_type', $type)->latest()->first();

@@ -57,6 +57,38 @@ class ReviewAdminTest extends TestCase
         ]);
     }
 
+    /**
+     * Menjalankan alur tinjauan teknis oleh Tim Teknis: admin menyimpan kajian
+     * administrasi, meneruskan ke teknis, lalu user teknis mengisi & menyelesaikan.
+     * Setelah ini status kembali ke admin_review dan siap disetujui admin.
+     */
+    private function completeTechnicalReview(CertificationApplication $app, User $admin): User
+    {
+        $tech = $this->user('technical');
+
+        $this->actingAs($admin)->post(route('internal.applications.review', $app), [
+            'review_type' => 'administration',
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Admin',
+        ])->assertRedirect();
+
+        $this->actingAs($admin)->post(route('internal.applications.forward-technical', $app))->assertRedirect();
+        $this->assertSame('technical_review', $app->refresh()->status);
+
+        $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Teknis',
+            'items' => [
+                ['type' => 'checklist', 'code' => 'audit_mandays', 'label' => 'Mandays audit', 'status' => 'sufficient', 'notes' => 'ok'],
+            ],
+        ])->assertRedirect();
+
+        $this->actingAs($tech)->post(route('technical.reviews.complete', $app))->assertRedirect();
+        $this->assertSame('admin_review', $app->refresh()->status);
+
+        return $tech;
+    }
+
     public function test_admin_dapat_melihat_daftar_review(): void
     {
         $this->seedAll();
@@ -120,6 +152,7 @@ class ReviewAdminTest extends TestCase
         $admin = $this->user('admin_application');
         $client = $this->user('client');
         $app = $this->applicationInReview($client);
+        $this->completeTechnicalReview($app, $admin);
 
         $this->actingAs($admin)
             ->post(route('internal.applications.approve', $app), [
@@ -180,14 +213,7 @@ class ReviewAdminTest extends TestCase
         $this->seedAll();
         $admin = $this->user('admin_application');
         $app = $this->applicationInReview($this->user('client'));
-
-        foreach (['administration', 'technical'] as $type) {
-            $this->actingAs($admin)->post(route('internal.applications.review', $app), [
-                'review_type' => $type,
-                'action_date' => now()->format('Y-m-d'),
-                'signed_name' => 'Reviewer',
-            ])->assertRedirect();
-        }
+        $this->completeTechnicalReview($app, $admin);
 
         $this->actingAs($admin)->post(route('internal.applications.approve', $app), [
             'action_date' => now()->format('Y-m-d'),

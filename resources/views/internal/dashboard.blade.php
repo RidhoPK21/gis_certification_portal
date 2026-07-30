@@ -62,6 +62,8 @@
                                     <a class="btn btn-light btn-sm" href="{{ route('finance.show', $app) }}">Buka</a>
                                 @elseif (auth()->user()->hasRole('auditor') && Route::has('audit.show'))
                                     <a class="btn btn-light btn-sm" href="{{ route('audit.show', $app) }}">Buka</a>
+                                @elseif (auth()->user()->hasRole('technical') && $app->status === 'technical_review')
+                                    <a class="btn btn-light btn-sm" href="{{ route('technical.reviews.show', $app) }}">Tinjau</a>
                                 @elseif (auth()->user()->hasRole('technical') && Route::has('technical.show'))
                                     <a class="btn btn-light btn-sm" href="{{ route('technical.show', $app) }}">Buka</a>
                                 @endif

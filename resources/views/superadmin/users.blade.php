@@ -8,6 +8,9 @@
             <h1>User &amp; Role</h1>
             <p>Satu user dapat memiliki beberapa role. Hak akses efektif berasal dari role dan permission.</p>
         </div>
+        <div>
+            <a class="btn btn-primary" href="{{ route('superadmin.users.create') }}">Tambah Akun</a>
+        </div>
     </div>
 
     <div class="table-wrap">
@@ -20,6 +23,9 @@
                     <tr>
                         <td>
                             <strong>{{ $user->name }}</strong>
+                            @unless ($user->email_verified_at)
+                                <span class="badge badge-warning">Menunggu aktivasi</span>
+                            @endunless
                             <div class="small muted">{{ $user->email }} · {{ $user->phone }}</div>
                         </td>
                         <td>
@@ -37,7 +43,16 @@
                                 </div>
                                 <label class="small"><input type="checkbox" name="is_active" value="1" @checked($user->is_active)> Aktif</label>
                         </td>
-                        <td><button class="btn btn-light btn-sm">Simpan</button></form></td>
+                        <td>
+                            <button class="btn btn-light btn-sm">Simpan</button></form>
+
+                            @unless ($user->email_verified_at)
+                                <form method="post" action="{{ route('superadmin.users.resend-invite', $user) }}" style="margin-top:6px">
+                                    @csrf
+                                    <button class="btn btn-light btn-sm">Kirim ulang undangan</button>
+                                </form>
+                            @endunless
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

@@ -12,6 +12,7 @@ use App\Services\AuditLogger;
 use App\Services\CertificateLinkService;
 use App\Services\FileStorageService;
 use App\Services\PortalNotificationService;
+use App\Services\ReviewService;
 use App\Services\SurveillancePlannerService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
@@ -52,6 +53,72 @@ class TechnicalController extends Controller
         $links = CertificateShareLink::where('application_id', $application->id)->latest()->get();
 
         return view('internal.technical.show', compact('application', 'links'));
+    }
+
+    public function reviewIndex(Request $request)
+    {
+        $query = CertificationApplication::where('status', 'technical_review')
+            ->with(['scheme', 'client']);
+
+        if ($request->filled('q')) {
+            $q = trim((string) $request->string('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('order_number', 'like', "%{$q}%")
+                    ->orWhere('company_name', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('scheme_id')) {
+            $query->where('certification_scheme_id', $request->integer('scheme_id'));
+        }
+
+        return view('internal.technical.reviews', [
+            'applications' => $query->latest()->paginate(20)->withQueryString(),
+            'schemes' => \App\Models\CertificationScheme::orderBy('sort_order')->get(),
+        ]);
+    }
+
+    public function reviewShow(CertificationApplication $application)
+    {
+        abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
+        $application->load(['scheme', 'client', 'values', 'reviews.items']);
+        $review = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first();
+
+        return view('internal.technical.review-show', [
+            'application' => $application,
+            'technicalFields' => config('review.technical_fields'),
+            'review' => $review,
+        ]);
+    }
+
+    public function saveTechnicalReview(Request $request, CertificationApplication $application, ReviewService $reviews, AuditLogger $audit)
+    {
+        abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
+        $data = $request->validate([
+            'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['required', 'string', 'max:150'],
+            'items' => ['nullable', 'array'], 'items.*.type' => ['required_with:items', 'string'], 'items.*.code' => ['required_with:items', 'string'],
+            'items.*.label' => ['required_with:items', 'string'],
+            'items.*.status' => ['required_with:items', Rule::in(['pending', 'sufficient', 'insufficient'])],
+            'items.*.notes' => ['nullable', 'string'],
+        ]);
+        $review = $reviews->save($application, 'technical', $data, $request->user()->id);
+        $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => 'technical']);
+
+        return back()->with('success', 'Tinjauan teknis berhasil disimpan. Klik "Selesai & Kirim ke Admin" bila sudah final.');
+    }
+
+    public function completeTechnicalReview(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
+    {
+        abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
+        $review = $application->reviews()->where('review_type', 'technical')->latest()->first();
+        abort_unless($review, 422, 'Isi dan simpan tinjauan teknis terlebih dahulu.');
+
+        $review->update(['completed_at' => now(), 'reviewed_by' => $request->user()->id]);
+        $workflow->transition($application, 'admin_review', 'technical_review_done', 'Tinjauan teknis selesai, dikembalikan ke Admin untuk keputusan.', $request->user()->id);
+        $notifications->sendToRole('admin_application', 'technical_review_completed', 'Tinjauan Teknis Selesai', 'Tinjauan teknis untuk '.$application->order_number.' telah selesai dan siap disetujui.', route('internal.applications.show', $application));
+        $audit->log('application.technical_review_completed', $application, [], ['application_id' => $application->id]);
+
+        return redirect()->route('technical.reviews.index')->with('success', 'Tinjauan teknis dikirim ke Admin untuk keputusan akhir.');
     }
 
     public function uploadDraft(Request $request, CertificationApplication $application, FileStorageService $files, AuditLogger $audit)

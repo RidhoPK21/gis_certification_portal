@@ -97,9 +97,28 @@ return [
 
     [
         'section' => 'Tim Teknis',
+        'label' => 'Tinjauan Teknis',
+        'route' => 'technical.reviews.index',
+        'active' => 'technical.reviews.*',
+        'roles' => [
+            'technical',
+            'superadmin',
+        ],
+    ],
+
+    [
+        'section' => 'Tim Teknis',
         'label' => 'Sertifikat',
         'route' => 'technical.index',
-        'active' => 'technical.*',
+        'active' => [
+            'technical.index',
+            'technical.show',
+            'technical.draft.*',
+            'technical.final.*',
+            'technical.complete',
+            'technical.link.*',
+            'technical.surveillance.*',
+        ],
         'roles' => [
             'technical',
             'superadmin',

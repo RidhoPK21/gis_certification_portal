@@ -28,6 +28,10 @@ class CreateNewUser implements CreatesNewUsers
             trim((string) ($input['email'] ?? ''))
         );
 
+        $input['company_name'] = trim(
+            (string) ($input['company_name'] ?? '')
+        );
+
         Validator::make(
             $input,
             [
@@ -35,6 +39,12 @@ class CreateNewUser implements CreatesNewUsers
                     'required',
                     'string',
                     'max:150',
+                ],
+
+                'company_name' => [
+                    'required',
+                    'string',
+                    'max:200',
                 ],
 
                 'email' => [
@@ -50,6 +60,9 @@ class CreateNewUser implements CreatesNewUsers
             [
                 'name.required' =>
                     'Nama lengkap wajib diisi.',
+
+                'company_name.required' =>
+                    'Nama perusahaan/instansi wajib diisi.',
 
                 'email.required' =>
                     'Alamat email wajib diisi.',
@@ -84,17 +97,18 @@ class CreateNewUser implements CreatesNewUsers
                 $user = User::query()->create([
                     'name' => $input['name'],
                     'email' => $input['email'],
+                    'company_name' => $input['company_name'],
                     'password' => Hash::make(
                         $input['password']
                     ),
                     'is_active' => true,
-
-                    /*
-                     * Nantinya tetap null sampai
-                     * verifikasi email dilakukan.
-                     */
-                    'email_verified_at' => null,
                 ]);
+
+                /*
+                 * email_verified_at sengaja dibiarkan pada nilai
+                 * default null sampai kode OTP yang dikirim ke
+                 * email pendaftar berhasil diverifikasi.
+                 */
 
                 $user->roles()->attach(
                     $clientRole->id

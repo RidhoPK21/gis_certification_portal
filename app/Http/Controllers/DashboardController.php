@@ -139,14 +139,25 @@ class DashboardController extends Controller
 
         $role = (string) ($user->roles->sortBy('sort_order')->pluck('code')->first() ?? 'client');
         $statuses = match ($role) {
-            'admin_application' => ['submitted', 'admin_review', 'revision_requested', 'application_approved'],
+            'admin_application' => ['submitted', 'admin_review', 'technical_review', 'revision_requested', 'application_approved'],
             'finance' => ['application_approved', 'invoice_process', 'payment_partial', 'payment_completed'],
             'auditor' => ['stage_1_audit', 'stage_2_audit', 'qms_audit', 'corrective_action', 'corrective_revision'],
-            'technical' => ['certificate_review', 'final_certificate', 'completed'],
+            'technical' => ['technical_review', 'certificate_review', 'final_certificate', 'completed'],
             default => [],
         };
 
         $query = CertificationApplication::query();
+
+        /*
+         * Auditor hanya boleh melihat permohonan yang ditugaskan kepadanya.
+         * Cakupan status sudah ditentukan per stage_code di dalam scope, jadi
+         * daftar $statuses tidak dipakai lagi agar permohonan yang baru lunas
+         * (payment_completed) tetap muncul bagi auditor yang sudah ditugaskan.
+         */
+        if ($role === 'auditor') {
+            $query->assignedToAuditor($user->id);
+            $statuses = [];
+        }
 
         if ($request->filled('q')) {
             $q = trim((string) $request->string('q'));

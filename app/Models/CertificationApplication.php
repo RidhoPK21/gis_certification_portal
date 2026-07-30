@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -88,6 +89,49 @@ class CertificationApplication extends Model
     public function auditStages(): HasMany
     {
         return $this->hasMany(AuditStage::class, 'application_id');
+    }
+
+    /**
+     * Batasi permohonan hanya pada yang benar-benar ditugaskan kepada
+     * auditor tersebut, sesuai cakupan tahap (stage_code) penugasannya.
+     * Dipakai bersama oleh halaman Audit dan Dashboard agar keduanya
+     * tidak pernah berbeda dalam menentukan hak lihat auditor.
+     */
+    public function scopeAssignedToAuditor(Builder $query, int $auditorId): Builder
+    {
+        return $query->whereHas(
+            'auditAssignments',
+            function (Builder $assignmentQuery) use ($auditorId): void {
+                $assignmentQuery
+                    ->where('auditor_id', $auditorId)
+                    ->where('status', 'assigned')
+                    ->where(function (Builder $scopeQuery): void {
+                        $scopeQuery->where(function (Builder $q): void {
+                            $q->where('stage_code', 'all')
+                                ->whereIn('applications.status', [
+                                    'payment_completed', 'stage_1_audit', 'stage_2_audit',
+                                    'qms_audit', 'corrective_action', 'corrective_revision',
+                                ]);
+                        })
+                        ->orWhere(function (Builder $q): void {
+                            $q->where('stage_code', 'stage_1')
+                                ->whereIn('applications.status', ['payment_completed', 'stage_1_audit']);
+                        })
+                        ->orWhere(function (Builder $q): void {
+                            $q->where('stage_code', 'stage_2')
+                                ->whereIn('applications.status', ['payment_completed', 'stage_1_audit', 'stage_2_audit']);
+                        })
+                        ->orWhere(function (Builder $q): void {
+                            $q->where('stage_code', 'qms')
+                                ->whereIn('applications.status', ['payment_completed', 'stage_2_audit', 'qms_audit']);
+                        })
+                        ->orWhere(function (Builder $q): void {
+                            $q->where('stage_code', 'corrective_action')
+                                ->whereIn('applications.status', ['corrective_action', 'corrective_revision']);
+                        });
+                    });
+            }
+        );
     }
 
     public function findings(): HasMany

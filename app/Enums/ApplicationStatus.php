@@ -7,6 +7,7 @@ enum ApplicationStatus: string
     case Draft = 'draft';
     case Submitted = 'submitted';
     case AdminReview = 'admin_review';
+    case TechnicalReview = 'technical_review';
     case RevisionRequested = 'revision_requested';
     case ClientRevision = 'client_revision';
     case Rejected = 'rejected';
@@ -30,6 +31,7 @@ enum ApplicationStatus: string
             self::Draft => 'Draft',
             self::Submitted => 'Terkirim',
             self::AdminReview => 'Review Admin',
+            self::TechnicalReview => 'Tinjauan Teknis',
             self::RevisionRequested => 'Revisi Diminta',
             self::ClientRevision => 'Revisi Klien',
             self::Rejected => 'Ditolak',

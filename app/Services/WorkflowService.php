@@ -14,7 +14,8 @@ class WorkflowService
     private const ALLOWED = [
         'draft' => ['submitted'],
         'submitted' => ['admin_review'],
-        'admin_review' => ['revision_requested', 'rejected', 'application_approved'],
+        'admin_review' => ['revision_requested', 'rejected', 'application_approved', 'technical_review'],
+        'technical_review' => ['admin_review'],
         'revision_requested' => ['client_revision'],
         'client_revision' => ['admin_review'],
         'application_approved' => ['invoice_process'],
@@ -111,7 +112,7 @@ class WorkflowService
         ];
 
         $rank = [
-            'draft' => 0, 'submitted' => 1, 'admin_review' => 2, 'revision_requested' => 3,
+            'draft' => 0, 'submitted' => 1, 'admin_review' => 2, 'technical_review' => 2, 'revision_requested' => 3,
             'client_revision' => 3, 'rejected' => 4, 'application_approved' => 5,
             'invoice_process' => 6, 'payment_partial' => 7, 'payment_completed' => 8,
             'stage_1_audit' => 9, 'stage_2_audit' => 10, 'qms_audit' => 11,

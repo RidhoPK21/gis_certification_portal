@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\AccountActivationController;
+use App\Http\Controllers\Auth\RegistrationOtpController;
 use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
 use App\Http\Controllers\Client\CorrectiveActionController as ClientCorrectiveActionController;
 use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
@@ -36,6 +38,24 @@ Route::prefix('certificate')->group(function (): void {
     Route::get('/draft/{token}/stream', [CertificateShareController::class, 'streamDraft'])->middleware('throttle:30,1')->name('certificate.draft.stream');
     Route::get('/final/{token}', [CertificateShareController::class, 'finalAccess'])->name('certificate.final.access');
     Route::post('/final/{token}/download', [CertificateShareController::class, 'downloadFinal'])->middleware('throttle:8,1')->name('certificate.final.download');
+});
+
+Route::middleware('guest')->group(function (): void {
+    Route::get('/register/verify', [RegistrationOtpController::class, 'show'])
+        ->name('register.verify.show');
+    Route::post('/register/verify', [RegistrationOtpController::class, 'verify'])
+        ->name('register.verify.submit');
+    Route::post('/register/verify/resend', [RegistrationOtpController::class, 'resend'])
+        ->middleware('throttle:otp-resend-registration')
+        ->name('register.verify.resend');
+
+    Route::get('/activate-account', [AccountActivationController::class, 'show'])
+        ->name('account.activate.show');
+    Route::post('/activate-account', [AccountActivationController::class, 'activate'])
+        ->name('account.activate.submit');
+    Route::post('/activate-account/resend', [AccountActivationController::class, 'resend'])
+        ->middleware('throttle:otp-resend-invite')
+        ->name('account.activate.resend');
 });
 
 Route::middleware([
@@ -134,6 +154,7 @@ Route::middleware([
             Route::get('/', [ApplicationReviewController::class, 'index'])->name('applications.index');
             Route::get('/{application}', [ApplicationReviewController::class, 'show'])->name('applications.show');
             Route::post('/{application}/review', [ApplicationReviewController::class, 'saveReview'])->name('applications.review');
+            Route::post('/{application}/forward-technical', [ApplicationReviewController::class, 'forwardToTechnical'])->name('applications.forward-technical');
             Route::post('/{application}/request-revision', [ApplicationReviewController::class, 'requestRevision'])->name('applications.revision');
             Route::post('/{application}/revisions/{revision}/resolve', [ApplicationReviewController::class, 'resolveRevision'])->name('applications.revisions.resolve');
             Route::post('/{application}/approve', [ApplicationReviewController::class, 'approve'])->name('applications.approve');
@@ -172,6 +193,10 @@ Route::middleware([
         ->name('technical.')
         ->group(function (): void {
             Route::get('/', [TechnicalController::class, 'index'])->name('index');
+            Route::get('/reviews', [TechnicalController::class, 'reviewIndex'])->name('reviews.index');
+            Route::get('/reviews/{application}', [TechnicalController::class, 'reviewShow'])->name('reviews.show');
+            Route::post('/reviews/{application}', [TechnicalController::class, 'saveTechnicalReview'])->name('reviews.save');
+            Route::post('/reviews/{application}/complete', [TechnicalController::class, 'completeTechnicalReview'])->name('reviews.complete');
             Route::get('/{application}', [TechnicalController::class, 'show'])->name('show');
             Route::post('/{application}/draft', [TechnicalController::class, 'uploadDraft'])->name('draft.upload');
             Route::post('/draft/{draft}/link', [TechnicalController::class, 'createDraftLink'])->name('draft.link');
@@ -187,6 +212,9 @@ Route::middleware([
         ->name('superadmin.')
         ->group(function (): void {
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::post('/users/{user}/resend-invite', [UserController::class, 'resendInvite'])->name('users.resend-invite');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
 
             Route::get('/schemes', [SchemeController::class, 'index'])

@@ -22,4 +22,14 @@ return [
     'demo_password' => env(
         'SYSTEMGIS_DEMO_PASSWORD'
     ),
+
+    'otp_ttl_minutes' => (int) env(
+        'SYSTEMGIS_OTP_TTL_MINUTES',
+        10
+    ),
+
+    'otp_max_attempts' => (int) env(
+        'SYSTEMGIS_OTP_MAX_ATTEMPTS',
+        5
+    ),
 ];

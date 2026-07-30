@@ -30,35 +30,7 @@ class AuditController extends Controller
                 ])->orWhereHas('auditAssignments');
             });
         } else {
-            $query->whereHas('auditAssignments', function ($assignmentQuery) use ($request) {
-                $assignmentQuery->where('auditor_id', $request->user()->id)
-                    ->where('status', 'assigned')
-                    ->where(function ($scopeQuery) {
-                        $scopeQuery->where(function ($q) {
-                            $q->where('stage_code', 'all')
-                                ->whereIn('applications.status', [
-                                    'payment_completed', 'stage_1_audit', 'stage_2_audit',
-                                    'qms_audit', 'corrective_action', 'corrective_revision',
-                                ]);
-                        })
-                        ->orWhere(function ($q) {
-                            $q->where('stage_code', 'stage_1')
-                                ->whereIn('applications.status', ['payment_completed', 'stage_1_audit']);
-                        })
-                        ->orWhere(function ($q) {
-                            $q->where('stage_code', 'stage_2')
-                                ->whereIn('applications.status', ['payment_completed', 'stage_1_audit', 'stage_2_audit']);
-                        })
-                        ->orWhere(function ($q) {
-                            $q->where('stage_code', 'qms')
-                                ->whereIn('applications.status', ['payment_completed', 'stage_2_audit', 'qms_audit']);
-                        })
-                        ->orWhere(function ($q) {
-                            $q->where('stage_code', 'corrective_action')
-                                ->whereIn('applications.status', ['corrective_action', 'corrective_revision']);
-                        });
-                    });
-            });
+            $query->assignedToAuditor($request->user()->id);
         }
 
         if ($request->filled('q')) {

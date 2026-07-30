@@ -49,6 +49,32 @@
             <div class="form-group">
                 <label
                     class="form-label"
+                    for="company_name"
+                >
+                    Nama Perusahaan/Instansi
+                </label>
+
+                <input
+                    class="form-control"
+                    id="company_name"
+                    type="text"
+                    name="company_name"
+                    value="{{ old('company_name') }}"
+                    placeholder="PT/CV/Instansi Anda"
+                    autocomplete="organization"
+                    required
+                >
+
+                @error('company_name')
+                    <div class="form-error">
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label
+                    class="form-label"
                     for="email"
                 >
                     Alamat Email
@@ -64,6 +90,10 @@
                     autocomplete="email"
                     required
                 >
+
+                <div class="form-help" style="margin-top: 6px; color: #687b8e; font-size: 12px;">
+                    Gunakan email aktif — kode verifikasi akan dikirim ke alamat ini.
+                </div>
 
                 @error('email')
                     <div class="form-error">
