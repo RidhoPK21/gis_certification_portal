@@ -7377,7 +7377,7 @@
     "standard": "SNI Produk (LSPro)",
     "prefix": "LSPro-GIS",
     "template": "sni",
-    "description": "Permohonan sertifikasi produk untuk produsen lokal, importir, atau pemegang merek.",
+    "description": "Permohonan sertifikasi produk untuk produsen lokal atau importir.",
     "sections": [
       {
         "code": "applicant",
@@ -7396,14 +7396,6 @@
               {
                 "value": "importer",
                 "label": "Importir"
-              },
-              {
-                "value": "brand_owner",
-                "label": "Pemegang Merek"
-              },
-              {
-                "value": "authorized",
-                "label": "Kuasa"
               }
             ],
             "sort_order": 1
@@ -7501,7 +7493,7 @@
         "fields": [
           {
             "code": "product_name",
-            "label": "Produk",
+            "label": "Tipe/Kategori produk",
             "type": "text",
             "required": true,
             "help": "Pada implementasi produksi dapat dipilih dari master produk SNI.",
@@ -7509,7 +7501,7 @@
           },
           {
             "code": "product_category",
-            "label": "Tipe/Kategori produk",
+            "label": "Produk",
             "type": "text",
             "required": true,
             "sort_order": 2
@@ -7721,49 +7713,49 @@
           {
             "code": "organization_structure_summary",
             "label": "Struktur organisasi",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 1
           },
           {
             "code": "production_flow",
             "label": "Alur proses produksi",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 2
           },
           {
             "code": "raw_material_quality_control",
             "label": "Pengendalian mutu bahan baku",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 3
           },
           {
             "code": "production_process_control",
             "label": "Pengendalian proses produksi",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 4
           },
           {
             "code": "product_quality_control",
             "label": "Pengendalian mutu produk",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 5
           },
           {
             "code": "production_equipment",
             "label": "Daftar peralatan produksi",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 6
           },
           {
             "code": "inspection_test_equipment",
             "label": "Daftar peralatan inspeksi/pengujian",
-            "type": "textarea",
+            "type": "file",
             "required": true,
             "sort_order": 7
           },
@@ -7785,6 +7777,18 @@
             "sort_order": 8
           },
           {
+            "code": "quality_manual_file",
+            "label": "Upload panduan mutu",
+            "type": "file",
+            "required": false,
+            "condition": {
+              "field": "quality_manual_available",
+              "operator": "equals",
+              "value": "yes"
+            },
+            "sort_order": 9
+          },
+          {
             "code": "iso9001_certificate_available",
             "label": "Sertifikat ISO 9001/sistem mutu lain tersedia?",
             "type": "select",
@@ -7799,7 +7803,19 @@
                 "label": "Tidak"
               }
             ],
-            "sort_order": 9
+            "sort_order": 10
+          },
+          {
+            "code": "iso9001_certificate_file",
+            "label": "Upload sertifikat ISO 9001/sistem mutu lain",
+            "type": "file",
+            "required": false,
+            "condition": {
+              "field": "iso9001_certificate_available",
+              "operator": "equals",
+              "value": "yes"
+            },
+            "sort_order": 11
           }
         ],
         "sort_order": 4
@@ -8490,18 +8506,8 @@
           {
             "code": "contact_position",
             "label": "Jabatan",
-            "type": "select",
+            "type": "text",
             "required": true,
-            "options": [
-              {
-                "value": "management_representative",
-                "label": "Perwakilan Manajemen"
-              },
-              {
-                "value": "other",
-                "label": "Lainnya"
-              }
-            ],
             "sort_order": 6
           },
           {
@@ -9534,18 +9540,8 @@
           {
             "code": "contact_position",
             "label": "Jabatan",
-            "type": "select",
+            "type": "text",
             "required": true,
-            "options": [
-              {
-                "value": "management_representative",
-                "label": "Perwakilan Manajemen"
-              },
-              {
-                "value": "other",
-                "label": "Lainnya"
-              }
-            ],
             "sort_order": 6
           },
           {

@@ -30,8 +30,14 @@ class ApplicationReviewController extends Controller
             $query->where(fn ($q) => $q->where('order_number', 'like', '%'.$request->q.'%')
                 ->orWhere('company_name', 'like', '%'.$request->q.'%'));
         }
+        if ($request->filled('scheme_id')) {
+            $query->where('certification_scheme_id', $request->integer('scheme_id'));
+        }
 
-        return view('internal.applications.index', ['applications' => $query->paginate(20)->withQueryString()]);
+        return view('internal.applications.index', [
+            'applications' => $query->paginate(20)->withQueryString(),
+            'schemes' => \App\Models\CertificationScheme::orderBy('sort_order')->get(),
+        ]);
     }
 
     public function show(CertificationApplication $application, DynamicFormService $forms)
@@ -51,7 +57,7 @@ class ApplicationReviewController extends Controller
         return view('internal.applications.show', compact('application', 'auditors'));
     }
 
-    public function assignAuditor(Request $request, CertificationApplication $application, AuditLogger $audit)
+    public function assignAuditor(Request $request, CertificationApplication $application, AuditLogger $audit, PortalNotificationService $notifications)
     {
         $data = $request->validate([
             'auditor_id' => ['required', 'integer', 'exists:users,id'],
@@ -66,6 +72,7 @@ class ApplicationReviewController extends Controller
             ['assignment_role' => $data['assignment_role'], 'assigned_date' => $data['assigned_date'], 'status' => 'assigned', 'assigned_by' => $request->user()->id]
         );
         $audit->log('audit.assignment_saved', $assignment, [], ['auditor' => $auditor->email]);
+        $notifications->send($auditor, 'auditor_assigned', 'Tugas Audit Baru', 'Anda ditugaskan sebagai ' . $data['assignment_role'] . ' untuk order ' . $application->order_number . '.', route('audit.show', $application));
 
         return back()->with('success', 'Auditor berhasil ditugaskan ke order ini.');
     }
@@ -106,7 +113,18 @@ class ApplicationReviewController extends Controller
     public function requestRevision(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
     {
         abort_unless($application->status === 'admin_review', 422, 'Revisi hanya dapat diminta saat review admin.');
-        $data = $request->validate(['targets' => ['required', 'array', 'min:1'], 'targets.*.type' => ['required', Rule::in(['field', 'document'])], 'targets.*.code' => ['required', 'string'], 'targets.*.label' => ['required', 'string'], 'targets.*.note' => ['required', 'string'], 'due_date' => ['nullable', 'date', 'after_or_equal:today']]);
+        $data = $request->validate([
+            'targets' => ['required', 'array', 'min:1'],
+            'targets.*.type' => ['required', Rule::in(['field', 'document'])],
+            'targets.*.code' => ['required', 'string'],
+            'targets.*.label' => ['required', 'string'],
+            'targets.*.note' => ['required', 'string'],
+            'due_date' => ['nullable', 'date', 'after_or_equal:today'],
+        ], [
+            'targets.required' => 'Pilih minimal satu item (kolom atau dokumen) yang perlu direvisi dengan mencentang kotak revisi.',
+            'targets.min' => 'Pilih minimal satu item (kolom atau dokumen) yang perlu direvisi dengan mencentang kotak revisi.',
+            'targets.*.note.required' => 'Catatan revisi wajib diisi untuk setiap item yang dipilih.',
+        ]);
         $round = ((int) $application->revisions()->max('revision_round')) + 1;
         foreach ($data['targets'] as $target) {
             ApplicationRevisionItem::create(['application_id' => $application->id, 'revision_round' => $round, 'target_type' => $target['type'], 'target_code' => $target['code'], 'target_label' => $target['label'], 'revision_note' => $target['note'], 'due_date' => $data['due_date'] ?? null, 'requested_by' => $request->user()->id]);
@@ -152,6 +170,7 @@ class ApplicationReviewController extends Controller
         $pdfs->generate($application, $request->user()->id);
         $application = $workflow->transition($application->refresh(), 'invoice_process', 'open_finance', 'Permohonan diteruskan ke Finance.', $request->user()->id);
         $notifications->send($application->client_id, 'application_approved', 'Permohonan disetujui', 'Permohonan '.$application->order_number.' disetujui dan masuk proses invoice.', route('client.applications.show', $application));
+        $notifications->sendToRole('finance', 'invoice_process', 'Order Baru untuk Invoice', 'Permohonan '.$application->order_number.' telah disetujui dan diteruskan untuk pembuatan invoice.', route('finance.show', $application));
 
         return back()->with('success', 'Permohonan disetujui, PDF tinjauan dibuat, dan order diteruskan ke Finance.');
     }

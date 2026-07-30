@@ -81,7 +81,12 @@ class ApplicationSubmissionService
         $application->load(['scheme.sections.fields.options', 'scheme.requiredDocuments', 'documents.currentVersion', 'values', 'client']);
         $application->setRelation('scheme', $this->forms->schemeForApplication($application));
         $values = $this->forms->values($application);
-        $validator = validator(['fields' => $values], $this->forms->validationRules($application->scheme, $values, true));
+        $validator = validator(
+            ['fields' => $values],
+            $this->forms->validationRules($application->scheme, $values, true),
+            $this->forms->validationMessages(),
+            $this->forms->validationAttributes($application->scheme, $values)
+        );
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
@@ -129,6 +134,13 @@ class ApplicationSubmissionService
                 'Permohonan berhasil dikirim',
                 'Permohonan ' . $application->order_number . ' sudah masuk ke tahap review Admin.',
                 route('client.applications.show', $application)
+            );
+            $this->notifications->sendToRole(
+                'admin_application',
+                'application_received',
+                'Permohonan Baru/Revisi Masuk',
+                'Permohonan ' . $application->order_number . ' dari ' . $application->company_name . ' telah disubmit dan butuh review.',
+                route('internal.applications.show', $application)
             );
             $this->audit->log('application.submitted', $application, [], ['order_number' => $application->order_number]);
 

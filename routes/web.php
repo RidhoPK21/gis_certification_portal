@@ -45,6 +45,39 @@ Route::middleware([
     Route::get('/dashboard', DashboardController::class)
         ->name('dashboard');
 
+    Route::get('/panduan', function (\Illuminate\Http\Request $request) {
+        $user = $request->user()->loadMissing('roles');
+        $userRoles = $user->roles->pluck('code')->all();
+        $primaryRole = $user->roles->sortBy('sort_order')->first();
+
+        $allRoles = [
+            'client' => 'Klien',
+            'admin_application' => 'Admin Permohonan',
+            'finance' => 'Finance',
+            'auditor' => 'Auditor',
+            'technical' => 'Tim Teknis',
+            'superadmin' => 'Superadmin',
+        ];
+
+        $isSuperadmin = in_array('superadmin', $userRoles, true);
+        $allowedRoles = $isSuperadmin ? array_keys($allRoles) : $userRoles;
+
+        $requestedRole = (string) $request->query('role', '');
+        $activeRole = in_array($requestedRole, $allowedRoles, true)
+            ? $requestedRole
+            : ($primaryRole?->code ?? 'client');
+
+        return view('panduan', [
+            'user' => $user,
+            'userRoles' => $userRoles,
+            'primaryRole' => $primaryRole,
+            'allRoles' => $allRoles,
+            'isSuperadmin' => $isSuperadmin,
+            'allowedRoles' => $allowedRoles,
+            'activeRole' => $activeRole,
+        ]);
+    })->name('panduan');
+
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])
         ->name('notifications.read-all');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])
@@ -52,6 +85,8 @@ Route::middleware([
 
     Route::get('/secure-files/application-document/{document}', [ClientDocumentController::class, 'download'])
         ->name('secure-files.application-document');
+    Route::get('/secure-files/application-field-file/{application}/{code}', [SecureFileController::class, 'fieldFile'])
+        ->name('secure-files.application-field-file');
     Route::get('/secure-files/invoice/{invoice}', [SecureFileController::class, 'invoice'])
         ->name('secure-files.invoice');
     Route::get('/secure-files/audit/{file}', [SecureFileController::class, 'auditReport'])
@@ -83,6 +118,7 @@ Route::middleware([
             Route::get('/applications/{application}', [ClientApplicationController::class, 'show'])->name('applications.show');
             Route::get('/applications/{application}/edit', [ClientApplicationController::class, 'edit'])->name('applications.edit');
             Route::put('/applications/{application}', [ClientApplicationController::class, 'update'])->name('applications.update');
+            Route::post('/applications/{application}/upload-field-file', [ClientApplicationController::class, 'uploadFieldFile'])->name('applications.upload-field-file');
             Route::post('/applications/{application}/submit', [ClientApplicationController::class, 'submit'])->name('applications.submit');
             Route::delete('/applications/{application}', [ClientApplicationController::class, 'destroy'])->name('applications.destroy');
             Route::post('/applications/{application}/documents', [ClientDocumentController::class, 'store'])->name('documents.store');

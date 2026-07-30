@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditStageFile;
+use App\Models\CertificationApplication;
 use App\Models\CorrectiveActionFile;
 use App\Models\Invoice;
 use App\Services\AuditLogger;
@@ -49,5 +50,27 @@ class SecureFileController extends Controller
         $audit->log('file.corrective_action_downloaded', $file, [], ['application_id' => $application->id]);
 
         return $files->response($file->file_path, $file->original_name);
+    }
+
+    public function fieldFile(Request $request, CertificationApplication $application, string $code, FileStorageService $files, AuditLogger $audit)
+    {
+        $allowed = $application->client_id === $request->user()->id
+            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical']);
+        if ($request->user()->hasRole('auditor')) {
+            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
+        }
+        abort_unless($allowed, 403);
+
+        $value = $application->values()->where('field_code', $code)->first();
+        abort_unless($value && $value->value_json, 404);
+
+        $data = $value->value_json;
+        $path = $data['path'] ?? null;
+        $name = $data['original_name'] ?? 'file';
+        abort_unless($path, 404);
+
+        $audit->log('file.application_field_file_downloaded', $application, [], ['field_code' => $code, 'original_name' => $name]);
+
+        return $files->response($path, $name);
     }
 }

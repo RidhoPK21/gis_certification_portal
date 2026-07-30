@@ -19,13 +19,26 @@ class FinanceController extends Controller
 {
     private const FINANCE_STATUSES = ['invoice_process', 'payment_partial', 'payment_completed'];
 
-    public function index()
+    public function index(Request $request)
     {
+        $query = CertificationApplication::whereIn('status', self::FINANCE_STATUSES)
+            ->with(['scheme', 'client', 'invoice']);
+
+        if ($request->filled('q')) {
+            $q = trim((string) $request->string('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('order_number', 'like', "%{$q}%")
+                    ->orWhere('company_name', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('scheme_id')) {
+            $query->where('certification_scheme_id', $request->integer('scheme_id'));
+        }
+
         return view('internal.finance.index', [
-            'applications' => CertificationApplication::whereIn('status', self::FINANCE_STATUSES)
-                ->with(['scheme', 'client', 'invoice'])
-                ->latest()
-                ->paginate(20),
+            'applications' => $query->latest()->paginate(20)->withQueryString(),
+            'schemes' => \App\Models\CertificationScheme::orderBy('sort_order')->get(),
         ]);
     }
 
@@ -42,12 +55,13 @@ class FinanceController extends Controller
         abort_unless(in_array($application->status, self::FINANCE_STATUSES, true), 422, 'Order belum berada pada tahap Finance.');
         $data = $request->validate([
             'invoice_number' => ['required', 'string', 'max:100', Rule::unique('invoices', 'invoice_number')->ignore($application->invoice?->id)],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'amount' => ['nullable', 'numeric', 'min:0'],
             'invoice_date' => ['required', 'date'],
             'payment_stage' => ['required', Rule::in(array_keys(Invoice::STAGES))],
             'notes' => ['nullable', 'string'],
             'invoice_file' => ['nullable', 'file'],
         ]);
+        $data['amount'] = $data['amount'] ?? ($application->invoice?->amount ?? 0);
         unset($data['invoice_file']);
         $path = $application->invoice?->file_path;
         if ($request->hasFile('invoice_file')) {
@@ -124,6 +138,7 @@ class FinanceController extends Controller
         });
         if ($status === 'paid' && in_array($application->status, ['invoice_process', 'payment_partial'], true)) {
             $workflow->transition($application, 'payment_completed', 'payment_completed', 'Pembayaran dinyatakan lunas.', $request->user()->id, new \DateTime($data['payment_date']));
+            $notifications->sendToRole('admin_application', 'payment_completed', 'Pembayaran Selesai', 'Pembayaran order '.$application->order_number.' telah lunas. Audit siap dijadwalkan.', route('internal.applications.show', $application));
         } elseif ($status === 'partial' && $application->status === 'invoice_process') {
             $workflow->transition($application, 'payment_partial', 'payment_partial', 'Pembayaran tahap '.$data['milestone'].' tercatat.', $request->user()->id, new \DateTime($data['payment_date']));
         }

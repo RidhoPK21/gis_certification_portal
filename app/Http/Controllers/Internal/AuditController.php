@@ -20,18 +20,63 @@ class AuditController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CertificationApplication::whereIn('status', [
-            'payment_completed', 'stage_1_audit', 'stage_2_audit', 'qms_audit',
-            'corrective_action', 'corrective_revision',
-        ])->with(['scheme', 'client', 'auditStages', 'auditAssignments.auditor'])->latest();
+        $query = CertificationApplication::with(['scheme', 'client', 'auditStages', 'auditAssignments.auditor'])->latest();
 
-        if (! $request->user()->hasRole('superadmin')) {
-            $query->whereHas('auditAssignments', fn ($assignment) => $assignment
-                ->where('auditor_id', $request->user()->id)
-                ->where('status', 'assigned'));
+        if ($request->user()->hasRole('superadmin')) {
+            $query->where(function ($q) {
+                $q->whereIn('status', [
+                    'payment_completed', 'stage_1_audit', 'stage_2_audit', 'qms_audit',
+                    'corrective_action', 'corrective_revision',
+                ])->orWhereHas('auditAssignments');
+            });
+        } else {
+            $query->whereHas('auditAssignments', function ($assignmentQuery) use ($request) {
+                $assignmentQuery->where('auditor_id', $request->user()->id)
+                    ->where('status', 'assigned')
+                    ->where(function ($scopeQuery) {
+                        $scopeQuery->where(function ($q) {
+                            $q->where('stage_code', 'all')
+                                ->whereIn('applications.status', [
+                                    'payment_completed', 'stage_1_audit', 'stage_2_audit',
+                                    'qms_audit', 'corrective_action', 'corrective_revision',
+                                ]);
+                        })
+                        ->orWhere(function ($q) {
+                            $q->where('stage_code', 'stage_1')
+                                ->whereIn('applications.status', ['payment_completed', 'stage_1_audit']);
+                        })
+                        ->orWhere(function ($q) {
+                            $q->where('stage_code', 'stage_2')
+                                ->whereIn('applications.status', ['payment_completed', 'stage_1_audit', 'stage_2_audit']);
+                        })
+                        ->orWhere(function ($q) {
+                            $q->where('stage_code', 'qms')
+                                ->whereIn('applications.status', ['payment_completed', 'stage_2_audit', 'qms_audit']);
+                        })
+                        ->orWhere(function ($q) {
+                            $q->where('stage_code', 'corrective_action')
+                                ->whereIn('applications.status', ['corrective_action', 'corrective_revision']);
+                        });
+                    });
+            });
         }
 
-        return view('internal.audit.index', ['applications' => $query->paginate(20)]);
+        if ($request->filled('q')) {
+            $q = trim((string) $request->string('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('order_number', 'like', "%{$q}%")
+                    ->orWhere('company_name', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('scheme_id')) {
+            $query->where('certification_scheme_id', $request->integer('scheme_id'));
+        }
+
+        return view('internal.audit.index', [
+            'applications' => $query->paginate(20)->withQueryString(),
+            'schemes' => \App\Models\CertificationScheme::orderBy('sort_order')->get(),
+        ]);
     }
 
     public function show(Request $request, CertificationApplication $application)
@@ -129,16 +174,29 @@ class AuditController extends Controller
         return back()->with('success', 'Tahap audit dilewati dengan alasan yang tercatat.');
     }
 
-    public function completeAudit(Request $request, CertificationApplication $application, WorkflowService $workflow, AuditLogger $audit)
+    public function completeAudit(Request $request, CertificationApplication $application, WorkflowService $workflow, AuditLogger $audit, PortalNotificationService $notifications)
     {
-        $this->ensureAssigned($request, $application, 'qms');
+        if (!$request->user()->hasRole('superadmin')) {
+            $allowed = $application->auditAssignments()
+                ->where('auditor_id', $request->user()->id)
+                ->where('status', 'assigned')
+                ->whereIn('stage_code', ['all', 'qms'])
+                ->exists();
+            abort_unless($allowed, 403, 'Order ini belum ditugaskan kepada akun auditor Anda.');
+        }
         $data = $request->validate([
-            'notes' => ['required', 'string', 'max:3000'],
-            'action_date' => ['required', 'date'],
+            'notes' => ['nullable', 'string', 'max:3000'],
+            'action_date' => ['nullable', 'date'],
         ]);
-        abort_unless($application->status === 'qms_audit', 422, 'Audit hanya dapat diselesaikan dari tahap QMS/audit lapangan.');
+        $data['notes'] = $data['notes'] ?: 'Audit selesai tanpa temuan terbuka.';
+        $data['action_date'] = $data['action_date'] ?: now()->format('Y-m-d');
+        abort_unless(in_array($application->status, ['qms_audit', 'corrective_action'], true), 422, 'Audit hanya dapat diselesaikan dari tahap QMS/audit lapangan atau tindakan koreksi.');
+        $qmsStage = $application->auditStages()->where('stage_code', 'qms')->first();
+        abort_unless($qmsStage, 422, 'Tahap QMS/Lapangan belum diselesaikan.');
+        abort_unless($qmsStage->status === 'approved', 422, 'Tahap QMS/Lapangan harus berstatus Disetujui sebelum audit diselesaikan.');
         abort_if($application->findings()->where('status', '!=', 'closed')->exists(), 422, 'Masih ada temuan terbuka. Selesaikan tindakan koreksi terlebih dahulu.');
         $workflow->transition($application, 'certificate_review', 'audit_completed_without_open_findings', $data['notes'], $request->user()->id, new \DateTime($data['action_date']));
+        $notifications->sendToRole('technical', 'certificate_review', 'Audit Selesai', 'Order '.$application->order_number.' telah selesai audit. Silakan mulai proses penerbitan sertifikat.', route('technical.show', $application));
         $audit->log('audit.completed', $application, [], ['notes' => $data['notes']]);
 
         return back()->with('success', 'Audit selesai dan order diteruskan ke Tim Teknis.');
@@ -195,6 +253,13 @@ class AuditController extends Controller
             $finding->update(['status' => 'closed']);
             if ($application->findings()->where('status', '!=', 'closed')->doesntExist() && $application->status === 'corrective_action') {
                 $workflow->transition($application, 'certificate_review', 'corrective_actions_closed', 'Seluruh tindakan koreksi diterima.', $request->user()->id);
+                $notifications->sendToRole(
+                    'technical',
+                    'certificate_review',
+                    'Audit Selesai',
+                    'Order '.$application->order_number.' telah menyelesaikan seluruh tindakan koreksi dan siap diproses oleh Tim Teknis.',
+                    route('technical.show', $application)
+                );
             }
         } else {
             $correctiveAction->update(['status' => 'revision']);

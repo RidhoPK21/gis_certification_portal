@@ -117,5 +117,12 @@ class SchemeCatalogSeeder extends Seeder
                 ['product_name' => $name, 'category' => $category, 'sni_number' => $number, 'certification_system' => 'System 5', 'is_active' => true]
             );
         }
+
+        $forms = app(\App\Services\DynamicFormService::class);
+        \App\Models\CertificationApplication::with('scheme')->get()->each(function (\App\Models\CertificationApplication $app) use ($forms) {
+            if ($app->scheme) {
+                $app->update(['form_snapshot' => $forms->snapshot($app->scheme)]);
+            }
+        });
     }
 }

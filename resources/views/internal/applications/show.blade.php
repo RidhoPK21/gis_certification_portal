@@ -84,7 +84,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Tahap</label>
+                        <label class="form-label">Lingkup Penugasan Auditor</label>
                         <select class="form-select" name="stage_code">
                             <option value="all">Semua Tahap</option>
                             <option value="stage_1">Stage 1</option>
@@ -92,6 +92,7 @@
                             <option value="qms">QMS/Lapangan</option>
                             <option value="corrective_action">Corrective Action</option>
                         </select>
+                        <small class="text-muted d-block mt-1">Lingkup menentukan bagian proses yang dapat dilihat dan dikerjakan oleh Auditor yang ditugaskan.</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tanggal Penugasan</label>
@@ -105,7 +106,7 @@
                 <div class="table-wrap">
                     <table class="table">
                         <thead>
-                            <tr><th>Nama</th><th>Peran</th><th>Tahap</th><th>Tanggal</th></tr>
+                            <tr><th>Nama</th><th>Peran</th><th>Lingkup Penugasan Auditor</th><th>Tanggal</th></tr>
                         </thead>
                         <tbody>
                             @forelse ($application->auditAssignments as $assignment)
@@ -133,12 +134,33 @@
                 <table class="table">
                     <tbody>
                         @foreach ($section->fields as $field)
-                            @php($row = $application->values->firstWhere('field_code', $field->code))
-                            @php($val = $row?->value_json ?? $row?->value_text)
+                            @php
+                                $row = $application->values->firstWhere('field_code', $field->code);
+                                $val = $row?->value_json ?? $row?->value_text;
+                            @endphp
                             @if (filled($val))
                                 <tr>
                                     <th style="width:35%">{{ $field->label }}</th>
-                                    <td>{{ is_array($val) ? implode(', ', $val) : $val }} @if ($field->unit){{ $field->unit }}@endif</td>
+                                    <td>
+                                        @if ($field->type === 'file')
+                                            @php
+                                                $fileData = is_array($val) ? $val : (is_string($val) && str_starts_with($val, '{') ? json_decode($val, true) : null);
+                                                $fileName = $fileData['original_name'] ?? (is_string($val) ? $val : null);
+                                                $filePath = $fileData['path'] ?? null;
+                                            @endphp
+                                            @if ($filePath)
+                                                <a class="btn btn-light btn-sm" href="{{ route('secure-files.application-field-file', ['application' => $application, 'code' => $field->code]) }}" target="_blank">
+                                                    ✓ {{ $fileName }}
+                                                </a>
+                                            @elseif ($fileName)
+                                                <span>{{ $fileName }}</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        @else
+                                            {{ is_array($val) ? implode(', ', $val) : $val }} @if ($field->unit){{ $field->unit }}@endif
+                                        @endif
+                                    </td>
                                 </tr>
                             @endif
                         @endforeach
@@ -414,5 +436,25 @@
 @endsection
 
 @push('scripts')
-<script>document.querySelectorAll('.revision-check').forEach(c=>c.addEventListener('change',()=>{document.querySelectorAll('.revision-input-'+c.dataset.index).forEach(i=>{i.disabled=!c.checked;i.required=c.checked&&i.name.endsWith('[note]')})}));</script>
+<script>
+document.querySelectorAll('.revision-check').forEach(c=>c.addEventListener('change',()=>{document.querySelectorAll('.revision-input-'+c.dataset.index).forEach(i=>{i.disabled=!c.checked;i.required=c.checked&&i.name.endsWith('[note]')})}));
+document.getElementById('revision-form')?.addEventListener('submit', function(e) {
+    if (this.querySelectorAll('.revision-check:checked').length === 0) {
+        e.preventDefault();
+        if (typeof window.Swal !== 'undefined') {
+            window.Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian',
+                text: 'Pilih minimal 1 item (field atau dokumen) yang harus direvisi oleh klien dengan mencentang kotak di sebelah kiri.',
+                confirmButtonText: 'Mengerti',
+                confirmButtonColor: '#b42318'
+            });
+        } else if (typeof window.flashError === 'function' || typeof flashError === 'function') {
+            (window.flashError || flashError)('Pilih minimal 1 item (field atau dokumen) yang harus direvisi oleh klien dengan mencentang kotak di sebelah kiri.');
+        } else {
+            alert('Pilih minimal 1 item (field atau dokumen) yang harus direvisi.');
+        }
+    }
+});
+</script>
 @endpush

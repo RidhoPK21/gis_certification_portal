@@ -22,10 +22,6 @@
                         <input class="form-control" name="invoice_number" value="{{ old('invoice_number', $application->invoice?->invoice_number) }}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Nilai Invoice (IDR) <span class="required">*</span></label>
-                        <input class="form-control" type="number" step="0.01" name="amount" value="{{ old('amount', $application->invoice?->amount) }}" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Tanggal Invoice</label>
                         <input class="form-control" type="date" name="invoice_date" value="{{ old('invoice_date', optional($application->invoice?->invoice_date)->format('Y-m-d') ?: now()->format('Y-m-d')) }}" required>
                     </div>
@@ -55,7 +51,6 @@
                 <dl class="detail-list">
                     <dt>Status (Finance)</dt><dd>{{ $application->invoice->stageLabel() }}</dd>
                     <dt>Milestone Saat Ini</dt><dd>Tahap {{ $application->invoice->current_milestone }}</dd>
-                    <dt>Total Invoice</dt><dd>Rp {{ number_format((float) $application->invoice->amount, 0, ',', '.') }}</dd>
                     <dt>Total Terverifikasi</dt><dd>Rp {{ number_format((float) $application->invoice->payments->where('status', 'verified')->sum('amount'), 0, ',', '.') }}</dd>
                     @if ($application->invoice->file_path)
                         <dt>File Invoice</dt>

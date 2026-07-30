@@ -50,6 +50,7 @@ class DocumentController extends Controller
                 'original_name' => $version->original_name,
                 'version' => $version->version,
                 'review_status' => $document->review_status,
+                'completion' => $forms->completion($application),
             ]);
         }
 

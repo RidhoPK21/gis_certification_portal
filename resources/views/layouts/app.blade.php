@@ -96,6 +96,11 @@
                     #062c4e,
                     #073a64
                 );
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-collapsed .sidebar {
+            transform: translateX(-100%);
         }
 
         .sidebar-brand {
@@ -174,6 +179,12 @@
         .main-area {
             width: calc(100% - 270px);
             margin-left: 270px;
+            transition: width 0.3s ease, margin-left 0.3s ease;
+        }
+
+        .sidebar-collapsed .main-area {
+            width: 100%;
+            margin-left: 0;
         }
 
         .topbar {
@@ -214,19 +225,41 @@
         }
 
         .logout-button {
-            padding: 9px 14px;
-            border: 1px solid var(--border);
+            padding: 9px 16px;
+            border: 1px solid #b5342c;
             border-radius: 9px;
-            color: var(--navy);
-            background: var(--surface);
+            color: #ffffff;
+            background: #b5342c;
             font-weight: 700;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(181, 52, 44, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .logout-button:hover {
+            background: #992922;
+            border-color: #992922;
+            box-shadow: 0 4px 10px rgba(181, 52, 44, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .logout-button:active {
+            transform: translateY(0);
+            box-shadow: none;
         }
 
         .notif-bell {
             position: relative;
         }
 
+        .sidebar-toggle {
+            margin-right: 14px;
+        }
+
+        .sidebar-toggle,
         .theme-toggle,
         .notif-toggle {
             position: relative;
@@ -457,6 +490,22 @@
             align-items: center;
         }
 
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .items-start {
+            align-items: flex-start;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
         .gap-1 {
             gap: 10px;
         }
@@ -553,6 +602,40 @@
             background: #eef2f6;
             color: #64748b;
         }
+
+        .badge-scheme {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.4;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .badge-scheme::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: currentColor;
+            flex-shrink: 0;
+        }
+
+        .badge-scheme-blue { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .badge-scheme-indigo { background: #e0e7ff; color: #4338ca; border-color: #c7d2fe; }
+        .badge-scheme-teal { background: #ccfbf1; color: #0f766e; border-color: #99f6e4; }
+        .badge-scheme-rose { background: #ffe4e6; color: #be123c; border-color: #fecdd3; }
+        .badge-scheme-amber { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+        .badge-scheme-green { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+        .badge-scheme-orange { background: #ffedd5; color: #c2410c; border-color: #fed7aa; }
+        .badge-scheme-slate { background: #f1f5f9; color: #334155; border-color: #e2e8f0; }
+        .badge-scheme-emerald { background: #d1fae5; color: #047857; border-color: #a7f3d0; }
+        .badge-scheme-forest { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 
         .table-wrap {
             overflow-x: auto;
@@ -1008,6 +1091,17 @@
             color: #f28b82;
         }
 
+        [data-theme="dark"] .badge-scheme-blue { background: rgba(14, 165, 233, 0.2); color: #7dd3fc; border-color: rgba(14, 165, 233, 0.35); }
+        [data-theme="dark"] .badge-scheme-indigo { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.35); }
+        [data-theme="dark"] .badge-scheme-teal { background: rgba(20, 184, 166, 0.2); color: #5eead4; border-color: rgba(20, 184, 166, 0.35); }
+        [data-theme="dark"] .badge-scheme-rose { background: rgba(244, 63, 94, 0.2); color: #fda4af; border-color: rgba(244, 63, 94, 0.35); }
+        [data-theme="dark"] .badge-scheme-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-color: rgba(245, 158, 11, 0.35); }
+        [data-theme="dark"] .badge-scheme-green { background: rgba(34, 197, 94, 0.2); color: #86efac; border-color: rgba(34, 197, 94, 0.35); }
+        [data-theme="dark"] .badge-scheme-orange { background: rgba(249, 115, 22, 0.2); color: #fdba74; border-color: rgba(249, 115, 22, 0.35); }
+        [data-theme="dark"] .badge-scheme-slate { background: rgba(100, 116, 139, 0.25); color: #cbd5e1; border-color: rgba(100, 116, 139, 0.4); }
+        [data-theme="dark"] .badge-scheme-emerald { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.35); }
+        [data-theme="dark"] .badge-scheme-forest { background: rgba(5, 150, 105, 0.25); color: #34d399; border-color: rgba(5, 150, 105, 0.4); }
+
         [data-theme="dark"] .alert-info {
             border-color: #164b6e;
             background: rgba(11, 90, 146, 0.18);
@@ -1058,6 +1152,7 @@
             color: var(--text);
         }
     </style>
+    @stack('styles')
 </head>
 
 <body>
@@ -1129,13 +1224,18 @@
 
         <div class="main-area">
             <header class="topbar">
-                <div>
-                    <strong>
-                        {{ config('systemgis.company_name') }}
-                    </strong>
+                <div style="display: flex; align-items: center;">
+                    <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle Sidebar">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div>
+                        <strong>
+                            {{ config('systemgis.company_name') }}
+                        </strong>
 
-                    <div class="topbar-role">
-                        {{ $primaryRole?->name ?? 'Tanpa Role' }}
+                        <div class="topbar-role">
+                            {{ $primaryRole?->name ?? 'Tanpa Role' }}
+                        </div>
                     </div>
                 </div>
 
@@ -1202,8 +1302,14 @@
                         <button
                             class="logout-button"
                             type="submit"
+                            title="Keluar dari sistem"
                         >
-                            Keluar
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-top:-1px">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <span>Keluar</span>
                         </button>
                     </form>
                 </div>
@@ -1211,7 +1317,7 @@
 
             <main class="page-content" id="page-content">
                 {{-- Data flash untuk SweetAlert (sukses/gagal setelah reload). --}}
-                <script type="application/json" id="flash-data">@json(['success' => session('success'), 'errors' => $errors->all()])</script>
+                <script type="application/json" id="flash-data">@json(['success' => session('success'), 'errors' => $errors->getMessages()])</script>
 
                 @if (session('success'))
                     <div class="alert alert-success mt-1" id="flash-success-banner" style="margin-bottom: 20px;">
@@ -1234,8 +1340,6 @@
             </main>
         </div>
     </div>
-
-    @stack('scripts')
 
     <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
     <script>
@@ -1377,8 +1481,24 @@
                 if(res.status===422){
                     const data=await res.json().catch(()=>({}));
                     const msgs=[];
-                    Object.values(data.errors||{}).forEach(arr=>arr.forEach(m=>msgs.push(m)));
+                    let firstErrorNode = null;
+                    Object.entries(data.errors||{}).forEach(([key, arr])=>{
+                        (Array.isArray(arr)?arr:[arr]).forEach(m=>msgs.push(m));
+                        if(!firstErrorNode){
+                            if(key.startsWith('fields.')){
+                                const code=key.split('.')[1];
+                                firstErrorNode = document.getElementById('field-'+code) || document.querySelector(`[name="fields[${code}]"]`) || document.querySelector(`[name="fields[${code}][]"]`);
+                            }else if(key==='documents'){
+                                firstErrorNode = document.getElementById('documents');
+                            }
+                        }
+                    });
                     flashError(data.message||'Periksa kembali isian berikut:',msgs,form);
+                    if(firstErrorNode){
+                        setTimeout(()=>{
+                            firstErrorNode.scrollIntoView({behavior:'smooth',block:'center'});
+                        }, 300);
+                    }
                 }else if(!res.ok){
                     const data=await res.json().catch(()=>({}));
                     flashError(data.message||'Terjadi kesalahan. Coba lagi.',null,form);
@@ -1407,9 +1527,29 @@
                 document.getElementById('flash-success-banner')?.remove();
                 flashSuccess(data.success);
             }
-            if(data.errors&&data.errors.length){
+            if(data.errors && Object.keys(data.errors).length > 0){
                 document.getElementById('flash-error-banner')?.remove();
-                flashError('Periksa kembali isian berikut:',data.errors);
+                
+                let msgs=[];
+                let firstErrorNode=null;
+                Object.entries(data.errors).forEach(([key,arr])=>{
+                    (Array.isArray(arr)?arr:[arr]).forEach(m=>msgs.push(m));
+                    if(!firstErrorNode){
+                        if(key.startsWith('fields.')){
+                            const code=key.split('.')[1];
+                            firstErrorNode = document.getElementById('field-'+code) || document.querySelector(`[name="fields[${code}]"]`) || document.querySelector(`[name="fields[${code}][]"]`);
+                        }else if(key==='documents'){
+                            firstErrorNode = document.getElementById('documents');
+                        }
+                    }
+                });
+                
+                flashError('Periksa kembali isian berikut:',msgs);
+                if(firstErrorNode){
+                    setTimeout(()=>{
+                        firstErrorNode.scrollIntoView({behavior:'smooth',block:'center'});
+                    }, 300);
+                }
             }
         }
         if(document.readyState==='loading'){
@@ -1417,6 +1557,11 @@
         }else{
             showFlashOnLoad();
         }
+
+        window.flashError = flashError;
+        window.flashSuccess = flashSuccess;
+        window.showAlert = showAlert;
+        window.askConfirm = askConfirm;
     })();
 
     /* Dropdown notifikasi di header: buka/tutup + klik luar menutup. */
@@ -1452,6 +1597,31 @@
             }
         });
     })();
+
+    /* Toggle sidebar: simpan status di localStorage. */
+    (function(){
+        const toggle=document.getElementById('sidebar-toggle');
+        const body=document.body;
+        if(!toggle)return;
+        
+        try {
+            if(localStorage.getItem('sidebar')==='collapsed'){
+                body.classList.add('sidebar-collapsed');
+            }
+        }catch(e){}
+
+        toggle.addEventListener('click',function(){
+            body.classList.toggle('sidebar-collapsed');
+            try {
+                if(body.classList.contains('sidebar-collapsed')){
+                    localStorage.setItem('sidebar','collapsed');
+                }else{
+                    localStorage.removeItem('sidebar');
+                }
+            }catch(e){}
+        });
+    })();
     </script>
+    @stack('scripts')
 </body>
 </html>

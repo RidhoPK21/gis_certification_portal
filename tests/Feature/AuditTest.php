@@ -165,4 +165,617 @@ class AuditTest extends TestCase
         $this->assertSame('corrective_revision', $app->refresh()->status);
         $this->assertDatabaseHas('notifications', ['user_id' => $client->id, 'type' => 'ca_revision']);
     }
+
+    public function test_dashboard_dan_keamanan_berdasarkan_assignment_dan_scope(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditorAssigned = $this->user('auditor');
+        $auditorUnassigned = $this->user('auditor');
+        $auditorStage1 = $this->user('auditor');
+        $auditorCA = $this->user('auditor');
+        $client = $this->user('client');
+
+        $app = $this->application($client, 'payment_completed');
+
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app->id,
+            'auditor_id' => $auditorAssigned->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'all',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+
+        // 1. Auditor yang ditugaskan dapat melihat payment_completed pada Dashboard.
+        $response = $this->actingAs($auditorAssigned)->get(route('dashboard'));
+        $response->assertOk();
+        $response->assertSee($app->order_number);
+        $statsAssigned = $response->viewData('stats');
+        $this->assertSame(1, $statsAssigned['all']);
+        $this->assertSame(1, $statsAssigned['queue']);
+
+        // 2. Auditor yang tidak ditugaskan tidak dapat melihat permohonan tersebut pada daftar maupun statistik Dashboard.
+        $responseUnassigned = $this->actingAs($auditorUnassigned)->get(route('dashboard'));
+        $responseUnassigned->assertOk();
+        $responseUnassigned->assertDontSee($app->order_number);
+        $statsUnassigned = $responseUnassigned->viewData('stats');
+        $this->assertSame(0, $statsUnassigned['all']);
+        $this->assertSame(0, $statsUnassigned['queue']);
+
+        // 3. Assignment stage_1 dapat melihat payment_completed dan stage_1_audit.
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app->id,
+            'auditor_id' => $auditorStage1->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'stage_1',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+        $this->actingAs($auditorStage1)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee($app->order_number);
+        $app->update(['status' => 'stage_1_audit']);
+        $this->actingAs($auditorStage1)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee($app->order_number);
+        $app->update(['status' => 'stage_2_audit']);
+        $this->actingAs($auditorStage1)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee($app->order_number);
+
+        // 4. Assignment corrective_action hanya melihat corrective_action dan corrective_revision.
+        $app2 = $this->application($client, 'payment_completed');
+        $app2->update(['order_number' => 'AUD-CA01']);
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app2->id,
+            'auditor_id' => $auditorCA->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'corrective_action',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+        $this->actingAs($auditorCA)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('AUD-CA01');
+        $app2->update(['status' => 'corrective_action']);
+        $this->actingAs($auditorCA)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('AUD-CA01');
+        $app2->update(['status' => 'corrective_revision']);
+        $this->actingAs($auditorCA)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('AUD-CA01');
+
+        // 5. Auditor yang tidak ditugaskan tetap mendapat 403 ketika membuka detail.
+        $this->actingAs($auditorUnassigned)
+            ->get(route('audit.show', $app))
+            ->assertForbidden();
+
+        // 6. Auditor yang tidak ditugaskan tetap mendapat 403 ketika mengunduh dokumen, laporan audit, atau bukti Corrective Action.
+        $doc = \App\Models\ApplicationDocument::create([
+            'application_id' => $app->id,
+            'document_code' => 'DOC-TEST',
+            'document_name' => 'Dokumen Test',
+        ]);
+        $this->actingAs($auditorUnassigned)
+            ->get(route('secure-files.application-document', $doc))
+            ->assertForbidden();
+
+        $stage = \App\Models\AuditStage::create([
+            'application_id' => $app->id,
+            'stage_code' => 'stage_1',
+            'status' => 'approved',
+        ]);
+        $stageFile = \App\Models\AuditStageFile::create([
+            'audit_stage_id' => $stage->id,
+            'original_name' => 'report.pdf',
+            'file_path' => 'private/report.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 1000,
+            'checksum_sha256' => hash('sha256', 'test'),
+        ]);
+        $this->actingAs($auditorUnassigned)
+            ->get(route('secure-files.audit', $stageFile))
+            ->assertForbidden();
+
+        $finding = \App\Models\Finding::create([
+            'application_id' => $app->id,
+            'finding_number' => 'NC-TEST',
+            'description' => 'Test Finding',
+        ]);
+        $ca = \App\Models\CorrectiveAction::create([
+            'finding_id' => $finding->id,
+            'status' => 'submitted',
+        ]);
+        $caFile = \App\Models\CorrectiveActionFile::create([
+            'corrective_action_id' => $ca->id,
+            'original_name' => 'ca.pdf',
+            'file_path' => 'private/ca.pdf',
+            'mime_type' => 'application/pdf',
+            'size_bytes' => 1000,
+            'checksum_sha256' => hash('sha256', 'test'),
+        ]);
+        $this->actingAs($auditorUnassigned)
+            ->get(route('secure-files.corrective-action', $caFile))
+            ->assertForbidden();
+    }
+
+    public function test_assignment_scope_authorization_and_corrective_action_tabs(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $client = $this->user('client');
+        $app = $this->application($client, 'stage_1_audit');
+
+        $auditorAll = $this->user('auditor');
+        $auditorStage1 = $this->user('auditor');
+        $auditorStage2 = $this->user('auditor');
+        $auditorQms = $this->user('auditor');
+        $auditorCA = $this->user('auditor');
+        $auditorUnassigned = $this->user('auditor');
+
+        foreach ([
+            [$auditorAll, 'all'],
+            [$auditorStage1, 'stage_1'],
+            [$auditorStage2, 'stage_2'],
+            [$auditorQms, 'qms'],
+            [$auditorCA, 'corrective_action'],
+        ] as [$aud, $scope]) {
+            \App\Models\AuditAssignment::create([
+                'application_id' => $app->id,
+                'auditor_id' => $aud->id,
+                'assigned_by' => $admin->id,
+                'assignment_role' => 'LA',
+                'stage_code' => $scope,
+                'status' => 'assigned',
+                'assigned_date' => today(),
+            ]);
+        }
+
+        // 1. Auditor scope all dapat membuka seluruh tab
+        $this->actingAs($auditorAll)
+            ->get(route('audit.show', $app))
+            ->assertOk()
+            ->assertSee('Ringkasan')
+            ->assertSee('Stage 1')
+            ->assertSee('Stage 2')
+            ->assertSee('QMS/Lapangan')
+            ->assertSee('Corrective Action')
+            ->assertSee('Pencatatan Audit Stage 1')
+            ->assertSee('Pencatatan Audit Stage 2')
+            ->assertSee('Pencatatan Audit QMS / Audit Lapangan');
+
+        // 2. Auditor scope stage_1 dapat melihat Ringkasan & Stage 1, tapi tidak melihat form stage lain
+        $this->actingAs($auditorStage1)
+            ->get(route('audit.show', $app))
+            ->assertOk()
+            ->assertSee('Pencatatan Audit Stage 1')
+            ->assertSee('Bagian ini tidak termasuk dalam lingkup penugasan Anda.');
+
+        // dan ditolak (403) jika mengirim stage_2 atau qms
+        $this->actingAs($auditorStage1)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'stage_2',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($auditorStage1)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'qms',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertForbidden();
+
+        // 3. Auditor scope stage_2 bisa mengirim stage_2, tapi ditolak untuk stage_1
+        $this->actingAs($auditorStage2)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'stage_1',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($auditorStage2)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'stage_2',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertRedirect();
+
+        // 4. Auditor scope qms bisa melakukan qms, tidak bisa stage_1
+        $this->actingAs($auditorQms)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'stage_1',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($auditorQms)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'qms',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertRedirect();
+
+        // 5. Auditor scope corrective_action dapat membuka Corrective Action, dilarang submit stage 1
+        $this->actingAs($auditorCA)
+            ->post(route('audit.stage', $app), [
+                'stage_code' => 'stage_1',
+                'status' => 'approved',
+                'audit_date' => '2026-07-28',
+                'auditor_team' => 'LA: Test',
+            ])
+            ->assertForbidden();
+
+        // 6. Auditor tanpa assignment mendapat 403
+        $this->actingAs($auditorUnassigned)
+            ->get(route('audit.show', $app))
+            ->assertForbidden();
+
+        // 7. Corrective Action tanpa temuan menampilkan status bahwa tindakan koreksi tidak diperlukan
+        $this->actingAs($auditorCA)
+            ->get(route('audit.show', $app))
+            ->assertOk()
+            ->assertSee('Tidak ada temuan pada permohonan ini. Tindakan koreksi tidak diperlukan.');
+
+        // Update status ke qms_audit untuk mengetes temuan & CA
+        $app->update(['status' => 'qms_audit']);
+
+        // 8. Buat temuan oleh QMS auditor
+        $this->actingAs($auditorQms)
+            ->post(route('audit.findings.store', $app), [
+                'finding_number' => 'NC-TEST-01',
+                'finding_type' => 'minor',
+                'clause_reference' => '7.1',
+                'description' => 'Temuan Minor Test',
+                'due_date' => now()->addDays(14)->format('Y-m-d'),
+            ])
+            ->assertRedirect();
+
+        $finding = $app->findings()->firstOrFail();
+
+        // Lihat di CA tab: Ada temuan tetapi Klien belum menjawab
+        $this->actingAs($auditorCA)
+            ->get(route('audit.show', $app))
+            ->assertOk()
+            ->assertSee('Menunggu tindakan koreksi dari Klien.')
+            ->assertDontSee('Simpan Review');
+
+        // 9. Klien mengirim jawaban CA
+        $ca = \App\Models\CorrectiveAction::create([
+            'finding_id' => $finding->id,
+            'root_cause' => 'Kurang pelatihan',
+            'correction' => 'Dilakukan briefing',
+            'corrective_action' => 'SOP diperbarui',
+            'status' => 'submitted',
+            'submitted_at' => now(),
+            'revision' => 1,
+        ]);
+
+        $this->actingAs($auditorCA)
+            ->get(route('audit.show', $app))
+            ->assertOk()
+            ->assertSee('Kurang pelatihan')
+            ->assertSee('Dilakukan briefing')
+            ->assertSee('SOP diperbarui')
+            ->assertSee('Simpan Review');
+
+        // Auditor stage_1 tidak bisa melakukan review CA -> 403
+        $this->actingAs($auditorStage1)
+            ->post(route('audit.corrective-actions.review', $ca), [
+                'status' => 'accepted',
+                'notes' => 'OK',
+                'action_date' => now()->format('Y-m-d'),
+            ])
+            ->assertForbidden();
+
+        // 11. Review perlu revisi
+        $this->actingAs($auditorCA)
+            ->post(route('audit.corrective-actions.review', $ca), [
+                'status' => 'revision',
+                'notes' => 'Tolong perbaiki lagi SOP-nya',
+                'action_date' => now()->format('Y-m-d'),
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('corrective_actions', [
+            'id' => $ca->id,
+            'status' => 'revision',
+        ]);
+        $this->assertDatabaseHas('findings', [
+            'id' => $finding->id,
+            'status' => 'revision',
+        ]);
+        $this->assertDatabaseHas('corrective_action_reviews', [
+            'corrective_action_id' => $ca->id,
+            'status' => 'revision',
+            'notes' => 'Tolong perbaiki lagi SOP-nya',
+        ]);
+
+        // 10. Klien kirim revisi & Review Diterima
+        $ca2 = \App\Models\CorrectiveAction::create([
+            'finding_id' => $finding->id,
+            'root_cause' => 'Kurang pelatihan mendalam',
+            'correction' => 'Dilakukan briefing lengkap',
+            'corrective_action' => 'SOP diperbarui dan disahkan',
+            'status' => 'submitted',
+            'submitted_at' => now(),
+            'revision' => 2,
+        ]);
+
+        $this->actingAs($auditorCA)
+            ->post(route('audit.corrective-actions.review', $ca2), [
+                'status' => 'accepted',
+                'notes' => 'Sudah cukup dan diterima',
+                'action_date' => now()->format('Y-m-d'),
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('corrective_actions', [
+            'id' => $ca2->id,
+            'status' => 'accepted',
+        ]);
+        $this->assertDatabaseHas('findings', [
+            'id' => $finding->id,
+            'status' => 'closed',
+        ]);
+
+        // Cek tab CA setelah semua temuan closed
+        $this->actingAs($auditorCA)
+            ->get(route('audit.show', $app))
+            ->assertOk()
+            ->assertSee('Seluruh tindakan koreksi telah diterima.');
+    }
+
+    public function test_qms_completion_validations_and_scope(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $client = $this->user('client');
+        $app = $this->application($client, 'qms_audit');
+
+        $auditorQms = $this->user('auditor');
+        $auditorCA = $this->user('auditor');
+
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app->id,
+            'auditor_id' => $auditorQms->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'qms',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app->id,
+            'auditor_id' => $auditorCA->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'Auditor',
+            'stage_code' => 'corrective_action',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+
+        // 1. QMS belum dibuat tidak dapat diselesaikan, respons 422
+        $this->actingAs($auditorQms)
+            ->post(route('audit.complete', $app), ['notes' => 'Test', 'action_date' => now()->format('Y-m-d')])
+            ->assertStatus(422);
+
+        // 2. QMS uploaded tidak dapat diselesaikan, respons 422
+        $qmsStage = \App\Models\AuditStage::create([
+            'application_id' => $app->id,
+            'stage_code' => 'qms',
+            'status' => 'uploaded',
+            'audit_date' => today(),
+            'updated_by' => $auditorQms->id,
+        ]);
+        $this->actingAs($auditorQms)
+            ->post(route('audit.complete', $app), ['notes' => 'Test', 'action_date' => now()->format('Y-m-d')])
+            ->assertStatus(422);
+
+        // 3. QMS revision tidak dapat diselesaikan, respons 422
+        $qmsStage->update(['status' => 'revision']);
+        $this->actingAs($auditorQms)
+            ->post(route('audit.complete', $app), ['notes' => 'Test', 'action_date' => now()->format('Y-m-d')])
+            ->assertStatus(422);
+
+        // 5. QMS approved dengan temuan open tidak dapat diselesaikan, respons 422
+        $qmsStage->update(['status' => 'approved']);
+        $finding = \App\Models\Finding::create([
+            'application_id' => $app->id,
+            'finding_number' => 'NC-01',
+            'finding_type' => 'minor',
+            'description' => 'Test open finding',
+            'due_date' => now()->addDays(14),
+            'status' => 'open',
+            'created_by' => $auditorQms->id,
+        ]);
+        $this->actingAs($auditorQms)
+            ->post(route('audit.complete', $app), ['notes' => 'Test', 'action_date' => now()->format('Y-m-d')])
+            ->assertStatus(422);
+
+        // 6. Auditor scope corrective_action tanpa scope qms tidak dapat memanggil completeAudit() -> 403
+        $finding->update(['status' => 'closed']);
+        $this->actingAs($auditorCA)
+            ->post(route('audit.complete', $app), ['notes' => 'Test', 'action_date' => now()->format('Y-m-d')])
+            ->assertForbidden();
+
+        // 4. QMS approved tanpa temuan dapat berubah menjadi certificate_review
+        $this->actingAs($auditorQms)
+            ->post(route('audit.complete', $app), ['notes' => 'Selesai audit', 'action_date' => now()->format('Y-m-d')])
+            ->assertRedirect();
+        $this->assertSame('certificate_review', $app->refresh()->status);
+    }
+
+    public function test_auditor_index_scope_and_assignment_filtering(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $client = $this->user('client');
+
+        $appQms = $this->application($client, 'qms_audit');
+        $appStage1 = $this->application($client, 'stage_1_audit');
+        $appCA = $this->application($client, 'corrective_action');
+
+        $auditorQms = $this->user('auditor');
+        $auditorCA = $this->user('auditor');
+        $auditorUnassigned = $this->user('auditor');
+
+        \App\Models\AuditAssignment::create([
+            'application_id' => $appQms->id,
+            'auditor_id' => $auditorQms->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'qms',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+        \App\Models\AuditAssignment::create([
+            'application_id' => $appStage1->id,
+            'auditor_id' => $auditorQms->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'qms',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+        \App\Models\AuditAssignment::create([
+            'application_id' => $appCA->id,
+            'auditor_id' => $auditorCA->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'Auditor',
+            'stage_code' => 'corrective_action',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+
+        // 7. Auditor tidak ditugaskan tidak melihat order pada /internal/audit
+        $this->actingAs($auditorUnassigned)
+            ->get(route('audit.index'))
+            ->assertOk()
+            ->assertDontSee($appQms->order_number)
+            ->assertDontSee($appStage1->order_number)
+            ->assertDontSee($appCA->order_number);
+
+        // 8. Auditor scope qms hanya melihat order qms_audit yang ditugaskan
+        $this->actingAs($auditorQms)
+            ->get(route('audit.index'))
+            ->assertOk()
+            ->assertSee($appQms->order_number)
+            ->assertDontSee($appStage1->order_number)
+            ->assertDontSee($appCA->order_number);
+
+        // 9. Auditor scope corrective_action hanya melihat corrective_action dan corrective_revision yang ditugaskan
+        $this->actingAs($auditorCA)
+            ->get(route('audit.index'))
+            ->assertOk()
+            ->assertSee($appCA->order_number)
+            ->assertDontSee($appQms->order_number);
+
+        // 10. Hash view menggunakan stage_1 dan stage_2
+        $this->actingAs($auditorQms)
+            ->get(route('audit.show', $appQms))
+            ->assertOk()
+            ->assertSee('id="stage_1"', false)
+            ->assertSee('id="stage_2"', false)
+            ->assertSee("['ringkasan', 'stage_1', 'stage_2', 'qms', 'corrective_action']", false);
+    }
+
+    public function test_ca_completion_sends_technical_notification_once(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditor = $this->user('auditor');
+        $client = $this->user('client');
+        $tech = $this->user('technical');
+        $app = $this->application($client, 'corrective_action');
+
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app->id,
+            'auditor_id' => $auditor->id,
+            'assigned_by' => $admin->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'corrective_action',
+            'status' => 'assigned',
+            'assigned_date' => today(),
+        ]);
+
+        $finding = \App\Models\Finding::create([
+            'application_id' => $app->id,
+            'finding_number' => 'NC-01',
+            'finding_type' => 'minor',
+            'description' => 'Test finding',
+            'due_date' => today()->addDays(14),
+            'status' => 'open',
+            'created_by' => $auditor->id,
+        ]);
+
+        $ca = \App\Models\CorrectiveAction::create([
+            'finding_id' => $finding->id,
+            'root_cause' => 'Root cause',
+            'correction' => 'Correction',
+            'corrective_action' => 'Action',
+            'status' => 'submitted',
+            'submitted_at' => now(),
+            'submitted_by' => $client->id,
+        ]);
+
+        $initialNotificationsCount = \App\Models\PortalNotification::where('user_id', $tech->id)
+            ->where('type', 'certificate_review')
+            ->count();
+
+        // 11. Setelah Corrective Action terakhir diterima: status menjadi certificate_review & notifikasi Tim Teknis dibuat
+        $this->actingAs($auditor)
+            ->post(route('audit.corrective-actions.review', $ca), [
+                'status' => 'accepted',
+                'notes' => 'CA diterima',
+                'action_date' => now()->format('Y-m-d'),
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('certificate_review', $app->refresh()->status);
+
+        $newNotificationsCount = \App\Models\PortalNotification::where('user_id', $tech->id)
+            ->where('type', 'certificate_review')
+            ->count();
+        $this->assertSame($initialNotificationsCount + 1, $newNotificationsCount);
+
+        $notif = \App\Models\PortalNotification::where('user_id', $tech->id)
+            ->where('type', 'certificate_review')
+            ->latest('id')
+            ->firstOrFail();
+        $this->assertSame('Audit Selesai', $notif->title);
+        $this->assertStringContainsString($app->order_number, $notif->message);
+        $this->assertSame(route('technical.show', $app), $notif->action_url);
+
+        // Uji bahwa panggilan review tidak menduplikasi notifikasi ketika status aplikasi sudah bukan corrective_action
+        $this->actingAs($auditor)
+            ->post(route('audit.corrective-actions.review', $ca), [
+                'status' => 'accepted',
+                'notes' => 'CA diterima kembali',
+                'action_date' => now()->format('Y-m-d'),
+            ])
+            ->assertRedirect();
+
+        $finalNotificationsCount = \App\Models\PortalNotification::where('user_id', $tech->id)
+            ->where('type', 'certificate_review')
+            ->count();
+        $this->assertSame($initialNotificationsCount + 1, $finalNotificationsCount);
+    }
 }

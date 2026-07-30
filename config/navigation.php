@@ -15,6 +15,20 @@ return [
             'superadmin',
         ],
     ],
+    [
+        'section' => 'Utama',
+        'label' => 'Panduan Penggunaan',
+        'route' => 'panduan',
+        'active' => 'panduan',
+        'roles' => [
+            'client',
+            'admin_application',
+            'finance',
+            'auditor',
+            'technical',
+            'superadmin',
+        ],
+    ],
 
     [
         'section' => 'Permohonan Klien',

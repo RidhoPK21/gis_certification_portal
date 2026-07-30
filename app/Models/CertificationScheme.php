@@ -28,4 +28,43 @@ class CertificationScheme extends Model
     {
         return $this->hasMany(FormConfigurationVersion::class);
     }
+
+    public function getColorToneAttribute(): string
+    {
+        return match (strtoupper((string) $this->code)) {
+            'ISO9001' => 'blue',
+            'ISO27001' => 'indigo',
+            'ISO20000' => 'teal',
+            'ISO37001' => 'rose',
+            'ISO37301' => 'amber',
+            'ISO22000' => 'green',
+            'HACCP' => 'orange',
+            'SNI', 'SNI/LSPRO', 'LSPRO' => 'slate',
+            'ISPO_PEK' => 'emerald',
+            'ISPO_COMP' => 'forest',
+            default => 'blue',
+        };
+    }
+
+    public function getBadgeClassAttribute(): string
+    {
+        return 'badge badge-scheme badge-scheme-' . $this->color_tone;
+    }
+
+    public function getAccentColorAttribute(): string
+    {
+        return match (strtoupper((string) $this->code)) {
+            'ISO9001' => '#0284c7',
+            'ISO27001' => '#4f46e5',
+            'ISO20000' => '#0d9488',
+            'ISO37001' => '#e11d48',
+            'ISO37301' => '#d97706',
+            'ISO22000' => '#16a34a',
+            'HACCP' => '#ea580c',
+            'SNI', 'SNI/LSPRO', 'LSPRO' => '#475569',
+            'ISPO_PEK' => '#059669',
+            'ISPO_COMP' => '#15803d',
+            default => '#0284c7',
+        };
+    }
 }

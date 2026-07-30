@@ -89,4 +89,15 @@ class ProfileAndDashboardTest extends TestCase
             ->assertRedirect()
             ->assertSessionHas('success');
     }
+
+    public function test_halaman_panduan_dapat_dibuka(): void
+    {
+        $user = $this->makeClient();
+
+        $this->actingAs($user)
+            ->get(route('panduan'))
+            ->assertOk()
+            ->assertSee('Panduan Penggunaan')
+            ->assertSee('Panduan Klien');
+    }
 }

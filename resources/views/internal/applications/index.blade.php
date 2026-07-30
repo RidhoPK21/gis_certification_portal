@@ -17,6 +17,15 @@
                 <input class="form-control" name="q" value="{{ request('q') }}" placeholder="Nomor order atau perusahaan">
             </div>
             <div class="form-group">
+                <label class="form-label">Skema Sertifikasi</label>
+                <select class="form-select" name="scheme_id">
+                    <option value="">Semua skema</option>
+                    @foreach ($schemes as $scheme)
+                        <option value="{{ $scheme->id }}" @selected((int) request('scheme_id') === $scheme->id)>{{ $scheme->short_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
                 <label class="form-label">Status</label>
                 <select class="form-select" name="status">
                     <option value="">Semua status</option>
@@ -25,8 +34,14 @@
                     @endforeach
                 </select>
             </div>
-            <div class="form-group" style="align-self:end">
-                <button class="btn btn-primary">Terapkan Filter</button>
+        </div>
+        <div class="flex justify-between items-center mt-1">
+            <div class="small muted">Filter berdasarkan skema, nomor order, atau status permohonan.</div>
+            <div class="flex gap-1">
+                @if (request()->hasAny(['q', 'scheme_id', 'status']) && array_filter(request()->only(['q', 'scheme_id', 'status'])))
+                    <a class="btn btn-light" href="{{ route('internal.applications.index') }}">Reset</a>
+                @endif
+                <button class="btn btn-primary" type="submit">Terapkan Filter</button>
             </div>
         </div>
     </form>
@@ -46,9 +61,11 @@
             <tbody>
                 @forelse ($applications as $app)
                     <tr>
-                        <td><strong>{{ $app->order_number ?: 'Draft #' . $app->id }}</strong></td>
+                        <td style="border-left: 4px solid {{ $app->scheme->accent_color }};">
+                            <strong>{{ $app->order_number ?: 'Draft #' . $app->id }}</strong>
+                        </td>
                         <td>{{ $app->company_name }}<div class="small muted">{{ $app->client->name }}</div></td>
-                        <td>{{ $app->scheme->short_name }}</td>
+                        <td><x-scheme-badge :scheme="$app->scheme" /></td>
                         <td>
                             <span class="badge badge-{{ \App\Enums\ApplicationStatus::tryFrom($app->status)?->tone() ?? 'neutral' }}">
                                 @statuslabel($app->status)

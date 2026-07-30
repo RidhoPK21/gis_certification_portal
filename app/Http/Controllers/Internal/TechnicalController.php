@@ -22,13 +22,26 @@ class TechnicalController extends Controller
 {
     private const TECHNICAL_STATUSES = ['certificate_review', 'final_certificate', 'completed', 'surveillance'];
 
-    public function index()
+    public function index(Request $request)
     {
+        $query = CertificationApplication::whereIn('status', self::TECHNICAL_STATUSES)
+            ->with(['scheme', 'client', 'certificateDrafts', 'certificateFinal']);
+
+        if ($request->filled('q')) {
+            $q = trim((string) $request->string('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('order_number', 'like', "%{$q}%")
+                    ->orWhere('company_name', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('scheme_id')) {
+            $query->where('certification_scheme_id', $request->integer('scheme_id'));
+        }
+
         return view('internal.technical.index', [
-            'applications' => CertificationApplication::whereIn('status', self::TECHNICAL_STATUSES)
-                ->with(['scheme', 'client', 'certificateDrafts', 'certificateFinal'])
-                ->latest()
-                ->paginate(20),
+            'applications' => $query->latest()->paginate(20)->withQueryString(),
+            'schemes' => \App\Models\CertificationScheme::orderBy('sort_order')->get(),
         ]);
     }
 

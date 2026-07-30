@@ -36,4 +36,18 @@ class PortalNotificationService
 
         return $notification;
     }
+
+    public function sendToRole(
+        string $roleCode,
+        string $type,
+        string $title,
+        string $message,
+        ?string $url = null,
+        array $data = []
+    ): void {
+        $users = User::whereHas('roles', fn ($q) => $q->where('code', $roleCode))->get();
+        foreach ($users as $user) {
+            $this->send($user, $type, $title, $message, $url, $data);
+        }
+    }
 }

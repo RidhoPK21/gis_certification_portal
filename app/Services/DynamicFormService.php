@@ -116,7 +116,7 @@ class DynamicFormService
             if ($field->type === 'url') {
                 $base[] = 'url';
             }
-            if (in_array($field->type, ['checkbox_group', 'multiselect'], true)) {
+            if (in_array($field->type, ['checkbox_group', 'multiselect', 'file'], true)) {
                 $base[] = 'array';
             }
 
@@ -124,6 +124,29 @@ class DynamicFormService
         }
 
         return $rules;
+    }
+
+    public function validationAttributes(CertificationScheme $scheme, array $values): array
+    {
+        $attributes = [];
+
+        foreach ($this->visibleFields($scheme, $values) as $field) {
+            $attributes['fields.' . $field->code] = $field->label;
+        }
+
+        return $attributes;
+    }
+
+    public function validationMessages(): array
+    {
+        return [
+            'required' => 'Kolom :attribute wajib diisi.',
+            'numeric' => 'Kolom :attribute harus berupa angka.',
+            'email' => 'Kolom :attribute harus berupa format email yang valid.',
+            'date' => 'Kolom :attribute harus berupa tanggal yang valid.',
+            'url' => 'Kolom :attribute harus berupa URL yang valid.',
+            'array' => 'Kolom :attribute format tidak valid / belum lengkap.',
+        ];
     }
 
     public function applicableDocuments(CertificationScheme $scheme, array $values): Collection

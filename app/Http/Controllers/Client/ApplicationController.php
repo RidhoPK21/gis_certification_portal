@@ -16,11 +16,28 @@ class ApplicationController extends Controller
 {
     public function index(Request $request)
     {
+        $query = CertificationApplication::where('client_id', $request->user()->id)
+            ->with('scheme');
+
+        if ($request->filled('q')) {
+            $q = trim((string) $request->string('q'));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('order_number', 'like', "%{$q}%")
+                    ->orWhere('company_name', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        if ($request->filled('scheme_id')) {
+            $query->where('certification_scheme_id', $request->integer('scheme_id'));
+        }
+
         return view('client.applications.index', [
-            'applications' => CertificationApplication::where('client_id', $request->user()->id)
-                ->with('scheme')
-                ->latest()
-                ->paginate(12),
+            'applications' => $query->latest()->paginate(12)->withQueryString(),
+            'schemes' => CertificationScheme::where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -57,7 +74,10 @@ class ApplicationController extends Controller
     public function edit(Request $request, CertificationApplication $application, DynamicFormService $forms, WorkflowService $workflow)
     {
         $this->own($request, $application);
-        abort_unless($application->canBeEditedByClient(), 403, 'Permohonan tidak dapat diubah pada tahap ini.');
+        if (! $application->canBeEditedByClient()) {
+            return redirect()->route('client.applications.show', $application)
+                ->with('info', 'Permohonan ini tidak sedang dalam tahap pengisian atau revisi sehingga tidak dapat diubah lagi. Anda sedang melihat halaman ringkasan.');
+        }
 
         if ($application->status === 'revision_requested') {
             $application = $workflow->transition($application, 'client_revision', 'client_open_revision', 'Klien mulai memperbaiki item revisi.', $request->user()->id);
@@ -88,14 +108,102 @@ class ApplicationController extends Controller
         $input = (array) $request->input('fields', []);
         $application->loadMissing('scheme');
         $application->setRelation('scheme', $forms->schemeForApplication($application));
-        validator(['fields' => $input], $forms->validationRules($application->scheme, $input, false))->validate();
+        $this->processUploadedFieldFiles($request, $application, $input);
+        validator(
+            ['fields' => $input],
+            $forms->validationRules($application->scheme, $input, false),
+            $forms->validationMessages(),
+            $forms->validationAttributes($application->scheme, $input)
+        )->validate();
         $service->saveValues($application, $input, $request->user()->id);
 
         if ($request->expectsJson()) {
-            return response()->json(['ok' => true, 'saved_at' => now()->toIso8601String()]);
+            return response()->json([
+                'ok' => true,
+                'saved_at' => now()->toIso8601String(),
+                'completion' => $forms->completion($application),
+            ]);
         }
 
         return back()->with('success', 'Draft berhasil disimpan.');
+    }
+
+    public function uploadFieldFile(Request $request, CertificationApplication $application, DynamicFormService $forms, ApplicationSubmissionService $service, AuditLogger $audit)
+    {
+        $this->own($request, $application);
+        abort_unless($application->canBeEditedByClient(), 403);
+
+        $request->validate([
+            'field_code' => ['required', 'string'],
+            'file' => ['required', 'file', 'max:20480'],
+        ]);
+
+        $code = (string) $request->input('field_code');
+        $file = $request->file('file');
+        $originalName = $file->getClientOriginalName();
+
+        $path = $file->storeAs(
+            "applications/{$application->id}/fields/{$code}",
+            time() . '_' . $originalName,
+            'private'
+        );
+
+        $fileData = [
+            'path' => $path,
+            'original_name' => $originalName,
+            'size' => $file->getSize(),
+            'uploaded_at' => now()->toIso8601String(),
+        ];
+
+        $service->saveValues($application, [$code => $fileData], $request->user()->id);
+
+        $audit->log('application.field_file_uploaded', $application, [], [
+            'field_code' => $code,
+            'original_name' => $originalName,
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil diunggah.',
+                'field_code' => $code,
+                'original_name' => $originalName,
+                'path' => $path,
+                'url' => route('secure-files.application-field-file', ['application' => $application, 'code' => $code]),
+                'completion' => $forms->completion($application),
+            ]);
+        }
+
+        return back()->with('success', 'File berhasil diunggah.');
+    }
+
+    private function processUploadedFieldFiles(Request $request, CertificationApplication $application, array &$input): void
+    {
+        $files = (array) $request->file('fields', []);
+        $forms = app(DynamicFormService::class);
+        $existingValues = $forms->values($application);
+
+        foreach ($application->scheme->sections->flatMap->fields as $field) {
+            if ($field->type === 'file') {
+                if (isset($files[$field->code]) && $files[$field->code]->isValid()) {
+                    $file = $files[$field->code];
+                    $originalName = $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        "applications/{$application->id}/fields/{$field->code}",
+                        time() . '_' . $originalName,
+                        'private'
+                    );
+                    $input[$field->code] = [
+                        'path' => $path,
+                        'original_name' => $originalName,
+                        'size' => $file->getSize(),
+                        'uploaded_at' => now()->toIso8601String(),
+                    ];
+                } elseif (isset($existingValues[$field->code]) && !empty($existingValues[$field->code])) {
+                    $input[$field->code] = $existingValues[$field->code];
+                }
+            }
+        }
     }
 
     public function submit(Request $request, CertificationApplication $application, ApplicationSubmissionService $service)
