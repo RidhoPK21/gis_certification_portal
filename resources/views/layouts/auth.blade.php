@@ -17,9 +17,7 @@
         @yield('title', 'Masuk') — {{ $branding['app_name'] }}
     </title>
 
-    @if ($brandFaviconUrl)
-        <link rel="icon" href="{{ $brandFaviconUrl }}">
-    @endif
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
 
     <style>
         :root {
@@ -342,7 +340,7 @@
                 <div class="brand">
                     <div class="brand-mark">
                         <img
-                            src="{{ $brandLoginLogoUrl ?? asset('images/gis-logo.png') }}"
+                            src="{{ $brandLoginLogoUrl }}"
                             alt="Logo {{ $branding['app_name'] }}"
                         >
                     </div>

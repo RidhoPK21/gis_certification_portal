@@ -17,9 +17,7 @@
         @yield('title', 'Dashboard') — {{ $branding['app_name'] }}
     </title>
 
-    @if ($brandFaviconUrl)
-        <link rel="icon" href="{{ $brandFaviconUrl }}">
-    @endif
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
 
     <script>
         (function () {

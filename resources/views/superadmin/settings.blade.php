@@ -18,19 +18,33 @@
             <h2>Logo &amp; Favicon</h2>
             <p class="muted">Kosongkan bila tidak ingin mengubah. Format disarankan PNG latar transparan.</p>
 
+            @php
+                $previewBox = 'display:inline-block;background:#fff;padding:6px;border:1px solid var(--border);border-radius:8px';
+            @endphp
+
             <div class="grid-3">
                 <div class="form-group">
                     <label class="form-label">Logo Sidebar / Header</label>
-                    @if ($logoUrl)
-                        <div style="margin-bottom:8px">
-                            <img src="{{ $logoUrl }}" alt="Logo" style="max-height:60px;background:#fff;padding:4px;border:1px solid var(--border);border-radius:8px">
+
+                    <div style="margin-bottom:8px">
+                        <div class="small muted" style="margin-bottom:4px">Sedang dipakai:</div>
+                        @if ($logoUrl)
+                            <div style="{{ $previewBox }}">
+                                <img src="{{ $logoUrl }}" alt="Logo sidebar" style="max-height:56px;max-width:100%;display:block">
+                            </div>
+                            <span class="badge badge-success" style="margin-top:4px">Logo kustom</span>
                             <label class="small" style="display:block;margin-top:4px">
                                 <input type="checkbox" name="remove_logo" value="1"> Hapus logo ini
                             </label>
-                        </div>
-                    @else
-                        <div class="small muted" style="margin-bottom:8px">Belum ada logo — memakai tulisan nama aplikasi.</div>
-                    @endif
+                        @else
+                            <div style="{{ $previewBox }};background:#0d2138;color:#fff;min-width:160px">
+                                <strong style="display:block">{{ $settings['app_name'] }}</strong>
+                                <small>{{ $settings['app_tagline'] }}</small>
+                            </div>
+                            <span class="badge badge-neutral" style="margin-top:4px">Bawaan: tulisan nama aplikasi</span>
+                        @endif
+                    </div>
+
                     <input class="form-control" type="file" name="logo" accept=".jpg,.jpeg,.png,.webp,.svg">
                     <div class="small muted">Maks 1 MB.</div>
                     @error('logo')<div class="error-text">{{ $message }}</div>@enderror
@@ -38,16 +52,22 @@
 
                 <div class="form-group">
                     <label class="form-label">Logo Halaman Login</label>
-                    @if ($loginLogoUrl)
-                        <div style="margin-bottom:8px">
-                            <img src="{{ $loginLogoUrl }}" alt="Logo login" style="max-height:60px;background:#fff;padding:4px;border:1px solid var(--border);border-radius:8px">
+
+                    <div style="margin-bottom:8px">
+                        <div class="small muted" style="margin-bottom:4px">Sedang dipakai:</div>
+                        <div style="{{ $previewBox }}">
+                            <img src="{{ $effectiveLoginLogoUrl }}" alt="Logo halaman login" style="max-height:56px;max-width:100%;display:block">
+                        </div>
+                        @if ($loginLogoUrl)
+                            <span class="badge badge-success" style="margin-top:4px">Logo kustom</span>
                             <label class="small" style="display:block;margin-top:4px">
                                 <input type="checkbox" name="remove_login_logo" value="1"> Hapus logo ini
                             </label>
-                        </div>
-                    @else
-                        <div class="small muted" style="margin-bottom:8px">Belum ada — memakai logo bawaan GIS.</div>
-                    @endif
+                        @else
+                            <span class="badge badge-neutral" style="margin-top:4px">Bawaan: logo GIS</span>
+                        @endif
+                    </div>
+
                     <input class="form-control" type="file" name="login_logo" accept=".jpg,.jpeg,.png,.webp,.svg">
                     <div class="small muted">Maks 1 MB.</div>
                     @error('login_logo')<div class="error-text">{{ $message }}</div>@enderror
@@ -55,16 +75,22 @@
 
                 <div class="form-group">
                     <label class="form-label">Favicon (ikon tab browser)</label>
-                    @if ($faviconUrl)
-                        <div style="margin-bottom:8px">
-                            <img src="{{ $faviconUrl }}" alt="Favicon" style="height:32px;background:#fff;padding:4px;border:1px solid var(--border);border-radius:8px">
+
+                    <div style="margin-bottom:8px">
+                        <div class="small muted" style="margin-bottom:4px">Sedang dipakai:</div>
+                        <div style="{{ $previewBox }}">
+                            <img src="{{ $effectiveFaviconUrl }}" alt="Favicon" style="height:32px;width:32px;object-fit:contain;display:block">
+                        </div>
+                        @if ($faviconUrl)
+                            <span class="badge badge-success" style="margin-top:4px">Favicon kustom</span>
                             <label class="small" style="display:block;margin-top:4px">
                                 <input type="checkbox" name="remove_favicon" value="1"> Hapus favicon ini
                             </label>
-                        </div>
-                    @else
-                        <div class="small muted" style="margin-bottom:8px">Belum ada — memakai favicon bawaan.</div>
-                    @endif
+                        @else
+                            <span class="badge badge-neutral" style="margin-top:4px">Bawaan: logo GIS</span>
+                        @endif
+                    </div>
+
                     <input class="form-control" type="file" name="favicon" accept=".png,.ico,.svg">
                     <div class="small muted">Maks 256 KB, disarankan 32×32 atau 64×64 piksel.</div>
                     @error('favicon')<div class="error-text">{{ $message }}</div>@enderror

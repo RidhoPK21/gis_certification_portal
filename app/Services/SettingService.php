@@ -82,6 +82,31 @@ class SettingService
     }
 
     /**
+     * Logo bawaan yang dipakai bila superadmin belum mengunggah apa pun.
+     */
+    public function defaultLogoUrl(): string
+    {
+        return asset('images/gis-logo.png');
+    }
+
+    /**
+     * Logo halaman login yang sedang berlaku (kustom bila ada, selain itu bawaan).
+     */
+    public function loginLogoUrl(): string
+    {
+        return $this->imageUrl('login_logo_path') ?? $this->defaultLogoUrl();
+    }
+
+    /**
+     * Favicon yang sedang berlaku. Bawaannya memakai logo GIS karena
+     * public/favicon.ico kosong, sehingga tab browser tidak polos.
+     */
+    public function faviconUrl(): string
+    {
+        return $this->imageUrl('favicon_path') ?? $this->defaultLogoUrl();
+    }
+
+    /**
      * URL gambar branding, atau null bila belum diunggah / file hilang.
      */
     public function imageUrl(string $key): ?string

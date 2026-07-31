@@ -30,9 +30,15 @@ class SettingController extends Controller
     {
         return view('superadmin.settings', [
             'settings' => $settings->all(),
+
+            // URL kustom (null bila belum diunggah) — menentukan tombol "Hapus".
             'logoUrl' => $settings->imageUrl('logo_path'),
             'loginLogoUrl' => $settings->imageUrl('login_logo_path'),
             'faviconUrl' => $settings->imageUrl('favicon_path'),
+
+            // Gambar yang benar-benar tampil saat ini, termasuk bila masih bawaan.
+            'effectiveLoginLogoUrl' => $settings->loginLogoUrl(),
+            'effectiveFaviconUrl' => $settings->faviconUrl(),
         ]);
     }
 

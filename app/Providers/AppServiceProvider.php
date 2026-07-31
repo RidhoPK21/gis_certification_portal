@@ -33,9 +33,10 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with([
                 'branding' => $settings->all(),
+                // Logo sidebar boleh kosong: bila tidak ada, dipakai tulisan nama aplikasi.
                 'brandLogoUrl' => $settings->imageUrl('logo_path'),
-                'brandLoginLogoUrl' => $settings->imageUrl('login_logo_path'),
-                'brandFaviconUrl' => $settings->imageUrl('favicon_path'),
+                'brandLoginLogoUrl' => $settings->loginLogoUrl(),
+                'brandFaviconUrl' => $settings->faviconUrl(),
             ]);
         });
     }
