@@ -40,7 +40,9 @@ class InstallApplication extends Command
         }
 
         if (! $this->option('demo')) {
-            foreach (['RolePermissionSeeder', 'SchemeCatalogSeeder', 'WorkflowSeeder'] as $seeder) {
+            // Taksonomi SNI ikut di sini karena isinya data master (pilihan
+            // dropdown Produk -> Kategori pada form SNI/LSPro), bukan data demo.
+            foreach (['RolePermissionSeeder', 'SchemeCatalogSeeder', 'WorkflowSeeder', 'SniProductTaxonomySeeder'] as $seeder) {
                 Artisan::call('db:seed', ['--class' => $seeder, '--force' => true]);
                 $this->output->write(Artisan::output());
             }

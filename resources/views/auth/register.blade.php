@@ -151,6 +151,8 @@
                 >
             </div>
 
+            @include('auth.partials.turnstile')
+
             <button
                 class="login-button"
                 type="submit"

@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\TurnstileService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -20,6 +21,12 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        /*
+         * Turnstile diperiksa sebelum validasi lain agar bot tidak dapat
+         * memakai form registrasi untuk membuat akun massal.
+         */
+        app(TurnstileService::class)->ensureValid(request());
+
         $input['name'] = trim(
             (string) ($input['name'] ?? '')
         );

@@ -7,6 +7,7 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Models\User;
+use App\Services\TurnstileService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -65,6 +66,12 @@ class FortifyServiceProvider extends ServiceProvider
          */
         Fortify::authenticateUsing(
             function (Request $request): ?User {
+                /*
+                 * Turnstile diperiksa lebih dulu agar bot tidak dapat
+                 * memakai form login untuk menebak kata sandi.
+                 */
+                app(TurnstileService::class)->ensureValid($request);
+
                 $email = Str::lower(
                     trim(
                         (string) $request->input('email')
