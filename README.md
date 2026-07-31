@@ -113,7 +113,7 @@ Di produksi tidak ada akun bawaan sama sekali — tidak ada kredensial apa pun d
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.penyedia-anda.com
 MAIL_PORT=587
-MAIL_SCHEME=tls
+MAIL_SCHEME=smtp                                   # port 587; pakai "smtps" bila port 465
 MAIL_USERNAME=
 MAIL_PASSWORD=
 MAIL_FROM_ADDRESS="no-reply@domain-perusahaan.com"

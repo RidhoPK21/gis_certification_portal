@@ -45,7 +45,9 @@ return new class extends Migration
             $table->text('skip_reason')->nullable();
             $table->foreignId('skipped_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->unique(['application_id', 'workflow_step_id']);
+            // Nama eksplisit: nama otomatis Laravel mencapai 65 karakter,
+            // melebihi batas identifier MySQL (64).
+            $table->unique(['application_id', 'workflow_step_id'], 'application_workflow_step_unique');
         });
 
         Schema::create('order_number_sequences', function (Blueprint $table): void {
