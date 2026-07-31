@@ -22,9 +22,11 @@ class EmailOtpMail extends Mailable
 
     public function build(): self
     {
-        $subject = $this->purpose === EmailOtp::PURPOSE_ADMIN_INVITE
-            ? 'Aktivasi Akun Staf SystemGIS'
-            : 'Kode Verifikasi Email SystemGIS';
+        $subject = match ($this->purpose) {
+            EmailOtp::PURPOSE_ADMIN_INVITE => 'Aktivasi Akun Staf SystemGIS',
+            EmailOtp::PURPOSE_PASSWORD_RESET => 'Reset Kata Sandi SystemGIS',
+            default => 'Kode Verifikasi Email SystemGIS',
+        };
 
         return $this->subject($subject)->view('emails.email-otp');
     }

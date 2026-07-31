@@ -14,8 +14,12 @@
     >
 
     <title>
-        @yield('title', 'Masuk') — {{ config('app.name') }}
+        @yield('title', 'Masuk') — {{ $branding['app_name'] }}
     </title>
+
+    @if ($brandFaviconUrl)
+        <link rel="icon" href="{{ $brandFaviconUrl }}">
+    @endif
 
     <style>
         :root {
@@ -338,28 +342,26 @@
                 <div class="brand">
                     <div class="brand-mark">
                         <img
-                            src="{{ asset('images/gis-logo.png') }}"
-                            alt="Logo GIS"
+                            src="{{ $brandLoginLogoUrl ?? asset('images/gis-logo.png') }}"
+                            alt="Logo {{ $branding['app_name'] }}"
                         >
                     </div>
 
                     <div class="brand-title">
-                        SystemGIS
+                        {{ $branding['app_name'] }}
 
                         <span class="brand-subtitle">
-                            {{ config('systemgis.company_name') }}
+                            {{ $branding['company_name'] }}
                         </span>
                     </div>
                 </div>
 
                 <h1>
-                    Portal Permohonan Sertifikasi Terintegrasi
+                    {{ $branding['login_heading'] }}
                 </h1>
 
                 <p>
-                    Mengelola permohonan, peninjauan dokumen,
-                    pembayaran, audit, hingga penerbitan
-                    sertifikat dalam satu sistem.
+                    {{ $branding['login_subheading'] }}
                 </p>
             </div>
         </aside>

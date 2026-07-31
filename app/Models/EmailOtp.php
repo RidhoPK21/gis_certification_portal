@@ -11,6 +11,8 @@ class EmailOtp extends Model
 
     public const PURPOSE_ADMIN_INVITE = 'admin_invite';
 
+    public const PURPOSE_PASSWORD_RESET = 'password_reset';
+
     protected $guarded = [];
 
     protected function casts(): array

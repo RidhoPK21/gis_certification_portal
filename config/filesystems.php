@@ -55,6 +55,20 @@ return [
             'report' => false,
         ],
 
+        /*
+         * Logo dan favicon disimpan langsung di dalam folder public agar
+         * tidak bergantung pada `storage:link`, yang kerap bermasalah di
+         * shared hosting.
+         */
+        'branding' => [
+            'driver' => 'local',
+            'root' => public_path('branding'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/branding',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

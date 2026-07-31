@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
@@ -54,6 +55,15 @@ class User extends Authenticatable
     return $this
         ->belongsToMany(Role::class)
         ->withTimestamps();
+}
+
+/**
+ * Permohonan milik user sebagai klien. Dipakai untuk mencegah
+ * penghapusan akun yang masih memiliki riwayat sertifikasi.
+ */
+public function applications(): HasMany
+{
+    return $this->hasMany(CertificationApplication::class, 'client_id');
 }
 
 public function hasRole(array|string $roleCode): bool

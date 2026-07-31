@@ -14,8 +14,12 @@
     >
 
     <title>
-        @yield('title', 'Dashboard') — {{ config('app.name') }}
+        @yield('title', 'Dashboard') — {{ $branding['app_name'] }}
     </title>
+
+    @if ($brandFaviconUrl)
+        <link rel="icon" href="{{ $brandFaviconUrl }}">
+    @endif
 
     <script>
         (function () {
@@ -1195,11 +1199,21 @@
     <div class="app-shell">
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <strong>SystemGIS</strong>
+                @if ($brandLogoUrl)
+                    <img
+                        src="{{ $brandLogoUrl }}"
+                        alt="{{ $branding['app_name'] }}"
+                        style="max-width: 100%; max-height: 46px; display: block; margin-bottom: 6px;"
+                    >
+                @endif
 
-                <small>
-                    Certification Portal
-                </small>
+                <strong>{{ $branding['app_name'] }}</strong>
+
+                @if ($branding['app_tagline'] !== '')
+                    <small>
+                        {{ $branding['app_tagline'] }}
+                    </small>
+                @endif
             </div>
 
             <nav class="sidebar-navigation">
@@ -1230,7 +1244,7 @@
                     </button>
                     <div>
                         <strong>
-                            {{ config('systemgis.company_name') }}
+                            {{ $branding['company_name'] }}
                         </strong>
 
                         <div class="topbar-role">
@@ -1337,6 +1351,35 @@
                 @endif
 
                 @yield('content')
+
+                @php
+                    $footerContacts = array_filter([
+                        $branding['contact_address'],
+                        $branding['contact_phone'],
+                        $branding['contact_email'],
+                    ]);
+                @endphp
+
+                @if ($branding['footer_text'] !== '' || $footerContacts !== [])
+                    <footer
+                        style="
+                            margin-top: 32px;
+                            padding: 18px 0 6px;
+                            border-top: 1px solid var(--border);
+                            color: var(--muted);
+                            font-size: 12px;
+                            line-height: 1.7;
+                        "
+                    >
+                        @if ($branding['footer_text'] !== '')
+                            <div>{{ $branding['footer_text'] }}</div>
+                        @endif
+
+                        @if ($footerContacts !== [])
+                            <div>{{ implode(' · ', $footerContacts) }}</div>
+                        @endif
+                    </footer>
+                @endif
             </main>
         </div>
     </div>

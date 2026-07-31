@@ -18,7 +18,7 @@
 
     <hr style="border:none;border-top:1px solid #d9e3ec;margin:24px 0;">
     <p style="font-size:12px;color:#6a7c8d;">
-        {{ config('systemgis.company_name', 'GIS Certification Portal') }}
+        {{ app(\App\Services\SettingService::class)->get('company_name') }}
     </p>
 </body>
 </html>

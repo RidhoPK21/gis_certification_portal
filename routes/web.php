@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AccountActivationController;
+use App\Http\Controllers\Auth\PasswordResetOtpController;
 use App\Http\Controllers\Auth\RegistrationOtpController;
 use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
 use App\Http\Controllers\Client\CorrectiveActionController as ClientCorrectiveActionController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\SecureFileController;
 use App\Http\Controllers\Superadmin\AuditTrailController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
 use App\Http\Controllers\Superadmin\SchemeController;
+use App\Http\Controllers\Superadmin\SettingController;
 use App\Http\Controllers\Superadmin\SniProductController;
 use App\Http\Controllers\Superadmin\SniProductTaxonomyController;
 use App\Http\Controllers\Superadmin\UserController;
@@ -56,6 +58,14 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/activate-account/resend', [AccountActivationController::class, 'resend'])
         ->middleware('throttle:otp-resend-invite')
         ->name('account.activate.resend');
+
+    Route::get('/reset-password', [PasswordResetOtpController::class, 'show'])
+        ->name('password.reset.show');
+    Route::post('/reset-password', [PasswordResetOtpController::class, 'reset'])
+        ->name('password.reset.submit');
+    Route::post('/reset-password/resend', [PasswordResetOtpController::class, 'resend'])
+        ->middleware('throttle:otp-resend-invite')
+        ->name('password.reset.resend');
 });
 
 Route::middleware([
@@ -213,9 +223,13 @@ Route::middleware([
         ->group(function (): void {
             Route::get('/users', [UserController::class, 'index'])->name('users.index');
             Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+            Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
             Route::post('/users', [UserController::class, 'store'])->name('users.store');
             Route::post('/users/{user}/resend-invite', [UserController::class, 'resendInvite'])->name('users.resend-invite');
+            Route::post('/users/{user}/password-reset', [UserController::class, 'sendPasswordReset'])->name('users.password-reset');
+            Route::put('/users/{user}/password', [UserController::class, 'setPassword'])->name('users.password');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
             Route::get('/schemes', [SchemeController::class, 'index'])
                 ->name('schemes.index');
@@ -254,14 +268,7 @@ Route::middleware([
 
             Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail.index');
 
-            Route::view(
-                '/settings',
-                'module.placeholder',
-                [
-                    'title' => 'Pengaturan Sistem',
-                    'description' =>
-                        'Mengelola nomor order, workflow, template PDF, dan notifikasi.',
-                ]
-            )->name('settings.index');
+            Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+            Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         });
 });
