@@ -184,4 +184,49 @@ class AjaxUploadTest extends TestCase
             'invoice_date' => now()->format('Y-m-d'),
         ])->assertRedirect();
     }
+
+    public function test_validasi_dan_completion_field_file_dengan_file_lama_tersimpan(): void
+    {
+        $this->seedAll();
+        $client = $this->user('client');
+
+        $scheme = null;
+        $fileField = null;
+        foreach (CertificationScheme::all() as $s) {
+            $f = $s->sections->flatMap->fields->firstWhere('type', 'file');
+            if ($f) {
+                $scheme = $s;
+                $fileField = $f;
+                break;
+            }
+        }
+        $this->assertNotNull($fileField, 'Harus ada skema dengan minimal satu field file');
+
+        $app = app(ApplicationSubmissionService::class)->createDraft($client->id, $scheme->id, [
+            'company_name' => 'PT Uji',
+            'applicant_name' => 'Budi',
+            'contact_email' => 'budi@uji.test',
+            'contact_phone' => '0811',
+            'form_version' => $scheme->form_version,
+        ]);
+
+        $forms = app(DynamicFormService::class);
+        $schema = $forms->schemeForApplication($app);
+
+        $values = [
+            $fileField->code => [
+                'path' => 'applications/' . $app->id . '/fields/' . $fileField->code . '/file_lama.pdf',
+                'original_name' => 'file_lama.pdf',
+            ],
+        ];
+
+        $rules = $forms->validationRules($schema, $values, true);
+        $this->assertArrayHasKey('fields.' . $fileField->code, $rules);
+
+        $validator = validator(['fields' => $values], $rules, $forms->validationMessages(), $forms->validationAttributes($schema, $values));
+        $errors = $validator->errors();
+        $this->assertFalse($errors->has('fields.' . $fileField->code), 'Validasi untuk field ' . $fileField->label . ' tidak boleh gagal saat ada file lama tersimpan: ' . implode(', ', $errors->get('fields.' . $fileField->code)));
+
+        $this->assertTrue($forms->isFieldFilled($fileField, $values[$fileField->code]));
+    }
 }

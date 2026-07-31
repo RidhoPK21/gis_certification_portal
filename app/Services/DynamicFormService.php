@@ -116,11 +116,33 @@ class DynamicFormService
             if ($field->type === 'url') {
                 $base[] = 'url';
             }
-            if (in_array($field->type, ['checkbox_group', 'multiselect', 'file'], true)) {
+            if (in_array($field->type, ['checkbox_group', 'multiselect'], true)) {
                 $base[] = 'array';
             }
+            if ($field->type === 'file' && $forSubmit && $field->is_required) {
+                $base[] = function (string $attribute, mixed $value, \Closure $fail) {
+                    if (blank($value)) {
+                        $fail('Kolom :attribute wajib diunggah.');
+                        return;
+                    }
+                    if ($value instanceof \Illuminate\Http\UploadedFile && ! $value->isValid()) {
+                        $fail('Kolom :attribute gagal diunggah.');
+                        return;
+                    }
+                    if (is_array($value) && empty($value['path']) && empty($value['original_name']) && empty($value['name']) && empty($value['filename'])) {
+                        $fail('Kolom :attribute belum memiliki file yang tersimpan.');
+                        return;
+                    }
+                };
+            }
 
-            $rules['fields.' . $field->code] = array_values(array_unique($base));
+            $uniqueRules = [];
+            foreach ($base as $rule) {
+                if (! in_array($rule, $uniqueRules, true)) {
+                    $uniqueRules[] = $rule;
+                }
+            }
+            $rules['fields.' . $field->code] = $uniqueRules;
         }
 
         return $rules;
@@ -164,7 +186,7 @@ class DynamicFormService
         $scheme = $this->schemeForApplication($application);
         $requiredFields = $this->visibleFields($scheme, $values)->where('is_required', true);
         $fieldTotal = $requiredFields->count();
-        $fieldDone = $requiredFields->filter(fn ($field) => filled(data_get($values, $field->code)))->count();
+        $fieldDone = $requiredFields->filter(fn ($field) => $this->isFieldFilled($field, data_get($values, $field->code)))->count();
         $docs = $this->applicableDocuments($scheme, $values)->where('requirement', 'required');
         $uploaded = $application->documents()
             ->whereIn('document_code', $docs->pluck('code'))
@@ -173,6 +195,36 @@ class DynamicFormService
         $total = $fieldTotal + $docs->count();
 
         return $total === 0 ? 100 : (int) floor((($fieldDone + $uploaded) / $total) * 100);
+    }
+
+    public function isFieldFilled(SchemeField $field, mixed $value): bool
+    {
+        if (blank($value)) {
+            return false;
+        }
+
+        if ($field->type === 'file') {
+            if ($value instanceof \Illuminate\Http\UploadedFile) {
+                return $value->isValid();
+            }
+
+            if (is_array($value)) {
+                return ! empty($value['path']) || ! empty($value['original_name']) || ! empty($value['name']) || ! empty($value['filename']);
+            }
+
+            if (is_string($value)) {
+                $decoded = json_decode($value, true);
+                if (is_array($decoded)) {
+                    return ! empty($decoded['path']) || ! empty($decoded['original_name']) || ! empty($decoded['name']) || ! empty($decoded['filename']);
+                }
+
+                return trim($value) !== '';
+            }
+
+            return false;
+        }
+
+        return filled($value);
     }
 
     public function snapshot(CertificationScheme $scheme): array

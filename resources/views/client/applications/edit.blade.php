@@ -212,10 +212,10 @@
                                 @elseif ($field->type === 'file')
                                     @php
                                         $fileData = is_array($value) ? $value : (is_string($value) && str_starts_with($value, '{') ? json_decode($value, true) : null);
-                                        $fileName = $fileData['original_name'] ?? (is_string($value) ? $value : null);
-                                        $filePath = $fileData['path'] ?? null;
+                                        $fileName = $fileData['original_name'] ?? $fileData['name'] ?? $fileData['filename'] ?? (is_string($value) && !empty($value) && !str_starts_with($value, '{') ? $value : null);
+                                        $filePath = $fileData['path'] ?? $fileData['file_path'] ?? null;
                                     @endphp
-                                    <div class="file-field-wrapper">
+                                    <div class="file-field-wrapper" data-has-file="{{ $fileName ? 'true' : 'false' }}">
                                         <div class="small text-success mb-1 flex items-center gap-2" id="file-current-{{ $field->code }}" style="{{ $fileName ? '' : 'display:none' }}">
                                             <span>✓ File tersimpan: <strong>{{ $fileName }}</strong></span>
                                             @if ($filePath)
@@ -226,6 +226,7 @@
                                         <input class="form-control field-file-input" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]"
                                                type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip,.rar"
                                                data-field-code="{{ $field->code }}"
+                                               data-has-file="{{ $fileName ? 'true' : 'false' }}"
                                                data-upload-url="{{ route('client.applications.upload-field-file', $application) }}">
                                         <small class="text-muted d-block mt-1">Format diperbolehkan: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, ZIP, RAR (Maks. 20MB){{ $fileName ? ' · Pilih file baru jika ingin mengganti.' : '' }}</small>
                                     </div>
@@ -327,7 +328,15 @@ window.updateCompletion = function(serverPct) {
                 filled = field.querySelectorAll('input:checked').length > 0;
             } else if (input.type === 'file') {
                 const cur = field.querySelector('[id^="file-current-"]');
-                filled = (cur && cur.style.display !== 'none' && cur.textContent.trim() !== '') || (input.files && input.files.length > 0);
+                const status = field.querySelector('[id^="file-status-"]');
+                const wrapper = field.querySelector('.file-field-wrapper');
+                const hasSavedFile = (input.dataset && (input.dataset.hasFile === 'true' || input.dataset.hasFile === '1')) ||
+                                     (wrapper && wrapper.dataset && (wrapper.dataset.hasFile === 'true' || wrapper.dataset.hasFile === '1')) ||
+                                     (field.dataset && (field.dataset.hasFile === 'true' || field.dataset.hasFile === '1')) ||
+                                     (cur && cur.style.display !== 'none' && cur.textContent.trim() !== '') ||
+                                     (status && status.style.display !== 'none' && status.textContent.includes('Berhasil diunggah'));
+                const hasNewFile = (input.files && input.files.length > 0) || (input.value && input.value.trim() !== '');
+                filled = hasSavedFile || hasNewFile;
             } else {
                 filled = input.value && input.value.trim() !== '';
             }
@@ -476,6 +485,18 @@ window.updateCompletion = function(serverPct) {
                     statusEl.style.color='#17663a';
                     statusEl.textContent='Berhasil diunggah '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+'. Anda bisa memilih file lagi untuk mengganti.';
                 }
+                input.dataset.hasFile = 'true';
+                input.setAttribute('data-has-file', 'true');
+                const wrapper = input.closest('.file-field-wrapper');
+                if (wrapper) {
+                    wrapper.dataset.hasFile = 'true';
+                    wrapper.setAttribute('data-has-file', 'true');
+                }
+                const fieldGroup = input.closest('.dynamic-field');
+                if (fieldGroup) {
+                    fieldGroup.dataset.hasFile = 'true';
+                    fieldGroup.setAttribute('data-has-file', 'true');
+                }
                 if(data.completion!==undefined&&typeof window.updateCompletion==='function'){
                     window.updateCompletion(data.completion);
                 }else if(typeof window.updateCompletion==='function'){
@@ -581,6 +602,19 @@ window.updateCompletion = function(serverPct) {
                 if (input.type === 'checkbox' || input.type === 'radio') {
                     const checked = field.querySelectorAll('input:checked');
                     if (checked.length === 0) isEmpty = true;
+                } else if (input.type === 'file') {
+                    const cur = field.querySelector('[id^="file-current-"]');
+                    const status = field.querySelector('[id^="file-status-"]');
+                    const wrapper = field.querySelector('.file-field-wrapper');
+                    const hasSavedFile = (input.dataset && (input.dataset.hasFile === 'true' || input.dataset.hasFile === '1')) ||
+                                         (wrapper && wrapper.dataset && (wrapper.dataset.hasFile === 'true' || wrapper.dataset.hasFile === '1')) ||
+                                         (field.dataset && (field.dataset.hasFile === 'true' || field.dataset.hasFile === '1')) ||
+                                         (cur && cur.style.display !== 'none' && cur.textContent.trim() !== '') ||
+                                         (status && status.style.display !== 'none' && status.textContent.includes('Berhasil diunggah'));
+                    const hasNewFile = (input.files && input.files.length > 0) || (input.value && input.value.trim() !== '');
+                    if (!hasSavedFile && !hasNewFile) {
+                        isEmpty = true;
+                    }
                 } else {
                     if (!input.value || input.value.trim() === '') isEmpty = true;
                 }

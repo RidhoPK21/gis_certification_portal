@@ -73,6 +73,8 @@ class ApplicationSubmissionService
             $application->update(['updated_by' => $userId]);
         });
 
+        $application->unsetRelation('values');
+
         $this->audit->log('application.draft_saved', $application, [], ['fields' => array_keys($values)]);
     }
 
