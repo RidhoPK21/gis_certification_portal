@@ -151,9 +151,11 @@
             </button>
         </form>
 
+        @include('auth.partials.spam-notice')
+
         <div
             class="login-help"
-            style="margin-top: 20px;"
+            style="margin-top: 16px;"
         >
             Kode berlaku {{ config('systemgis.otp_ttl_minutes') }} menit.
             Kode reset diminta melalui Superadmin SystemGIS.

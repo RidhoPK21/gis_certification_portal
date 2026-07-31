@@ -126,7 +126,8 @@ class AccountActivationController extends Controller
             ->withInput($request->only('email'))
             ->with(
                 'status',
-                'Jika email tersebut terdaftar dan menunggu aktivasi, kode baru telah dikirim.'
+                'Jika email tersebut terdaftar dan menunggu aktivasi, kode baru telah dikirim. '
+                . 'Bila belum masuk dalam 1-2 menit, periksa folder Spam atau tab Promosi.'
             );
     }
 }

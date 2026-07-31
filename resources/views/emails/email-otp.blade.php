@@ -67,6 +67,12 @@
         jangan bagikan kode tersebut kepada siapa pun.
     </p>
 
+    <p style="font-size:13px;color:#6a7c8d;background:#fffaed;border:1px solid #f2d799;border-radius:8px;padding:10px 12px;">
+        Email ini masuk ke folder <strong>Spam</strong> atau <strong>Promosi</strong>?
+        Tekan &ldquo;Bukan spam&rdquo; dan tambahkan alamat pengirim ke kontak Anda,
+        agar pemberitahuan berikutnya langsung masuk ke kotak masuk.
+    </p>
+
     <hr style="border:none;border-top:1px solid #d9e3ec;margin:24px 0;">
     <p style="font-size:12px;color:#6a7c8d;">
         {{ app(\App\Services\SettingService::class)->get('company_name') }}

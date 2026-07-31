@@ -58,7 +58,8 @@ class RegisterResponse implements RegisterResponseContract
         if ($request->wantsJson()) {
             return new JsonResponse([
                 'message' =>
-                    'Pendaftaran berhasil. Kode verifikasi telah dikirim ke email Anda.',
+                    'Pendaftaran berhasil. Kode verifikasi telah dikirim ke email Anda. '
+                    . 'Bila belum masuk dalam 1-2 menit, periksa folder Spam atau tab Promosi.',
             ], 201);
         }
 
@@ -66,7 +67,8 @@ class RegisterResponse implements RegisterResponseContract
             ->route('register.verify.show')
             ->with(
                 'status',
-                'Kode verifikasi telah dikirim ke email Anda.'
+                'Kode verifikasi telah dikirim ke email Anda. '
+                . 'Bila belum masuk dalam 1-2 menit, periksa folder Spam atau tab Promosi.'
             );
     }
 }

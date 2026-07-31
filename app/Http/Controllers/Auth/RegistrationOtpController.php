@@ -105,7 +105,8 @@ class RegistrationOtpController extends Controller
 
         return back()->with(
             'status',
-            'Kode verifikasi baru telah dikirim ke email Anda.'
+            'Kode verifikasi baru telah dikirim ke email Anda. '
+            . 'Bila belum masuk dalam 1-2 menit, periksa folder Spam atau tab Promosi.'
         );
     }
 

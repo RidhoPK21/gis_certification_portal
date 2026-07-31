@@ -100,7 +100,11 @@ class UserController extends Controller
 
         return redirect()
             ->route('superadmin.users.index')
-            ->with('success', 'Undangan aktivasi telah dikirim ke ' . $user->email . '.');
+            ->with(
+                'success',
+                'Undangan aktivasi telah dikirim ke ' . $user->email
+                . '. Ingatkan penerima untuk memeriksa folder Spam bila email belum masuk.'
+            );
     }
 
     public function resendInvite(
@@ -184,7 +188,11 @@ class UserController extends Controller
 
         $audit->log('user.password_reset_sent', $user);
 
-        return back()->with('success', 'Kode reset kata sandi dikirim ke ' . $user->email . '.');
+        return back()->with(
+            'success',
+            'Kode reset kata sandi dikirim ke ' . $user->email
+            . '. Ingatkan penerima untuk memeriksa folder Spam bila email belum masuk.'
+        );
     }
 
     /**

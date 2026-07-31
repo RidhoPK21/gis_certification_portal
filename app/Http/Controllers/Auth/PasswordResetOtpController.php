@@ -94,7 +94,11 @@ class PasswordResetOtpController extends Controller
 
         return back()
             ->withInput($request->only('email'))
-            ->with('status', 'Jika email tersebut terdaftar, kode reset telah dikirim.');
+            ->with(
+                'status',
+                'Jika email tersebut terdaftar, kode reset telah dikirim. '
+                . 'Bila belum masuk dalam 1-2 menit, periksa folder Spam atau tab Promosi.'
+            );
     }
 
     private function findUser(string $email): ?User
