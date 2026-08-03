@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\PermissionMiddleware;
+use App\Http\Middleware\PreventProxyTransform;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,10 @@ return Application::configure(
     )
     ->withMiddleware(
         function (Middleware $middleware): void {
+            $middleware->web(prepend: [
+                PreventProxyTransform::class,
+            ]);
+
             $middleware->alias([
                 'active' => EnsureActiveUser::class,
                 'role' => RoleMiddleware::class,
