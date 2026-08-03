@@ -111,7 +111,19 @@ require __DIR__.'/../../../gis_app/vendor/autoload.php';
 $app = require_once __DIR__.'/../../../gis_app/bootstrap/app.php';
 ```
 
-### A8. Optimalkan & SSL
+### A8. Folder unggahan logo
+
+Logo dan favicon dari menu *Pengaturan Sistem* disimpan di `public/branding` (sengaja tidak lewat `storage:link`, yang kerap bermasalah di shared hosting):
+
+```bash
+cd ~/gis_app
+mkdir -p public/branding
+chmod 775 public/branding
+```
+
+Folder ini diabaikan git, jadi isinya tidak akan tertimpa saat `git pull`.
+
+### A9. Optimalkan & SSL
 
 ```bash
 cd ~/gis_app
@@ -122,7 +134,7 @@ php artisan view:cache
 
 Pasang SSL lewat panel (*Security → SSL*) dan aktifkan **Force HTTPS**.
 
-### A9. Cron (opsional)
+### A10. Cron (opsional)
 
 Notifikasi portal dikirim lewat queue. Bila `QUEUE_CONNECTION=sync` (disarankan di shared hosting), langkah ini tidak diperlukan. Bila memakai `database`, tambahkan cron tiap 5 menit:
 
@@ -230,10 +242,16 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d portal.domain-anda.com
 ```
 
-### B7. Optimalkan
+### B7. Folder unggahan logo & optimalkan
 
 ```bash
 cd /var/www/gis_app
+mkdir -p public/branding
+sudo chown -R www-data:www-data public/branding
+sudo chmod 775 public/branding
+```
+
+```bash
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -277,9 +295,18 @@ cd ~/gis_app            # VPS: cd /var/www/gis_app
 git pull origin main
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
+mkdir -p public/branding && chmod 775 public/branding
+php artisan cache:clear
 php artisan config:clear && php artisan config:cache
 php artisan route:cache && php artisan view:cache
 ```
+
+Catatan tiap langkah:
+
+- **`migrate --force` jangan dilewatkan.** Identitas portal dibaca pada setiap halaman; bila ada migrasi baru yang belum dijalankan, aplikasi memang tetap hidup dengan nilai bawaan, tetapi menu *Pengaturan Sistem* tidak akan berfungsi.
+- **`mkdir public/branding`** memastikan unggahan logo tidak gagal karena folder belum ada.
+- **`cache:clear`** membuang cache pengaturan lama agar perubahan branding langsung terlihat.
+- Urutan `config:clear` lalu `config:cache` — jangan dibalik.
 
 Bila di server pernah ada perubahan file manual, buang dulu supaya `git pull` tidak bentrok:
 
@@ -287,7 +314,7 @@ Bila di server pernah ada perubahan file manual, buang dulu supaya `git pull` ti
 git checkout -- .
 ```
 
-`.env` dan `vendor/` tidak dilacak git, jadi tidak akan tertimpa.
+`.env`, `vendor/`, dan `public/branding/` tidak dilacak git, jadi tidak akan tertimpa.
 
 ---
 
@@ -364,12 +391,19 @@ Batas kirim ulang OTP (1×/menit, 5×/jam) dan batas percobaan login (5×/menit)
 2. **Ganti password superadmin** lewat menu Profil.
 3. Uji pengiriman email: **User & Role → Tambah Akun** dengan email asli → kode aktivasi harus masuk ke inbox.
 4. Uji registrasi klien di `/register` → kode OTP → verifikasi → login.
-5. Pastikan dropdown **Produk & Kategori SNI** terisi (12 grup, 139 kategori). Bila kosong:
+5. Buka **Pengaturan Sistem** → unggah logo & favicon perusahaan, isi teks footer dan kontak. Bila halaman ini error, berarti migrasi belum dijalankan (`php artisan migrate --force`).
+6. Buka **User & Role → Kelola** pada satu akun → coba **Kirim Kode Reset** dan pastikan emailnya masuk.
+7. Pastikan dropdown **Produk & Kategori SNI** terisi (12 grup, 139 kategori). Bila kosong:
    ```bash
    php artisan db:seed --class=SniProductTaxonomySeeder --force
    ```
 
 Akun staf **tidak dibuat lewat seeder**. Superadmin mengundang lewat **User & Role → Tambah Akun**; staf menerima kode aktivasi dan menentukan kata sandinya sendiri.
+
+Beberapa hal yang mungkin ditanyakan pengguna:
+
+- **Kode OTP masuk folder spam.** Wajar bila pengirimnya akun Gmail untuk domain berbeda. Aplikasi sudah menampilkan pemberitahuan agar pengguna memeriksa folder Spam/Promosi, tetapi solusi jangka panjangnya adalah memakai email domain perusahaan dengan SPF & DKIM yang benar.
+- **Akun tidak dapat dihapus.** Disengaja: akun yang sudah memiliki permohonan tidak boleh dihapus, karena penghapusannya akan ikut menghapus seluruh permohonan, dokumen, invoice, dan sertifikat terkait. Nonaktifkan akunnya saja.
 
 ---
 
@@ -387,6 +421,9 @@ Akun staf **tidak dibuat lewat seeder**. Superadmin mengundang lewat **User & Ro
 | CSS berantakan / tautan salah | `APP_URL` tidak sesuai domain, atau domain memakai bentuk subfolder (`/~username`) |
 | Email OTP tidak terkirim | Uji: `php artisan tinker --execute="Mail::raw('tes', fn($m) => $m->to('anda@email.com')->subject('Tes'));"` Beberapa shared hosting memblokir SMTP keluar — pakai SMTP milik hosting tersebut. |
 | Turnstile menolak terus | Hostname domain belum didaftarkan di widget Cloudflare, atau ada `\r` pada `TURNSTILE_SECRET_KEY`. |
+| Menu **Pengaturan Sistem** error | Tabel `settings` belum ada — jalankan `php artisan migrate --force`. Halaman lain tetap berjalan dengan identitas bawaan. |
+| Unggah logo gagal / logo tidak muncul | Folder `public/branding` belum ada atau tidak bisa ditulis: `mkdir -p public/branding && chmod 775 public/branding`. Pada VPS, pastikan pemiliknya `www-data`. |
+| Logo sudah diganti tapi tampilan lama | Cache pengaturan: `php artisan cache:clear`. |
 
 > **Jangan pernah** menyalakan `APP_DEBUG=true` di server publik — halaman error Laravel menampilkan seluruh isi `.env`, termasuk password.
 
@@ -394,6 +431,6 @@ Akun staf **tidak dibuat lewat seeder**. Superadmin mengundang lewat **User & Ro
 
 ## G. Yang tidak boleh diunggah ke server
 
-`vendor/`, `node_modules/`, `.env`, `.git/` (bila mengunggah manual), `database/database.sqlite`, `storage/logs/*.log`, `.phpunit.result.cache`, `public/hot`.
+`vendor/`, `node_modules/`, `.env`, `.git/` (bila mengunggah manual), `database/database.sqlite`, `storage/logs/*.log`, `.phpunit.result.cache`, `public/hot`, `public/branding/` (isi unggahan server, jangan ditimpa dari lokal).
 
 Cara paling aman adalah `git clone` — semuanya sudah dikecualikan lewat `.gitignore`.
