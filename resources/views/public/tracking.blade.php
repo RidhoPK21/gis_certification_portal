@@ -1,104 +1,300 @@
-@extends('layouts.guest')
+@extends('layouts.auth')
 
-@section('title', 'Cek Status Permohonan Sertifikasi')
+@section('title', 'Cek Status Permohonan')
 
-@section('body')
+@section('wrapper_class', 'auth-wrapper--wide')
+
+@section('side_heading', 'Lacak permohonan sertifikasi Anda')
+
+@section('side_subheading', 'Masukkan nomor permohonan untuk melihat sampai tahap mana prosesnya berjalan. Halaman ini terbuka tanpa perlu login dan tidak menampilkan data perusahaan maupun dokumen.')
+
+@section('content')
     <style>
-        .track-header {
+        /*
+         * Hasil pelacakan bisa lebih tinggi dari layar; tanpa ini kartu
+         * dipusatkan secara vertikal dan bagian atasnya terpotong saat discroll.
+         */
+        .auth-content {
+            align-items: flex-start;
+            padding-top: 42px;
+            padding-bottom: 42px;
+        }
+
+        .track-badge {
+            display: inline-block;
+            padding: 5px 13px;
+            border-radius: 999px;
+            background: var(--light-blue);
+            color: #0b5a92;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .track-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .track-qr {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 18px;
+            margin-bottom: 22px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #fbfdff;
+        }
+
+        /* Latar QR dikunci putih supaya kontrasnya tetap terbaca pemindai. */
+        .track-qr-frame {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
             background: #ffffff;
-            border-bottom: 1px solid #dce5ee;
+            line-height: 0;
         }
-        .track-nav {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 16px; padding: 16px 0; flex-wrap: wrap;
+
+        .track-qr-info {
+            flex: 1;
+            min-width: 210px;
         }
-        .track-brand { display: flex; align-items: center; gap: 12px; color: #062f57; font-weight: 700; }
-        .track-main { padding: 32px 0 48px; }
-        .track-card {
-            width: min(560px, 100%); margin: 0 auto; padding: 28px;
-            border: 1px solid var(--border); border-radius: 16px; background: #ffffff;
-            box-shadow: 0 12px 32px rgba(15, 45, 75, 0.08);
+
+        .track-step {
+            display: flex;
+            gap: 14px;
+            padding-bottom: 18px;
         }
-        .track-result { width: min(760px, 100%); margin: 24px auto 0; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #e6f2fb; color: #0b5a92; font-size: 13px; font-weight: 700; }
-        .tl-item { display: flex; gap: 12px; padding-bottom: 14px; }
-        .tl-dot { width: 12px; height: 12px; margin-top: 4px; border-radius: 999px; background: #cbd8e3; flex: 0 0 auto; }
-        .tl-item.done .tl-dot { background: #1c7a45; }
-        .tl-item.current .tl-dot { background: #0b70b8; box-shadow: 0 0 0 4px rgba(11,112,184,.15); }
-        .tl-item h4 { margin: 0; font-size: 14px; color: var(--navy); }
-        .tl-item p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-        .alert-success { border: 1px solid #b6e0c2; background: #f2fbf5; color: #1c7a45; padding: 12px 14px; border-radius: 10px; }
-        .btn-light { border: 1px solid #cbd8e3; background: #fff; color: var(--navy); }
+
+        .track-step-dot {
+            flex: 0 0 auto;
+            width: 13px;
+            height: 13px;
+            margin-top: 4px;
+            border-radius: 999px;
+            background: #cbd8e3;
+        }
+
+        .track-step.done .track-step-dot {
+            background: #1c7a45;
+        }
+
+        .track-step.current .track-step-dot {
+            background: var(--blue);
+            box-shadow: 0 0 0 4px rgba(8, 120, 201, 0.16);
+        }
+
+        .track-step h4 {
+            margin: 0;
+            color: var(--navy);
+            font-size: 15px;
+        }
+
+        .track-step p {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .track-dates {
+            margin-top: 5px;
+            color: #35506b;
+            font-size: 12px;
+        }
+
+        .track-note {
+            padding: 13px 15px;
+            border: 1px solid #a9dfbd;
+            border-radius: 11px;
+            color: #17663a;
+            background: #ecfbf2;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .track-alert {
+            margin-bottom: 20px;
+            padding: 13px 15px;
+            border: 1px solid #f0c2c2;
+            border-radius: 11px;
+            color: #a12626;
+            background: #fdf2f2;
+            font-size: 14px;
+            line-height: 1.6;
+        }
     </style>
 
-    <header class="track-header">
-        <div class="container track-nav">
-            <a class="track-brand" href="{{ route('public.home') }}" style="text-decoration:none">
-                <span class="brand-mark">GIS</span>
-                <span>PT Global Inspeksi Sertifikasi<br><small class="muted">Cek Status Permohonan</small></span>
-            </a>
-            <a class="btn btn-primary" href="{{ route('login') }}">Masuk Portal</a>
-        </div>
-    </header>
-
-    <main class="track-main">
-        <div class="track-card">
+    <section class="auth-card">
+        <div class="auth-heading">
             <h2>Cek Status Permohonan</h2>
-            <p class="muted">Masukkan nomor order atau nomor sertifikat. Halaman publik hanya menampilkan tahapan umum tanpa dokumen atau data sensitif.</p>
-            @if ($errors->any())
-                <div class="alert alert-danger">{{ $errors->first('order_number') }}</div>
-            @endif
-            @isset($notFound)
-                <div class="alert alert-danger">Nomor <strong>{{ $notFound }}</strong> tidak ditemukan. Periksa kembali penulisannya.</div>
-            @endisset
-            <form method="post" action="{{ route('public.track') }}">
-                @csrf
-                <div class="form-group">
-                    <label class="form-label" for="order_number">Nomor Order / Nomor Sertifikat</label>
-                    <input class="form-control" id="order_number" name="order_number" value="{{ old('order_number', $notFound ?? '') }}" placeholder="Contoh: 013/LSSM-GIS/V/2026" required autocomplete="off">
-                </div>
-                <button class="btn btn-primary btn-block">Cek Status</button>
-            </form>
+
+            <p>
+                Masukkan nomor permohonan (nomor order) atau nomor sertifikat Anda.
+            </p>
         </div>
 
-        @isset($result)
-            <div class="track-result">
-                <div class="track-card" style="width:100%">
-                    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
-                        <div>
-                            <h2 style="margin:0">Status {{ $result['order_number'] }}</h2>
-                            <p class="muted" style="margin:4px 0 0">{{ $result['scheme'] }} · Dikirim {{ $result['submitted_at'] ?: '-' }}</p>
-                        </div>
-                        <span class="badge">{{ $result['status_label'] }}</span>
-                    </div>
-                    @foreach ($result['timeline'] as $item)
-                        <div class="tl-item {{ $item['state'] }}">
-                            <span class="tl-dot"></span>
-                            <div>
-                                <h4>{{ $item['label'] }}</h4>
-                                <p>{{ $item['state'] === 'done' ? 'Tahap telah selesai.' : ($item['state'] === 'current' ? 'Sedang diproses oleh tim terkait.' : 'Menunggu tahap sebelumnya selesai.') }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                    @if ($result['certificate_available'])
-                        <div class="alert-success mt-2">
-                            <strong>Sertifikat telah tersedia.</strong>
-                            @if ($result['certificate_number'])
-                                <div style="margin-top:6px">
-                                    Nomor sertifikat <strong>{{ $result['certificate_number'] }}</strong>
-                                    @if ($result['issued_date'])
-                                        · Terbit {{ $result['issued_date'] }}
-                                    @endif
-                                    @if ($result['expiry_date'])
-                                        · Berlaku sampai {{ $result['expiry_date'] }}
-                                    @endif
-                                </div>
-                            @endif
-                            <div style="margin-top:6px">Pengunduhan tetap melalui login klien atau link aman dari Tim Teknis.</div>
-                        </div>
-                    @endif
-                </div>
+        @if ($errors->any())
+            <div class="track-alert">
+                {{ $errors->first('order_number') }}
+            </div>
+        @endif
+
+        @isset($notFound)
+            <div class="track-alert">
+                Nomor <strong>{{ $notFound }}</strong> tidak ditemukan. Periksa kembali penulisannya.
             </div>
         @endisset
-    </main>
+
+        <form
+            method="POST"
+            action="{{ route('public.track') }}"
+        >
+            @csrf
+
+            <div class="form-group">
+                <label
+                    class="form-label"
+                    for="order_number"
+                >
+                    Nomor Permohonan / Nomor Sertifikat
+                </label>
+
+                <input
+                    class="form-control"
+                    id="order_number"
+                    name="order_number"
+                    value="{{ old('order_number', $notFound ?? '') }}"
+                    placeholder="Contoh: 013/LSSM-GIS/V/2026"
+                    autocomplete="off"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <button
+                class="login-button"
+                type="submit"
+            >
+                Cek Status
+            </button>
+        </form>
+
+        <a
+            class="secondary-button"
+            href="{{ route('login') }}"
+        >
+            Masuk ke portal klien
+        </a>
+    </section>
+
+    @isset($result)
+        <section
+            class="auth-card"
+            style="margin-top: 22px;"
+        >
+            <div class="track-summary">
+                <div>
+                    <h2 style="margin: 0; color: var(--navy); font-size: 22px;">
+                        Status {{ $result['order_number'] }}
+                    </h2>
+
+                    <p style="margin: 5px 0 0; color: var(--muted); font-size: 14px;">
+                        {{ $result['scheme'] }} · Dikirim {{ $result['submitted_at'] ?: '-' }}
+                    </p>
+                </div>
+
+                <span class="track-badge">{{ $result['status_label'] }}</span>
+            </div>
+
+            <div class="track-qr">
+                <div class="track-qr-frame">
+                    {!! $result['qr_svg'] !!}
+                </div>
+
+                <div class="track-qr-info">
+                    <strong>QR pelacakan permohonan</strong>
+
+                    <p style="margin: 7px 0 12px; color: var(--muted); font-size: 13px; line-height: 1.6;">
+                        Pindai QR ini untuk membuka halaman progres yang sama di perangkat lain.
+                        QR hanya menampilkan tahapan dan tanggal, <strong>tidak memberi akses ke
+                        dokumen atau berkas sertifikat</strong>.
+                    </p>
+
+                    <a
+                        class="secondary-button"
+                        style="margin-top: 0;"
+                        href="{{ $result['qr_download_url'] }}"
+                    >
+                        Unduh QR
+                    </a>
+                </div>
+            </div>
+
+            <h3 style="margin: 0 0 16px; color: var(--navy); font-size: 16px;">
+                Progres Permohonan
+            </h3>
+
+            @foreach ($result['timeline'] as $item)
+                <div class="track-step {{ $item['state'] }}">
+                    <span class="track-step-dot"></span>
+
+                    <div>
+                        <h4>{{ $item['label'] }}</h4>
+
+                        <p>
+                            @if ($item['state'] === 'done')
+                                Tahap telah selesai.
+                            @elseif ($item['state'] === 'current')
+                                Sedang diproses oleh tim terkait.
+                            @else
+                                Menunggu tahap sebelumnya selesai.
+                            @endif
+                        </p>
+
+                        @if ($item['started_at'])
+                            <div class="track-dates">
+                                Mulai {{ $item['started_at'] }}
+
+                                @if ($item['finished_at'])
+                                    · Selesai {{ $item['finished_at'] }}
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+
+            @if ($result['certificate_available'])
+                <div class="track-note">
+                    <strong>Sertifikat telah tersedia.</strong>
+
+                    @if ($result['certificate_number'])
+                        <div style="margin-top: 6px;">
+                            Nomor sertifikat <strong>{{ $result['certificate_number'] }}</strong>
+
+                            @if ($result['issued_date'])
+                                · Terbit {{ $result['issued_date'] }}
+                            @endif
+
+                            @if ($result['expiry_date'])
+                                · Berlaku sampai {{ $result['expiry_date'] }}
+                            @endif
+                        </div>
+                    @endif
+
+                    <div style="margin-top: 6px;">
+                        Pengunduhan berkas sertifikat tetap melalui login klien atau link aman dari Tim Teknis.
+                    </div>
+                </div>
+            @endif
+        </section>
+    @endisset
 @endsection

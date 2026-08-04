@@ -52,6 +52,31 @@
         </section>
     </div>
 
+    @if ($trackingQr)
+        <section class="card mt-2">
+            <h2>QR Pelacakan Permohonan</h2>
+            <div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-top:6px">
+                {{-- Latar QR sengaja tetap putih di mode gelap: kode QR
+                     butuh kontras terang agar tetap terbaca pemindai. --}}
+                <div style="background:#ffffff;padding:10px;border:1px solid var(--border);border-radius:10px;line-height:0">
+                    {!! $trackingQr !!}
+                </div>
+                <div style="flex:1;min-width:240px">
+                    <p class="small muted" style="margin:0 0 10px">
+                        Pindai atau bagikan QR ini untuk memantau progres permohonan
+                        <strong>{{ $application->order_number }}</strong> lewat halaman publik.
+                        Halaman tersebut hanya menampilkan tahapan beserta tanggalnya dan
+                        <strong>tidak memberi akses ke dokumen Anda</strong>.
+                    </p>
+                    <div class="flex gap-1 wrap">
+                        <a class="btn btn-primary btn-sm" href="{{ $trackingQrDownloadUrl }}">Unduh QR</a>
+                        <a class="btn btn-light btn-sm" href="{{ $trackingUrl }}" target="_blank" rel="noopener">Buka halaman pelacakan</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
     <section class="card mt-2">
         <h2>Dokumen Permohonan</h2>
         <div class="table-wrap">

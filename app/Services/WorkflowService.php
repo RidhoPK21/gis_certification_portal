@@ -144,18 +144,35 @@ class WorkflowService
         return $info;
     }
 
+    /**
+     * Ringkasan tahapan untuk halaman publik: label tahap, statusnya, serta
+     * tanggal masuk dan tanggal selesai tiap tahap.
+     *
+     * Tanggal diambil dari application_status_history karena hanya tabel itu
+     * yang menyimpan kapan sebuah status benar-benar terjadi (kolom
+     * action_date), bukan sekadar kapan barisnya ditulis sistem.
+     */
     public function publicTimeline(CertificationApplication $application): array
     {
         $groups = [
-            ['code' => 'application', 'label' => 'Permohonan', 'rank' => 1],
-            ['code' => 'invoice', 'label' => 'Invoice & Pembayaran', 'rank' => 6],
-            ['code' => 'stage1', 'label' => 'Audit Tahap 1', 'rank' => 9],
-            ['code' => 'stage2', 'label' => 'Audit Tahap 2', 'rank' => 10],
-            ['code' => 'qms', 'label' => 'Audit Lapangan / QMS', 'rank' => 11],
-            ['code' => 'ca', 'label' => 'Tindakan Koreksi', 'rank' => 12],
-            ['code' => 'review', 'label' => 'Review Sertifikat', 'rank' => 14],
-            ['code' => 'final', 'label' => 'Sertifikat Final', 'rank' => 15],
-            ['code' => 'surveillance', 'label' => 'Surveillance', 'rank' => 17],
+            ['code' => 'application', 'label' => 'Permohonan', 'rank' => 1, 'statuses' => [
+                'submitted', 'admin_review', 'technical_review', 'revision_requested',
+                'client_revision', 'rejected', 'application_approved',
+            ]],
+            ['code' => 'invoice', 'label' => 'Invoice & Pembayaran', 'rank' => 6, 'statuses' => [
+                'invoice_process', 'payment_partial', 'payment_completed',
+            ]],
+            ['code' => 'stage1', 'label' => 'Audit Tahap 1', 'rank' => 9, 'statuses' => ['stage_1_audit']],
+            ['code' => 'stage2', 'label' => 'Audit Tahap 2', 'rank' => 10, 'statuses' => ['stage_2_audit']],
+            ['code' => 'qms', 'label' => 'Audit Lapangan / QMS', 'rank' => 11, 'statuses' => ['qms_audit']],
+            ['code' => 'ca', 'label' => 'Tindakan Koreksi', 'rank' => 12, 'statuses' => [
+                'corrective_action', 'corrective_revision',
+            ]],
+            ['code' => 'review', 'label' => 'Review Sertifikat', 'rank' => 14, 'statuses' => ['certificate_review']],
+            ['code' => 'final', 'label' => 'Sertifikat Final', 'rank' => 15, 'statuses' => [
+                'final_certificate', 'completed',
+            ]],
+            ['code' => 'surveillance', 'label' => 'Surveillance', 'rank' => 17, 'statuses' => ['surveillance']],
         ];
 
         $rank = [
@@ -169,14 +186,82 @@ class WorkflowService
         ];
 
         $current = $rank[$application->status] ?? 0;
+        $startedAt = $this->timelineStartDates($application, $groups);
 
-        foreach ($groups as &$group) {
-            $group['state'] = $current > $group['rank']
+        foreach ($groups as $index => &$group) {
+            /*
+             * Tahap dianggap "sedang berjalan" selama status permohonan berada
+             * di antara rank tahap ini dan rank tahap berikutnya. Tanpa rentang
+             * ini status seperti admin_review (rank 2) tidak akan pernah cocok
+             * dengan rank tahap mana pun sehingga tidak ada tahap yang aktif.
+             */
+            $next = $groups[$index + 1]['rank'] ?? PHP_INT_MAX;
+
+            $group['state'] = $current >= $next
                 ? 'done'
-                : ($current === $group['rank'] ? 'current' : 'pending');
-            unset($group['rank']);
+                : ($current >= $group['rank'] ? 'current' : 'pending');
+
+            $group['started_at'] = optional($startedAt[$group['code']] ?? null)->format('d M Y, H:i');
+
+            // Tanggal selesai = saat permohonan pindah ke tahap berikutnya yang
+            // benar-benar tercatat, jadi tahap yang dilewati tidak ikut mengklaim tanggal.
+            $group['finished_at'] = null;
+
+            if ($group['state'] === 'done') {
+                foreach (array_slice($groups, $index + 1) as $later) {
+                    if (isset($startedAt[$later['code']])) {
+                        $group['finished_at'] = $startedAt[$later['code']]->format('d M Y, H:i');
+                        break;
+                    }
+                }
+            }
+
+            unset($group['rank'], $group['statuses']);
         }
 
         return $groups;
+    }
+
+    /**
+     * Tanggal paling awal permohonan memasuki tiap tahap.
+     *
+     * @param  array<int, array{code: string, statuses: array<int, string>}>  $groups
+     * @return array<string, \Illuminate\Support\Carbon>
+     */
+    private function timelineStartDates(CertificationApplication $application, array $groups): array
+    {
+        $groupOfStatus = [];
+
+        foreach ($groups as $group) {
+            foreach ($group['statuses'] as $status) {
+                $groupOfStatus[$status] = $group['code'];
+            }
+        }
+
+        $history = $application->relationLoaded('statusHistory')
+            ? $application->statusHistory
+            : $application->statusHistory()->get();
+
+        $dates = [];
+
+        foreach ($history as $row) {
+            $code = $groupOfStatus[$row->to_status] ?? null;
+
+            if ($code === null || $row->action_date === null) {
+                continue;
+            }
+
+            if (! isset($dates[$code]) || $row->action_date->lt($dates[$code])) {
+                $dates[$code] = $row->action_date;
+            }
+        }
+
+        // Permohonan lama bisa saja tidak punya baris riwayat "submitted";
+        // kolom submitted_at tetap menjadi acuan agar tahap pertama bertanggal.
+        if (! isset($dates['application']) && $application->submitted_at) {
+            $dates['application'] = $application->submitted_at;
+        }
+
+        return $dates;
     }
 }

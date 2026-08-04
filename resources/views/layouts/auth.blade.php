@@ -196,6 +196,11 @@
             width: min(440px, 100%);
         }
 
+        /* Halaman publik memuat hasil pelacakan + QR, jadi butuh kolom lebih lebar. */
+        .auth-wrapper--wide {
+            width: min(680px, 100%);
+        }
+
         .auth-card {
             padding: 38px;
             border: 1px solid var(--border);
@@ -304,6 +309,27 @@
             filter: brightness(1.04);
         }
 
+        .secondary-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 50px;
+            margin-top: 12px;
+            border: 1px solid #b9d3e8;
+            border-radius: 12px;
+            color: var(--navy);
+            background: var(--light-blue);
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .secondary-button:hover {
+            border-color: var(--blue);
+        }
+
         .login-help {
             margin-top: 20px;
             color: var(--muted);
@@ -355,17 +381,17 @@
                 </div>
 
                 <h1>
-                    {{ $branding['login_heading'] }}
+                    @yield('side_heading', $branding['login_heading'])
                 </h1>
 
                 <p>
-                    {{ $branding['login_subheading'] }}
+                    @yield('side_subheading', $branding['login_subheading'])
                 </p>
             </div>
         </aside>
 
         <main class="auth-content">
-            <div class="auth-wrapper">
+            <div class="auth-wrapper @yield('wrapper_class')">
                 @yield('content')
             </div>
         </main>

@@ -34,6 +34,7 @@ Route::get('/', function () {
 
 Route::get('/cek-status', [PublicTrackingController::class, 'index'])->name('public.home');
 Route::post('/cek-status', [PublicTrackingController::class, 'track'])->middleware('throttle:15,1')->name('public.track');
+Route::get('/cek-status/qr', [PublicTrackingController::class, 'qr'])->middleware('throttle:20,1')->name('public.qr');
 
 Route::prefix('certificate')->group(function (): void {
     Route::get('/draft/{token}', [CertificateShareController::class, 'previewDraft'])->name('certificate.draft.preview');

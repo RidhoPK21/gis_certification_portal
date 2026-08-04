@@ -259,6 +259,21 @@ class ApplicationController extends Controller
             $verifyQr = $qr->svg($verifyUrl);
         }
 
+        /*
+         * QR pelacakan muncul begitu permohonan dikirim (nomor order terbit),
+         * jauh sebelum ada sertifikat. Isinya halaman publik yang sama, jadi
+         * klien bisa membagikannya tanpa memberi akses ke dokumen.
+         */
+        $trackingUrl = null;
+        $trackingQr = null;
+        $trackingQrDownloadUrl = null;
+
+        if ($application->order_number) {
+            $trackingUrl = $qr->verificationUrl($application->order_number);
+            $trackingQr = $qr->svg($trackingUrl, 168);
+            $trackingQrDownloadUrl = route('public.qr', ['nomor' => $application->order_number]);
+        }
+
         if ($application->certificateFinal) {
             $certificateUrl = PortalNotification::forApplication($application)
                 ->where('type', 'final_available')
@@ -280,6 +295,9 @@ class ApplicationController extends Controller
             'certificateLinkActive' => $certificateLinkActive,
             'verifyUrl' => $verifyUrl,
             'verifyQr' => $verifyQr,
+            'trackingUrl' => $trackingUrl,
+            'trackingQr' => $trackingQr,
+            'trackingQrDownloadUrl' => $trackingQrDownloadUrl,
         ]);
     }
 

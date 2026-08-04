@@ -111,6 +111,14 @@
             </button>
         </form>
 
+        {{-- Jalur tanpa login: pemohon yang cuma ingin memantau progres. --}}
+        <a
+            class="secondary-button"
+            href="{{ route('public.home') }}"
+        >
+            Sudah ada permohonan? Coba cek di sini
+        </a>
+
         <div class="login-help">
     Belum memiliki akun?
 
