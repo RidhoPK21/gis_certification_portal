@@ -497,6 +497,24 @@
             grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
         }
 
+        /*
+         * Grid hanya punya jarak antar-kolom, bukan jarak ke elemen sesudahnya.
+         * Akibatnya tombol simpan menempel persis di bawah baris isian terakhir.
+         * Margin ini meruntuh dengan margin-top elemen berikutnya sehingga tidak
+         * menggandakan jarak yang sudah ada.
+         */
+        .grid-2,
+        .grid-3,
+        .grid-4 {
+            margin-bottom: 16px;
+        }
+
+        .grid-2:last-child,
+        .grid-3:last-child,
+        .grid-4:last-child {
+            margin-bottom: 0;
+        }
+
         .flex {
             display: flex;
             align-items: center;
@@ -704,6 +722,17 @@
             border-radius: 12px;
             border: 1px solid transparent;
             line-height: 1.6;
+            /*
+             * Tanpa jarak bawah, elemen sesudah alert menempel tanpa sela sama
+             * sekali (mis. tombol unduh sertifikat pada halaman klien). Kartu
+             * memakai display:block sehingga margin ini meruntuh dengan
+             * margin-top elemen berikutnya, bukan menjumlah.
+             */
+            margin-bottom: 16px;
+        }
+
+        .alert:last-child {
+            margin-bottom: 0;
         }
 
         .alert-info {
