@@ -133,8 +133,44 @@
         @if ($application->certificateFinal)
             <div class="alert alert-success">
                 <strong>Sertifikat final telah dirilis.</strong>
-                <p>Nomor {{ $application->certificateFinal->certificate_number }}. Gunakan link aman dan password yang dikirim Tim Teknis untuk mengunduh.</p>
+                <p>Nomor {{ $application->certificateFinal->certificate_number }}.</p>
             </div>
+
+            @if ($certificateUrl && $certificateLinkActive)
+                <a class="btn btn-primary" href="{{ $certificateUrl }}" target="_blank" rel="noopener">
+                    Buka Halaman Unduh Sertifikat
+                </a>
+                <p class="small muted mt-1">
+                    Password unduhan dikirim terpisah oleh Tim Teknis GIS melalui kanal
+                    komunikasi resmi, dan tidak pernah ditampilkan di portal ini.
+                </p>
+            @elseif ($certificateUrl)
+                <div class="alert alert-warning">
+                    Link akses sertifikat sudah kedaluwarsa atau dinonaktifkan.
+                    Hubungi Tim Teknis GIS untuk penerbitan link baru.
+                </div>
+            @else
+                <div class="alert alert-info">Link akses akan muncul di sini setelah Tim Teknis membuatnya.</div>
+            @endif
+
+            @if ($verifyQr)
+                <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+                    {{-- Latar QR sengaja tetap putih di mode gelap: kode QR
+                         butuh kontras terang agar tetap terbaca pemindai. --}}
+                    <div style="background:#ffffff;padding:8px;border:1px solid var(--border);border-radius:10px;line-height:0">
+                        {!! $verifyQr !!}
+                    </div>
+                    <div style="flex:1;min-width:220px">
+                        <strong>QR verifikasi sertifikat</strong>
+                        <p class="small muted" style="margin:6px 0">
+                            Bagikan atau cetak QR ini bila ada pihak yang perlu memastikan keaslian
+                            sertifikat Anda. QR hanya membuka halaman verifikasi publik dan
+                            <strong>tidak memberi akses ke berkas sertifikat</strong>.
+                        </p>
+                        <a href="{{ $verifyUrl }}" target="_blank" rel="noopener" class="small">Buka halaman verifikasi</a>
+                    </div>
+                </div>
+            @endif
         @elseif ($application->certificateDrafts->count())
             <div class="alert alert-info">Draft sertifikat sudah tersedia. Link preview akan muncul pada notifikasi setelah dibuat Tim Teknis.</div>
         @else

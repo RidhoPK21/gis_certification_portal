@@ -207,6 +207,119 @@ class ReviewAdminTest extends TestCase
         $this->assertDatabaseHas('review_form_items', ['item_code' => 'nib', 'review_status' => 'sufficient']);
     }
 
+    public function test_form_kajian_admin_hanya_menampilkan_dokumen_administrasi(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $app = $this->applicationInReview($this->user('client'));
+
+        $html = $this->actingAs($admin)
+            ->get(route('internal.applications.show', $app))
+            ->assertOk()
+            ->getContent();
+
+        /*
+         * Diiris per-section: nama dokumen teknis tetap muncul di tabel target
+         * revisi (admin yang meminta revisi ke klien untuk semua dokumen),
+         * jadi assertDontSee pada halaman penuh akan menyesatkan.
+         */
+        // betweenFirst, bukan between: between() memakai beforeLast() sehingga
+        // irisannya menelan hampir seluruh halaman.
+        $sectionKajian = Str::betweenFirst($html, 'id="dokumen"', '</section>');
+
+        $this->assertStringContainsString('value="nib"', $sectionKajian);
+        $this->assertStringNotContainsString('value="system_manual"', $sectionKajian);
+        $this->assertStringContainsString('value="system_manual"', $html);
+    }
+
+    /**
+     * Pemisahan administrasi/teknis harus berlaku untuk SELURUH skema, bukan
+     * hanya skema pertama. Test ini menjaga agar penambahan skema baru lewat
+     * Form Builder tidak diam-diam mengembalikan dokumen teknis ke form admin.
+     */
+    public function test_pemisahan_dokumen_berlaku_untuk_semua_skema(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $client = $this->user('client');
+
+        $schemes = CertificationScheme::with('requiredDocuments')->orderBy('sort_order')->get();
+        $this->assertGreaterThanOrEqual(10, $schemes->count(), 'Katalog skema tidak ter-seed penuh.');
+
+        foreach ($schemes as $scheme) {
+            $app = CertificationApplication::create([
+                'uuid' => (string) Str::uuid(),
+                'client_id' => $client->id,
+                'certification_scheme_id' => $scheme->id,
+                'form_version' => $scheme->form_version,
+                'status' => 'admin_review',
+                'current_step' => 'admin_review',
+                'company_name' => 'PT Uji '.$scheme->code,
+                'contact_email' => 'kontak@uji.test',
+                'order_number' => 'ALL-'.$scheme->code,
+                'order_date' => today(),
+                'submitted_at' => now(),
+            ]);
+
+            $groups = $scheme->requiredDocuments->groupBy(
+                fn ($doc) => ($doc->review_group ?? 'administration') === 'technical' ? 'technical' : 'administration'
+            );
+            $adminCodes = ($groups['administration'] ?? collect())->pluck('code');
+            $technicalCodes = ($groups['technical'] ?? collect())->pluck('code');
+
+            $this->assertTrue($adminCodes->isNotEmpty(), $scheme->code.': tidak punya dokumen administrasi.');
+            $this->assertTrue($technicalCodes->isNotEmpty(), $scheme->code.': tidak punya dokumen teknis.');
+
+            // 1. Form admin hanya memuat dokumen administrasi.
+            $html = $this->actingAs($admin)
+                ->get(route('internal.applications.show', $app))
+                ->assertOk()
+                ->getContent();
+            $sectionKajian = Str::betweenFirst($html, 'id="dokumen"', '</section>');
+
+            foreach ($adminCodes as $code) {
+                $this->assertStringContainsString('value="'.$code.'"', $sectionKajian, $scheme->code.': '.$code.' hilang dari form admin.');
+            }
+            foreach ($technicalCodes as $code) {
+                $this->assertStringNotContainsString('value="'.$code.'"', $sectionKajian, $scheme->code.': dokumen teknis '.$code.' masih di form admin.');
+            }
+
+            // 2. Backend menolak walau payload dipaksa lewat rute admin.
+            $this->actingAs($admin)
+                ->post(route('internal.applications.review', $app), [
+                    'review_type' => 'administration',
+                    'action_date' => now()->format('Y-m-d'),
+                    'signed_name' => 'Reviewer',
+                    'items' => [
+                        ['type' => 'document', 'code' => $technicalCodes->first(), 'label' => 'Dokumen Teknis', 'status' => 'sufficient'],
+                    ],
+                ])
+                ->assertStatus(422);
+
+            $this->assertDatabaseMissing('review_form_items', ['item_code' => $technicalCodes->first()]);
+        }
+    }
+
+    public function test_admin_tidak_dapat_menyimpan_kajian_dokumen_teknis(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $app = $this->applicationInReview($this->user('client'));
+
+        $this->actingAs($admin)
+            ->post(route('internal.applications.review', $app), [
+                'review_type' => 'administration',
+                'action_date' => now()->format('Y-m-d'),
+                'signed_name' => 'Reviewer',
+                'items' => [
+                    ['type' => 'document', 'code' => 'system_manual', 'label' => 'Manual Sistem', 'status' => 'sufficient'],
+                ],
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseMissing('review_form_items', ['item_code' => 'system_manual']);
+    }
+
     public function test_menyetujui_menandai_kajian_administrasi_dan_teknis_diterima(): void
     {
         Storage::fake('private');

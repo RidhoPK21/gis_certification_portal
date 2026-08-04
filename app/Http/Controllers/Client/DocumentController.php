@@ -62,10 +62,20 @@ class DocumentController extends Controller
         $document->load(['application', 'currentVersion']);
         $application = $document->application;
 
+        /*
+         * Tim Teknis mengkaji dokumen ber-review_group 'technical' pada tahap
+         * tinjauan teknis, jadi harus bisa membuka berkasnya.
+         */
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin']);
+            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical']);
 
-        if ($request->user()->hasRole('auditor')) {
+        /*
+         * Auditor hanya boleh membuka order yang ditugaskan kepadanya. Cabang
+         * ini menambah izin, bukan menggantikan: pengguna berperan ganda
+         * (mis. auditor + technical) tidak boleh kehilangan izin dari peran
+         * lainnya.
+         */
+        if (! $allowed && $request->user()->hasRole('auditor')) {
             $allowed = $application->auditAssignments()
                 ->where('auditor_id', $request->user()->id)
                 ->where('status', 'assigned')

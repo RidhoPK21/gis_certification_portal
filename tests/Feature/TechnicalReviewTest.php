@@ -157,6 +157,213 @@ class TechnicalReviewTest extends TestCase
         ]);
     }
 
+    /**
+     * Membawa permohonan sampai tahap technical_review agar test tidak
+     * mengulang rangkaian yang sama.
+     */
+    private function forwardToTechnical(CertificationApplication $app, User $admin): void
+    {
+        $this->saveAdminReview($app, $admin);
+        $this->actingAs($admin)->post(route('internal.applications.forward-technical', $app))->assertRedirect();
+    }
+
+    public function test_form_teknis_menampilkan_dokumen_teknis_bukan_administrasi(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $tech = $this->user('technical');
+        $app = $this->applicationInReview($this->user('client'));
+        $this->forwardToTechnical($app, $admin);
+
+        $html = $this->actingAs($tech)
+            ->get(route('technical.reviews.show', $app))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Kajian Dokumen Teknis', $html);
+        $this->assertStringContainsString('value="system_manual"', $html);
+        $this->assertStringNotContainsString('value="nib"', $html);
+    }
+
+    /**
+     * Pasangan dari test pemisahan di ReviewAdminTest: dokumen yang dikeluarkan
+     * dari form admin harus benar-benar muncul di form Tim Teknis untuk setiap
+     * skema, supaya tidak ada dokumen yang kehilangan tempat penilaian.
+     */
+    public function test_semua_dokumen_teknis_punya_tempat_di_form_tim_teknis(): void
+    {
+        $this->seedAll();
+        $tech = $this->user('technical');
+        $client = $this->user('client');
+
+        foreach (CertificationScheme::with('requiredDocuments')->orderBy('sort_order')->get() as $scheme) {
+            $app = CertificationApplication::create([
+                'uuid' => (string) Str::uuid(),
+                'client_id' => $client->id,
+                'certification_scheme_id' => $scheme->id,
+                'form_version' => $scheme->form_version,
+                'status' => 'technical_review',
+                'current_step' => 'technical_review',
+                'company_name' => 'PT Uji '.$scheme->code,
+                'contact_email' => 'kontak@uji.test',
+                'order_number' => 'TEK-'.$scheme->code,
+                'order_date' => today(),
+                'submitted_at' => now(),
+            ]);
+
+            $groups = $scheme->requiredDocuments->groupBy(
+                fn ($doc) => ($doc->review_group ?? 'administration') === 'technical' ? 'technical' : 'administration'
+            );
+
+            $html = $this->actingAs($tech)
+                ->get(route('technical.reviews.show', $app))
+                ->assertOk()
+                ->getContent();
+
+            foreach (($groups['technical'] ?? collect())->pluck('code') as $code) {
+                $this->assertStringContainsString('value="'.$code.'"', $html, $scheme->code.': dokumen teknis '.$code.' tidak ada di form Tim Teknis.');
+            }
+            foreach (($groups['administration'] ?? collect())->pluck('code') as $code) {
+                $this->assertStringNotContainsString('value="'.$code.'"', $html, $scheme->code.': dokumen administrasi '.$code.' bocor ke form Tim Teknis.');
+            }
+        }
+    }
+
+    public function test_tim_teknis_menyimpan_aspek_teknis_ke_application_values(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $tech = $this->user('technical');
+        $app = $this->applicationInReview($this->user('client'));
+        $this->forwardToTechnical($app, $admin);
+
+        $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Peninjau Teknis',
+            'aspects' => ['audit_mandays' => '5', 'assigned_auditor_team' => 'LA: Ani, A: Budi'],
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('application_values', [
+            'application_id' => $app->id, 'field_code' => 'audit_mandays', 'value_text' => '5',
+        ]);
+        $this->assertDatabaseHas('application_values', [
+            'application_id' => $app->id, 'field_code' => 'assigned_auditor_team', 'value_text' => 'LA: Ani, A: Budi',
+        ]);
+
+        // Simpan ulang harus meng-update baris yang sama, bukan menambah.
+        $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Peninjau Teknis',
+            'aspects' => ['audit_mandays' => '8'],
+        ])->assertRedirect();
+
+        $this->assertSame(1, $app->values()->where('field_code', 'audit_mandays')->count());
+        $this->assertSame('8', $app->values()->where('field_code', 'audit_mandays')->value('value_text'));
+    }
+
+    public function test_tim_teknis_menyimpan_kajian_dokumen_teknis(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $tech = $this->user('technical');
+        $app = $this->applicationInReview($this->user('client'));
+        $this->forwardToTechnical($app, $admin);
+
+        \App\Models\ApplicationDocument::create([
+            'application_id' => $app->id,
+            'document_code' => 'system_manual',
+            'document_name' => 'Manual Sistem',
+        ]);
+
+        $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Peninjau Teknis',
+            'items' => [
+                ['type' => 'document', 'code' => 'system_manual', 'label' => 'Manual Sistem', 'status' => 'meets', 'notes' => 'lengkap'],
+            ],
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('review_form_items', ['item_code' => 'system_manual', 'review_status' => 'meets']);
+        $this->assertDatabaseHas('application_documents', [
+            'application_id' => $app->id, 'document_code' => 'system_manual', 'review_status' => 'meets',
+        ]);
+    }
+
+    public function test_tim_teknis_tidak_dapat_mengubah_dokumen_administrasi(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $tech = $this->user('technical');
+        $app = $this->applicationInReview($this->user('client'));
+        $this->forwardToTechnical($app, $admin);
+
+        $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Peninjau Teknis',
+            'items' => [
+                ['type' => 'document', 'code' => 'nib', 'label' => 'NIB', 'status' => 'sufficient'],
+            ],
+        ])->assertStatus(422);
+
+        $this->assertDatabaseMissing('review_form_items', ['item_code' => 'nib']);
+    }
+
+    public function test_aspek_teknis_ikut_pada_snapshot_pdf_tinjauan(): void
+    {
+        Storage::fake('private');
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $tech = $this->user('technical');
+        $app = $this->applicationInReview($this->user('client'));
+        $this->forwardToTechnical($app, $admin);
+
+        $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
+            'action_date' => now()->format('Y-m-d'),
+            'signed_name' => 'Peninjau Teknis',
+            'aspects' => ['audit_mandays' => '5'],
+        ])->assertRedirect();
+        $this->actingAs($tech)->post(route('technical.reviews.complete', $app))->assertRedirect();
+
+        $this->actingAs($admin)->post(route('internal.applications.approve', $app), [
+            'action_date' => now()->format('Y-m-d'),
+        ])->assertRedirect();
+
+        $pdf = \App\Models\GeneratedPdf::latest('id')->firstOrFail();
+        $this->assertSame('5', $pdf->source_snapshot['values']['audit_mandays'] ?? null);
+    }
+
+    public function test_tim_teknis_dapat_mengunduh_dokumen_permohonan(): void
+    {
+        Storage::fake('private');
+        $this->seedAll();
+        $tech = $this->user('technical');
+        $app = $this->applicationInReview($this->user('client'));
+
+        $document = \App\Models\ApplicationDocument::create([
+            'application_id' => $app->id,
+            'document_code' => 'system_manual',
+            'document_name' => 'Manual Sistem',
+        ]);
+        Storage::disk('private')->put('applications/'.$app->id.'/manual.pdf', 'isi');
+        \App\Models\ApplicationDocumentVersion::create([
+            'application_document_id' => $document->id,
+            'version' => 1,
+            'original_name' => 'manual.pdf',
+            'stored_name' => 'manual.pdf',
+            'file_path' => 'applications/'.$app->id.'/manual.pdf',
+            'mime_type' => 'application/pdf',
+            'extension' => 'pdf',
+            'size_bytes' => 3,
+            'checksum_sha256' => hash('sha256', 'isi'),
+            'is_current' => true,
+            'uploaded_by' => $app->client_id,
+        ]);
+
+        $this->actingAs($tech)
+            ->get(route('secure-files.application-document', $document))
+            ->assertOk();
+    }
+
     public function test_non_teknis_ditolak_di_halaman_tinjauan_teknis(): void
     {
         $this->seedAll();

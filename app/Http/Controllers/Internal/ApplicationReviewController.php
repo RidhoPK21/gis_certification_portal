@@ -52,7 +52,22 @@ class ApplicationReviewController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('internal.applications.show', compact('application', 'auditors'));
+        /*
+         * Admin hanya mengkaji dokumen administrasi; dokumen ber-review_group
+         * 'technical' dinilai Tim Teknis pada tahap tinjauan teknis. values()
+         * wajib agar indeks items[] pada form tetap rapat mulai dari nol.
+         */
+        $documents = $application->scheme->requiredDocuments
+            ->groupBy(fn ($doc) => ($doc->review_group ?? 'administration') === 'technical'
+                ? 'technical'
+                : 'administration');
+
+        return view('internal.applications.show', [
+            'application' => $application,
+            'auditors' => $auditors,
+            'adminDocuments' => ($documents['administration'] ?? collect())->values(),
+            'technicalDocuments' => ($documents['technical'] ?? collect())->values(),
+        ]);
     }
 
     public function assignAuditor(Request $request, CertificationApplication $application, AuditLogger $audit, PortalNotificationService $notifications)
@@ -83,10 +98,10 @@ class ApplicationReviewController extends Controller
             'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['required', 'string', 'max:150'],
             'items' => ['nullable', 'array'], 'items.*.type' => ['required_with:items', 'string'], 'items.*.code' => ['required_with:items', 'string'],
             'items.*.label' => ['required_with:items', 'string'], 'items.*.presence' => ['nullable', 'string'],
-            'items.*.status' => ['required_with:items', Rule::in(['pending', 'sufficient', 'insufficient', 'meets', 'not_meets'])],
+            'items.*.status' => ['required_with:items', Rule::in(ReviewService::STATUSES)],
             'items.*.notes' => ['nullable', 'string'],
         ]);
-        $review = $reviews->save($application, $data['review_type'], $data, $request->user()->id);
+        $review = $reviews->save($application, $data['review_type'], $data, $request->user()->id, 'administration');
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => $data['review_type']]);
 
         return back()->with('success', 'Hasil kajian administrasi berhasil disimpan.');

@@ -97,6 +97,53 @@ class WorkflowService
         }
     }
 
+    /**
+     * Menentukan apakah Stage 1/Stage 2 boleh dilewati untuk skema permohonan
+     * ini, beserta alasannya bila tidak.
+     *
+     * Sumber kebenaran sengaja WorkflowTemplate, bukan baris
+     * application_workflow_steps: order yang di-submit sebelum WorkflowSeeder
+     * dijalankan tidak punya baris tersebut, dan kalau dipakai sebagai acuan
+     * jawabannya akan salah ("tidak boleh") untuk semua skema.
+     *
+     * @return array<string, array{allowed: bool, reason: ?string}>
+     */
+    public function stageSkipInfo(CertificationApplication $application): array
+    {
+        $template = WorkflowTemplate::where('certification_scheme_id', $application->certification_scheme_id)
+            ->where('is_active', true)
+            ->with('steps')
+            ->latest('version')
+            ->first();
+
+        $flags = $template
+            ? $template->steps->whereIn('code', ['stage_1', 'stage_2'])->pluck('is_skippable', 'code')
+            : collect();
+
+        $categoryLabel = match ($application->scheme?->category) {
+            'management_system' => 'sistem manajemen',
+            'food_safety' => 'keamanan pangan',
+            'ispo' => 'ISPO',
+            'product' => 'produk (LSPro)',
+            default => $application->scheme?->short_name ?? 'ini',
+        };
+
+        $info = [];
+
+        foreach (['stage_1' => 'Stage 1', 'stage_2' => 'Stage 2'] as $code => $label) {
+            $allowed = (bool) ($flags[$code] ?? false);
+
+            $info[$code] = [
+                'allowed' => $allowed,
+                'reason' => $allowed
+                    ? null
+                    : $label.' wajib dilaksanakan untuk skema '.$categoryLabel.' sehingga tidak dapat dilewati.',
+            ];
+        }
+
+        return $info;
+    }
+
     public function publicTimeline(CertificationApplication $application): array
     {
         $groups = [

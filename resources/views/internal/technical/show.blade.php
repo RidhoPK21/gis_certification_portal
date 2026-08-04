@@ -12,14 +12,70 @@
     </div>
 
     @if (session('generated_link'))
-        <div class="alert alert-success">
+        <div class="alert alert-success" id="generated-link" tabindex="-1" style="scroll-margin-top: 90px">
             <strong>Link berhasil dibuat</strong>
-            <p><code>{{ session('generated_link.url') }}</code></p>
+            <p>
+                <code id="gl-url">{{ session('generated_link.url') }}</code>
+                <button type="button" class="btn btn-light btn-sm" data-copy="#gl-url">Salin link</button>
+            </p>
             @if (session('generated_link.password'))
-                <p>Password sekali tampil: <strong style="font-size:1.2rem">{{ session('generated_link.password') }}</strong></p>
+                <p>
+                    Password sekali tampil:
+                    <strong id="gl-pass" style="font-size:1.2rem">{{ session('generated_link.password') }}</strong>
+                    <button type="button" class="btn btn-light btn-sm" data-copy="#gl-pass">Salin password</button>
+                </p>
             @endif
-            <p class="small">Simpan informasi ini pada kanal komunikasi yang disetujui GIS. Password tidak disimpan dalam bentuk asli.</p>
+            <p class="small">Simpan sekarang pada kanal komunikasi yang disetujui GIS — password tidak disimpan dalam bentuk asli dan tidak dapat ditampilkan ulang.</p>
+
+            @if (session('generated_link.verify_qr'))
+                <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+                    {{-- Latar QR sengaja tetap putih di mode gelap: kode QR
+                         butuh kontras terang agar tetap terbaca pemindai. --}}
+                    <div style="background:#ffffff;padding:8px;border:1px solid var(--border);border-radius:10px;line-height:0">
+                        {!! session('generated_link.verify_qr') !!}
+                    </div>
+                    <div style="flex:1;min-width:220px">
+                        <strong>QR verifikasi sertifikat</strong>
+                        <p class="small" style="margin:6px 0">
+                            Cetak atau tempelkan pada sertifikat {{ session('generated_link.certificate_number') }}.
+                            Siapa pun yang memindainya akan melihat halaman verifikasi publik —
+                            <em>tanpa</em> akses ke berkas sertifikat, jadi aman disebarkan.
+                        </p>
+                        <p class="small" style="margin:0">
+                            <code>{{ session('generated_link.verify_url') }}</code>
+                        </p>
+                    </div>
+                </div>
+            @endif
         </div>
+
+        <script>
+            /*
+             * Tanpa ini banner sering tidak terlihat: setelah redirect, Chrome
+             * memulihkan posisi scroll sebelumnya sehingga staf mendarat kembali
+             * di area tombol, jauh di bawah banner.
+             */
+            (function () {
+                var box = document.getElementById('generated-link');
+                if (!box) return;
+
+                box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                box.focus({ preventScroll: true });
+
+                box.querySelectorAll('[data-copy]').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var target = document.querySelector(btn.dataset.copy);
+                        if (!target || !navigator.clipboard) return;
+
+                        navigator.clipboard.writeText(target.textContent.trim()).then(function () {
+                            var label = btn.textContent;
+                            btn.textContent = 'Tersalin';
+                            setTimeout(function () { btn.textContent = label; }, 1500);
+                        });
+                    });
+                });
+            })();
+        </script>
     @endif
 
     <div class="grid-2">

@@ -172,6 +172,7 @@
 
     <section class="card mt-2" id="dokumen">
         <h2>Kajian Dokumen Administrasi</h2>
+        <p class="muted small">Dokumen teknis tidak dikaji di sini — bagian itu dinilai Tim Teknis pada tahap tinjauan teknis.</p>
         <form method="post" action="{{ route('internal.applications.review', $application) }}">
             @csrf
             <input type="hidden" name="review_type" value="administration">
@@ -181,7 +182,7 @@
                         <tr><th>No</th><th>Dokumen</th><th>File</th><th>Hasil Kajian</th><th>Keterangan</th></tr>
                     </thead>
                     <tbody>
-                        @foreach ($application->scheme->requiredDocuments as $i => $required)
+                        @foreach ($adminDocuments as $i => $required)
                             @php($doc = $application->documents->firstWhere('document_code', $required->code))
                             <tr>
                                 <td>{{ $i + 1 }}</td>
@@ -232,6 +233,47 @@
             <button class="btn btn-primary">Simpan Kajian Administrasi</button>
         </form>
     </section>
+
+    @if ($technicalDocuments->isNotEmpty())
+        <section class="card mt-2" id="dokumen-teknis">
+            <h2>Dokumen Teknis</h2>
+            <p class="muted small">Hanya tampilan. Penilaian dilakukan Tim Teknis, tetapi berkas dan hasilnya dapat Anda periksa sebelum menyetujui atau meminta revisi.</p>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>No</th><th>Dokumen</th><th>File</th><th>Hasil Kajian</th><th>Keterangan</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($technicalDocuments as $n => $required)
+                            @php($doc = $application->documents->firstWhere('document_code', $required->code))
+                            <tr>
+                                <td>{{ $n + 1 }}</td>
+                                <td>{{ $required->name }}</td>
+                                <td>
+                                    @if ($doc?->currentVersion)
+                                        <a class="btn btn-light btn-sm" href="{{ route('secure-files.application-document', $doc) }}">{{ $doc->currentVersion->original_name }}</a>
+                                        <div class="small muted">v{{ $doc->currentVersion->version }}</div>
+                                    @else
+                                        <span class="text-danger">Tidak ada</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @switch($doc?->review_status)
+                                        @case('sufficient') <span class="badge badge-success">Cukup</span> @break
+                                        @case('meets') <span class="badge badge-success">Memenuhi</span> @break
+                                        @case('insufficient') <span class="badge badge-warning">Belum cukup</span> @break
+                                        @case('not_meets') <span class="badge badge-danger">Tidak memenuhi</span> @break
+                                        @default <span class="muted small">Belum dikaji</span>
+                                    @endswitch
+                                </td>
+                                <td class="small">{{ $doc?->review_note ?: '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    @endif
 
     @php($techReview = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first())
     <section class="card mt-2" id="tinjauan">

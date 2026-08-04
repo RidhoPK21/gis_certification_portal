@@ -10,8 +10,10 @@ use App\Models\CertificationApplication;
 use App\Models\SurveillanceSchedule;
 use App\Services\AuditLogger;
 use App\Services\CertificateLinkService;
+use App\Services\DynamicFormService;
 use App\Services\FileStorageService;
 use App\Services\PortalNotificationService;
+use App\Services\QrCodeService;
 use App\Services\ReviewService;
 use App\Services\SurveillancePlannerService;
 use App\Services\WorkflowService;
@@ -50,7 +52,7 @@ class TechnicalController extends Controller
     {
         abort_unless(in_array($application->status, self::TECHNICAL_STATUSES, true), 422, 'Order belum berada pada tahap Tim Teknis.');
         $application->load(['scheme', 'client', 'certificateDrafts', 'certificateFinal', 'generatedPdfs', 'surveillanceSchedules']);
-        $links = CertificateShareLink::where('application_id', $application->id)->latest()->get();
+        $links = $application->certificateShareLinks()->latest()->get();
 
         return view('internal.technical.show', compact('application', 'links'));
     }
@@ -78,15 +80,19 @@ class TechnicalController extends Controller
         ]);
     }
 
-    public function reviewShow(CertificationApplication $application)
+    public function reviewShow(CertificationApplication $application, DynamicFormService $forms)
     {
         abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
-        $application->load(['scheme', 'client', 'values', 'reviews.items']);
+        $application->load(['scheme.requiredDocuments', 'client', 'values', 'documents.currentVersion', 'reviews.items']);
+        $application->setRelation('scheme', $forms->schemeForApplication($application));
         $review = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first();
 
         return view('internal.technical.review-show', [
             'application' => $application,
             'technicalFields' => config('review.technical_fields'),
+            'technicalDocuments' => $application->scheme->requiredDocuments
+                ->filter(fn ($doc) => ($doc->review_group ?? 'administration') === 'technical')
+                ->values(),
             'review' => $review,
         ]);
     }
@@ -96,12 +102,15 @@ class TechnicalController extends Controller
         abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
         $data = $request->validate([
             'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['required', 'string', 'max:150'],
+            'aspects' => ['nullable', 'array'],
+            'aspects.*' => ['nullable', 'string', 'max:3000'],
             'items' => ['nullable', 'array'], 'items.*.type' => ['required_with:items', 'string'], 'items.*.code' => ['required_with:items', 'string'],
-            'items.*.label' => ['required_with:items', 'string'],
-            'items.*.status' => ['required_with:items', Rule::in(['pending', 'sufficient', 'insufficient'])],
+            'items.*.label' => ['required_with:items', 'string'], 'items.*.presence' => ['nullable', 'string'],
+            'items.*.status' => ['required_with:items', Rule::in(ReviewService::STATUSES)],
             'items.*.notes' => ['nullable', 'string'],
         ]);
-        $review = $reviews->save($application, 'technical', $data, $request->user()->id);
+        $review = $reviews->save($application, 'technical', $data, $request->user()->id, 'technical');
+        $reviews->storeTechnicalAspects($application, $data['aspects'] ?? [], $request->user()->id);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => 'technical']);
 
         return back()->with('success', 'Tinjauan teknis berhasil disimpan. Klik "Selesai & Kirim ke Admin" bila sudah final.');
@@ -146,10 +155,12 @@ class TechnicalController extends Controller
         $draft->load('application');
         $result = $links->create($draft->application, 'draft', $draft->id, $request->user()->id, isset($data['expires_at']) ? new \DateTime($data['expires_at']) : null);
         $url = route('certificate.draft.preview', $result['token']);
-        $notifications->send($draft->application->client_id, 'draft_available', 'Draft sertifikat tersedia', 'Draft sertifikat untuk '.$draft->application->order_number.' siap ditinjau.', $url);
+        $notifications->send($draft->application->client_id, 'draft_available', 'Draft sertifikat tersedia', 'Draft sertifikat untuk '.$draft->application->order_number.' siap ditinjau.', $url, ['application_id' => $draft->application->id]);
         $audit->log('certificate.draft_link_created', $result['link'], [], ['expires_at' => $result['link']->expires_at]);
 
-        return back()->with('generated_link', ['url' => $url, 'password' => null])->with('success', 'Link preview draft berhasil dibuat. Salin link sebelum meninggalkan halaman.');
+        // withFragment: browser melompat ke banner link, mengalahkan pemulihan
+        // posisi scroll yang membuat banner tidak pernah terlihat staf.
+        return back()->withFragment('generated-link')->with('generated_link', ['url' => $url, 'password' => null])->with('success', 'Link preview draft berhasil dibuat. Salin link sebelum meninggalkan halaman.');
     }
 
     public function uploadFinal(Request $request, CertificationApplication $application, FileStorageService $files, WorkflowService $workflow, SurveillancePlannerService $planner, AuditLogger $audit)
@@ -180,16 +191,29 @@ class TechnicalController extends Controller
         return $this->savedResponse($request, 'Sertifikat final berhasil diunggah. Buat link aman untuk klien.');
     }
 
-    public function createFinalLink(Request $request, CertificateFinal $final, CertificateLinkService $links, PortalNotificationService $notifications, AuditLogger $audit)
+    public function createFinalLink(Request $request, CertificateFinal $final, CertificateLinkService $links, PortalNotificationService $notifications, AuditLogger $audit, QrCodeService $qr)
     {
         $data = $request->validate(['expires_at' => ['nullable', 'date', 'after:now']]);
         $final->load('application');
         $result = $links->create($final->application, 'final', $final->id, $request->user()->id, isset($data['expires_at']) ? new \DateTime($data['expires_at']) : null);
         $url = route('certificate.final.access', $result['token']);
-        $notifications->send($final->application->client_id, 'final_available', 'Sertifikat final tersedia', 'Sertifikat final untuk '.$final->application->order_number.' telah tersedia. Gunakan link dan password yang diberikan oleh GIS.', $url);
+        $notifications->send($final->application->client_id, 'final_available', 'Sertifikat final tersedia', 'Sertifikat final untuk '.$final->application->order_number.' telah tersedia. Gunakan link dan password yang diberikan oleh GIS.', $url, ['application_id' => $final->application->id]);
         $audit->log('certificate.final_link_created', $result['link'], [], ['expires_at' => $result['link']->expires_at]);
 
-        return back()->with('generated_link', ['url' => $url, 'password' => $result['password']])->with('success', 'Link dan password final berhasil dibuat. Password hanya ditampilkan sekali.');
+        /*
+         * QR sengaja mengarah ke halaman verifikasi publik, BUKAN ke link
+         * unduhan: QR pada sertifikat dipakai pihak ketiga untuk memastikan
+         * keaslian, dan tidak boleh membawa token akses berkas.
+         */
+        $verifyUrl = $qr->verificationUrl($final->certificate_number);
+
+        return back()->withFragment('generated-link')->with('generated_link', [
+            'url' => $url,
+            'password' => $result['password'],
+            'verify_url' => $verifyUrl,
+            'verify_qr' => $qr->svg($verifyUrl),
+            'certificate_number' => $final->certificate_number,
+        ])->with('success', 'Link dan password final berhasil dibuat. Password hanya ditampilkan sekali.');
     }
 
     public function complete(Request $request, CertificationApplication $application, WorkflowService $workflow, AuditLogger $audit)

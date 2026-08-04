@@ -149,6 +149,11 @@ class CertificationApplication extends Model
         return $this->hasOne(CertificateFinal::class, 'application_id')->latestOfMany();
     }
 
+    public function certificateShareLinks(): HasMany
+    {
+        return $this->hasMany(CertificateShareLink::class, 'application_id');
+    }
+
     public function surveillanceSchedules(): HasMany
     {
         return $this->hasMany(SurveillanceSchedule::class, 'application_id')->orderBy('cycle');

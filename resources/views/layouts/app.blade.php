@@ -487,6 +487,16 @@
             grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
         }
 
+        /*
+         * Sebelumnya tidak pernah didefinisikan, sehingga kartu statistik pada
+         * halaman audit menumpuk vertikal selebar penuh alih-alih berjajar.
+         */
+        .grid-4 {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        }
+
         .flex {
             display: flex;
             align-items: center;
@@ -550,11 +560,29 @@
             background: var(--surface);
             color: var(--text);
             font-size: 14px;
+            /*
+             * Tanpa min-height, tinggi kontrol ditentukan tinggi baris bawaan
+             * masing-masing elemen: input teks 38px, select 40px, input tanggal
+             * dan tombol 41px. Akibatnya kontrol yang bersebelahan tidak pernah
+             * benar-benar sejajar. Disamakan ke 41px agar tidak ada yang
+             * menyusut dari ukuran sebelumnya.
+             */
+            min-height: 41px;
         }
 
         .form-textarea {
             min-height: 90px;
             resize: vertical;
+        }
+
+        /*
+         * Input berkas punya tombol internal yang lebih tinggi dari teks biasa,
+         * sehingga tanpa penyesuaian ini ia 3px lebih jangkung dari kontrol
+         * lain yang sebaris dengannya.
+         */
+        .form-control[type="file"] {
+            padding-top: 8px;
+            padding-bottom: 8px;
         }
 
         .btn {
@@ -1447,8 +1475,16 @@
                 const fresh=doc.getElementById('page-content');
                 const current=document.getElementById('page-content');
                 if(fresh&&current){
+                    /*
+                     * Pertahankan posisi baca. Sebelumnya di sini ada
+                     * scrollIntoView ke puncak, yang membuat pengguna harus
+                     * menggulir ulang ke bawah setiap kali menyimpan sesuatu.
+                     */
+                    const y=window.scrollY;
                     current.innerHTML=fresh.innerHTML;
-                    current.scrollIntoView({behavior:'smooth',block:'start'});
+                    requestAnimationFrame(function(){
+                        window.scrollTo(0,Math.min(y,Math.max(0,document.documentElement.scrollHeight-window.innerHeight)));
+                    });
                 }else{
                     window.location.reload();
                 }
@@ -1481,6 +1517,71 @@
             });
             return result.isConfirmed;
         }
+
+        /*
+         * Form non-AJAX memakai pola POST-redirect-GET, sehingga browser
+         * memuat halaman baru dan mendarat di puncak. Posisi baca disimpan
+         * sebelum kirim lalu dipulihkan bila halaman yang dimuat memang
+         * halaman yang sama. Berlaku untuk semua tombol, termasuk yang
+         * mengarah ke halaman lain (posisinya sengaja tidak dipulihkan).
+         */
+        const SCROLL_KEY='gis:scroll-restore';
+
+        function currentPath(){return window.location.pathname+window.location.search;}
+
+        document.addEventListener('submit',function(event){
+            const form=event.target.closest('form');
+            if(!form||form.hasAttribute('data-ajax'))return;
+            try{
+                sessionStorage.setItem(SCROLL_KEY,JSON.stringify({
+                    path:currentPath(),
+                    hash:window.location.hash,
+                    y:window.scrollY
+                }));
+            }catch(e){/* penyimpanan penuh atau diblokir: abaikan */}
+        },true);
+
+        window.addEventListener('pageshow',function(){
+            let saved=null;
+            try{
+                saved=JSON.parse(sessionStorage.getItem(SCROLL_KEY)||'null');
+                sessionStorage.removeItem(SCROLL_KEY);
+            }catch(e){return;}
+
+            if(!saved)return;
+            if(saved.path!==currentPath())return;
+
+            /*
+             * Fragment yang dipasang server (mis. withFragment('generated-link'))
+             * harus menang atas pemulihan posisi. Tapi fragment tab halaman
+             * internal seperti #dokumen tidak boleh ikut membatalkan pemulihan:
+             * fragment tidak dikirim ke server, jadi setelah redirect hash-nya
+             * kosong. Karena itu yang dilewati hanya hash baru yang tidak kosong
+             * DAN berbeda dari hash saat form dikirim.
+             */
+            if(window.location.hash&&window.location.hash!==saved.hash)return;
+
+            /*
+             * Diulang beberapa kali, bukan sekali: tinggi halaman masih berubah
+             * saat font dan gambar selesai dimuat, sehingga satu kali scroll
+             * kerap tertimpa pergeseran layout sesudahnya. Pengulangan berhenti
+             * begitu pengguna menggulir sendiri, agar tidak merebut kendali.
+             */
+            let dibatalkan=false;
+            const batalkan=function(){dibatalkan=true;};
+            window.addEventListener('wheel',batalkan,{once:true,passive:true});
+            window.addEventListener('touchstart',batalkan,{once:true,passive:true});
+            window.addEventListener('keydown',batalkan,{once:true});
+
+            const terapkan=function(){
+                if(dibatalkan)return;
+                const maks=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+                window.scrollTo(0,Math.min(saved.y,maks));
+            };
+
+            requestAnimationFrame(terapkan);
+            [60,180,400,800].forEach(function(ms){setTimeout(terapkan,ms);});
+        });
 
         document.addEventListener('submit',async function(event){
             const form=event.target.closest('form');

@@ -149,4 +149,68 @@ class SuperadminAndPublicTest extends TestCase
             ->assertRedirect()
             ->assertSessionHasErrors('order_number');
     }
+
+    /**
+     * Membuat permohonan yang sudah punya sertifikat final.
+     */
+    private function applicationWithCertificate(string $orderNumber, string $certificateNumber): CertificationApplication
+    {
+        $client = $this->user('client');
+        $scheme = CertificationScheme::orderBy('sort_order')->firstOrFail();
+        $app = CertificationApplication::create([
+            'uuid' => (string) Str::uuid(), 'client_id' => $client->id, 'certification_scheme_id' => $scheme->id,
+            'form_version' => $scheme->form_version, 'status' => 'completed', 'current_step' => 'completed',
+            'company_name' => 'PT Uji', 'contact_email' => 'a@b.c', 'order_number' => $orderNumber, 'submitted_at' => now(),
+        ]);
+        \App\Models\CertificateFinal::create([
+            'application_id' => $app->id, 'certificate_number' => $certificateNumber, 'original_name' => 'f.pdf',
+            'file_path' => 'x/f.pdf', 'checksum_sha256' => str_repeat('a', 64),
+            'issued_date' => today(), 'expiry_date' => today()->addYears(3), 'status' => 'released',
+        ]);
+
+        return $app;
+    }
+
+    public function test_verifikasi_publik_lewat_get_dengan_nomor_sertifikat(): void
+    {
+        $this->seedAll();
+        $this->applicationWithCertificate('PUB-QR-1', '777/LSSM-GIS/VIII/2026');
+
+        // Inilah yang dibuka ketika QR pada sertifikat dipindai.
+        $this->get(route('public.home', ['nomor' => '777/LSSM-GIS/VIII/2026']))
+            ->assertOk()
+            ->assertSee('PUB-QR-1')
+            ->assertSee('777/LSSM-GIS/VIII/2026')
+            ->assertSee('Berlaku sampai');
+    }
+
+    public function test_verifikasi_publik_lewat_get_dengan_nomor_order(): void
+    {
+        $this->seedAll();
+        $this->applicationWithCertificate('PUB-QR-2', '778/LSSM-GIS/VIII/2026');
+
+        $this->get(route('public.home', ['nomor' => 'PUB-QR-2']))
+            ->assertOk()
+            ->assertSee('PUB-QR-2');
+    }
+
+    public function test_form_publik_juga_menerima_nomor_sertifikat(): void
+    {
+        $this->seedAll();
+        $this->applicationWithCertificate('PUB-QR-3', '779/LSSM-GIS/VIII/2026');
+
+        $this->post(route('public.track'), ['order_number' => '779/LSSM-GIS/VIII/2026'])
+            ->assertOk()
+            ->assertSee('PUB-QR-3');
+    }
+
+    public function test_nomor_tidak_dikenal_lewat_get_tidak_menampilkan_hasil(): void
+    {
+        $this->seedAll();
+
+        $this->get(route('public.home', ['nomor' => 'TIDAK/ADA/2026']))
+            ->assertOk()
+            ->assertSee('tidak ditemukan')
+            ->assertDontSee('Status TIDAK/ADA/2026');
+    }
 }

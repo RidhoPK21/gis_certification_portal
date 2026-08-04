@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Internal;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApplicationWorkflowStep;
 use App\Models\AuditStage;
 use App\Models\AuditStageFile;
 use App\Models\CertificationApplication;
@@ -51,7 +52,7 @@ class AuditController extends Controller
         ]);
     }
 
-    public function show(Request $request, CertificationApplication $application)
+    public function show(Request $request, CertificationApplication $application, WorkflowService $workflow)
     {
         $this->ensureAssigned($request, $application);
         $application->load([
@@ -59,7 +60,10 @@ class AuditController extends Controller
             'findings.correctiveActions.files', 'findings.correctiveActions.reviews',
         ]);
 
-        return view('internal.audit.show', compact('application'));
+        return view('internal.audit.show', [
+            'application' => $application,
+            'stageSkip' => $workflow->stageSkipInfo($application),
+        ]);
     }
 
     public function saveStage(Request $request, CertificationApplication $application, WorkflowService $workflow, FileStorageService $files, AuditLogger $audit)
@@ -123,16 +127,35 @@ class AuditController extends Controller
         ]);
         $this->ensureAssigned($request, $application, $data['stage_code']);
 
-        $step = $application->workflowSteps()
-            ->whereHas('workflowStep', fn ($query) => $query->where('code', $data['stage_code'])->where('is_skippable', true))
-            ->first();
-        abort_unless($step, 422, 'Tahap ini tidak dikonfigurasi sebagai skippable untuk skema tersebut.');
+        $info = $workflow->stageSkipInfo($application);
+        abort_unless(
+            $info[$data['stage_code']]['allowed'] ?? false,
+            422,
+            $info[$data['stage_code']]['reason'] ?? 'Tahap ini tidak dapat dilewati untuk skema tersebut.'
+        );
+
+        /*
+         * Order yang di-submit sebelum WorkflowTemplate aktif tidak punya baris
+         * application_workflow_steps sama sekali. initialize() bersifat
+         * firstOrCreate, jadi aman dipanggil untuk menyembuhkan order lama.
+         */
+        $step = $this->findWorkflowStep($application, $data['stage_code']);
+
+        if (! $step) {
+            $workflow->initialize($application);
+            $step = $this->findWorkflowStep($application->refresh(), $data['stage_code']);
+        }
 
         $stage = AuditStage::updateOrCreate(
             ['application_id' => $application->id, 'stage_code' => $data['stage_code']],
             ['status' => 'skipped', 'skip_reason' => $data['reason'], 'action_date' => $data['action_date'], 'updated_by' => $request->user()->id],
         );
-        $step->update([
+        /*
+         * Null-safe: bila skema memang belum punya WorkflowTemplate, pencatatan
+         * AuditStage dan transisi status tetap harus jalan. Backfill baris
+         * workflow ditangani command workflow:backfill-steps.
+         */
+        $step?->update([
             'status' => 'skipped', 'skip_reason' => $data['reason'],
             'skipped_by' => $request->user()->id, 'completed_at' => now(),
         ]);
@@ -144,6 +167,15 @@ class AuditController extends Controller
         $audit->log('audit.stage_skipped', $stage, [], ['reason' => $data['reason']]);
 
         return back()->with('success', 'Tahap audit dilewati dengan alasan yang tercatat.');
+    }
+
+    private function findWorkflowStep(
+        CertificationApplication $application,
+        string $stageCode
+    ): ?ApplicationWorkflowStep {
+        return $application->workflowSteps()
+            ->whereHas('workflowStep', fn ($query) => $query->where('code', $stageCode))
+            ->first();
     }
 
     public function completeAudit(Request $request, CertificationApplication $application, WorkflowService $workflow, AuditLogger $audit, PortalNotificationService $notifications)

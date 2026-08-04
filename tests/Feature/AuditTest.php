@@ -90,6 +90,112 @@ class AuditTest extends TestCase
             ->assertForbidden();
     }
 
+    /**
+     * Skema produk (SNI/LSPro) satu-satunya yang mengizinkan skip Stage 1
+     * maupun Stage 2 — lihat WorkflowSeeder.
+     */
+    private function productApplication(User $client): CertificationApplication
+    {
+        $scheme = CertificationScheme::where('category', 'product')->firstOrFail();
+
+        return CertificationApplication::create([
+            'uuid' => (string) Str::uuid(),
+            'client_id' => $client->id,
+            'certification_scheme_id' => $scheme->id,
+            'form_version' => $scheme->form_version,
+            'status' => 'payment_completed',
+            'current_step' => 'payment_completed',
+            'company_name' => 'PT Produk',
+            'contact_email' => 'produk@uji.test',
+            'order_number' => 'PRD-'.Str::random(4),
+            'order_date' => today(),
+            'submitted_at' => now(),
+        ]);
+    }
+
+    private function assignAuditor(CertificationApplication $app, User $admin, User $auditor): void
+    {
+        $this->actingAs($admin)->post(route('internal.applications.audit-assignments.store', $app), [
+            'auditor_id' => $auditor->id, 'assignment_role' => 'LA', 'stage_code' => 'all', 'assigned_date' => now()->format('Y-m-d'),
+        ])->assertRedirect();
+    }
+
+    public function test_form_skip_dinonaktifkan_untuk_skema_yang_mewajibkan_stage(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditor = $this->user('auditor');
+        $app = $this->application($this->user('client'));
+        $this->assignAuditor($app, $admin, $auditor);
+
+        $html = $this->actingAs($auditor)->get(route('audit.show', $app))->assertOk()->getContent();
+
+        $this->assertStringContainsString('wajib dilaksanakan untuk skema sistem manajemen', $html);
+        $this->assertStringContainsString('<fieldset disabled', $html);
+    }
+
+    public function test_skip_ditolak_untuk_skema_yang_mewajibkan_stage(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditor = $this->user('auditor');
+        $app = $this->application($this->user('client'));
+        $this->assignAuditor($app, $admin, $auditor);
+
+        $this->actingAs($auditor)->post(route('audit.stage.skip', $app), [
+            'stage_code' => 'stage_1',
+            'reason' => 'Klien sudah tersertifikasi sebelumnya.',
+            'action_date' => now()->format('Y-m-d'),
+        ])->assertStatus(422);
+
+        $this->assertDatabaseMissing('audit_stages', ['application_id' => $app->id, 'status' => 'skipped']);
+    }
+
+    public function test_skip_berhasil_untuk_skema_produk(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditor = $this->user('auditor');
+        $app = $this->productApplication($this->user('client'));
+        $this->assignAuditor($app, $admin, $auditor);
+        app(\App\Services\WorkflowService::class)->initialize($app);
+
+        $this->actingAs($auditor)->post(route('audit.stage.skip', $app), [
+            'stage_code' => 'stage_1',
+            'reason' => 'Produk sudah pernah diaudit pada siklus sebelumnya.',
+            'action_date' => now()->format('Y-m-d'),
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('audit_stages', [
+            'application_id' => $app->id, 'stage_code' => 'stage_1', 'status' => 'skipped',
+        ]);
+        $this->assertSame('stage_2_audit', $app->refresh()->status);
+    }
+
+    public function test_skip_menyembuhkan_order_tanpa_baris_workflow(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditor = $this->user('auditor');
+        // Sengaja tanpa WorkflowService::initialize(), meniru order lama yang
+        // di-submit sebelum WorkflowSeeder pernah dijalankan.
+        $app = $this->productApplication($this->user('client'));
+        $this->assignAuditor($app, $admin, $auditor);
+
+        $this->assertDatabaseMissing('application_workflow_steps', ['application_id' => $app->id]);
+
+        $this->actingAs($auditor)->post(route('audit.stage.skip', $app), [
+            'stage_code' => 'stage_1',
+            'reason' => 'Order lama tanpa baris workflow.',
+            'action_date' => now()->format('Y-m-d'),
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('application_workflow_steps', ['application_id' => $app->id]);
+        $this->assertDatabaseHas('audit_stages', [
+            'application_id' => $app->id, 'stage_code' => 'stage_1', 'status' => 'skipped',
+        ]);
+    }
+
     public function test_alur_audit_temuan_dan_tindakan_koreksi(): void
     {
         $this->seedAll();

@@ -159,22 +159,40 @@
                     <button class="btn btn-primary">Simpan Tahap Audit</button>
                 </form>
 
+                @php
+                    // Sengaja bentuk blok, bukan bentuk inline berargumen:
+                    // file ini memakai blok PHP di bawah, dan Blade akan
+                    // memasangkan pembuka inline dengan penutup blok terdekat
+                    // berikutnya sehingga isi di antaranya ikut tertelan.
+                    $skipInfo = $stageSkip['stage_1'];
+                    $alreadySkipped = $application->auditStages->firstWhere('stage_code', 'stage_1')?->status === 'skipped';
+                @endphp
                 <details class="mt-2">
                     <summary><strong>Skip tahap opsional (Stage 1)</strong></summary>
+                    @unless ($skipInfo['allowed'])
+                        <div class="alert alert-warning mt-2">{{ $skipInfo['reason'] }}</div>
+                    @endunless
+                    @if ($alreadySkipped)
+                        <div class="alert alert-info mt-2">Tahap ini sudah dilewati.</div>
+                    @endif
                     <form class="mt-2" method="post" action="{{ route('audit.stage.skip', $application) }}">
                         @csrf
                         <input type="hidden" name="stage_code" value="stage_1">
-                        <div class="grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Tanggal Aksi</label>
-                                <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}">
+                        {{-- fieldset disabled mematikan input sekaligus tombol, dan
+                             input disabled tidak ikut terkirim ke server. --}}
+                        <fieldset @disabled(! $skipInfo['allowed'] || $alreadySkipped) style="border:0;padding:0;margin:0">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Tanggal Aksi</label>
+                                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Alasan Wajib</label>
+                                    <input class="form-control" name="reason" required>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Alasan Wajib</label>
-                                <input class="form-control" name="reason" required>
-                            </div>
-                        </div>
-                        <button class="btn btn-warning">Skip dengan Alasan</button>
+                            <button class="btn btn-warning">Skip dengan Alasan</button>
+                        </fieldset>
                     </form>
                 </details>
             </section>
@@ -261,22 +279,34 @@
                     <button class="btn btn-primary">Simpan Tahap Audit</button>
                 </form>
 
+                @php
+                    $skipInfo = $stageSkip['stage_2'];
+                    $alreadySkipped = $application->auditStages->firstWhere('stage_code', 'stage_2')?->status === 'skipped';
+                @endphp
                 <details class="mt-2">
                     <summary><strong>Skip tahap opsional (Stage 2)</strong></summary>
+                    @unless ($skipInfo['allowed'])
+                        <div class="alert alert-warning mt-2">{{ $skipInfo['reason'] }}</div>
+                    @endunless
+                    @if ($alreadySkipped)
+                        <div class="alert alert-info mt-2">Tahap ini sudah dilewati.</div>
+                    @endif
                     <form class="mt-2" method="post" action="{{ route('audit.stage.skip', $application) }}">
                         @csrf
                         <input type="hidden" name="stage_code" value="stage_2">
-                        <div class="grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Tanggal Aksi</label>
-                                <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}">
+                        <fieldset @disabled(! $skipInfo['allowed'] || $alreadySkipped) style="border:0;padding:0;margin:0">
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Tanggal Aksi</label>
+                                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Alasan Wajib</label>
+                                    <input class="form-control" name="reason" required>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Alasan Wajib</label>
-                                <input class="form-control" name="reason" required>
-                            </div>
-                        </div>
-                        <button class="btn btn-warning">Skip dengan Alasan</button>
+                            <button class="btn btn-warning">Skip dengan Alasan</button>
+                        </fieldset>
                     </form>
                 </details>
             </section>

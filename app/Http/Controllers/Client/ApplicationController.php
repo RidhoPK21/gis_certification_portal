@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\CertificationApplication;
 use App\Models\CertificationScheme;
+use App\Models\PortalNotification;
 use App\Services\ApplicationSubmissionService;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
+use App\Services\QrCodeService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -232,14 +234,52 @@ class ApplicationController extends Controller
             ->with('success', 'Draft permohonan berhasil dihapus.');
     }
 
-    public function show(Request $request, CertificationApplication $application, DynamicFormService $forms)
+    public function show(Request $request, CertificationApplication $application, DynamicFormService $forms, QrCodeService $qr)
     {
         $this->own($request, $application);
         $application->load(['scheme', 'values', 'documents.currentVersion', 'revisions', 'statusHistory', 'invoice.payments', 'auditStages', 'findings.correctiveActions', 'certificateDrafts', 'certificateFinal', 'surveillanceSchedules']);
 
+        /*
+         * Token link sertifikat hanya tersimpan asli pada action_url notifikasi
+         * (CertificateLinkService menyimpan hash-nya saja), jadi dari situlah
+         * halaman ini mengambilnya. Password sengaja tidak pernah ditampilkan
+         * di portal — Tim Teknis mengirimkannya lewat kanal terpisah.
+         */
+        $certificateUrl = null;
+        $certificateLinkActive = false;
+        $verifyUrl = null;
+        $verifyQr = null;
+
+        if ($application->certificateFinal?->certificate_number) {
+            /*
+             * QR mengarah ke halaman verifikasi publik, bukan ke berkas: klien
+             * boleh menyebarkannya ke pihak ketiga tanpa membocorkan akses unduh.
+             */
+            $verifyUrl = $qr->verificationUrl($application->certificateFinal->certificate_number);
+            $verifyQr = $qr->svg($verifyUrl);
+        }
+
+        if ($application->certificateFinal) {
+            $certificateUrl = PortalNotification::forApplication($application)
+                ->where('type', 'final_available')
+                ->whereNotNull('action_url')
+                ->latest()
+                ->value('action_url');
+
+            $certificateLinkActive = $application->certificateShareLinks()
+                ->where('link_type', 'final')
+                ->latest()
+                ->get()
+                ->contains(fn ($link) => $link->isUsable());
+        }
+
         return view('client.applications.show', [
             'application' => $application,
             'completion' => $forms->completion($application),
+            'certificateUrl' => $certificateUrl,
+            'certificateLinkActive' => $certificateLinkActive,
+            'verifyUrl' => $verifyUrl,
+            'verifyQr' => $verifyQr,
         ]);
     }
 

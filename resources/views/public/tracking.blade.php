@@ -44,15 +44,18 @@
     <main class="track-main">
         <div class="track-card">
             <h2>Cek Status Permohonan</h2>
-            <p class="muted">Masukkan nomor order. Halaman publik hanya menampilkan tahapan umum tanpa dokumen atau data sensitif.</p>
+            <p class="muted">Masukkan nomor order atau nomor sertifikat. Halaman publik hanya menampilkan tahapan umum tanpa dokumen atau data sensitif.</p>
             @if ($errors->any())
                 <div class="alert alert-danger">{{ $errors->first('order_number') }}</div>
             @endif
+            @isset($notFound)
+                <div class="alert alert-danger">Nomor <strong>{{ $notFound }}</strong> tidak ditemukan. Periksa kembali penulisannya.</div>
+            @endisset
             <form method="post" action="{{ route('public.track') }}">
                 @csrf
                 <div class="form-group">
-                    <label class="form-label" for="order_number">Nomor Order</label>
-                    <input class="form-control" id="order_number" name="order_number" value="{{ old('order_number') }}" placeholder="Contoh: 013/LSSM-GIS/V/2026" required autocomplete="off">
+                    <label class="form-label" for="order_number">Nomor Order / Nomor Sertifikat</label>
+                    <input class="form-control" id="order_number" name="order_number" value="{{ old('order_number', $notFound ?? '') }}" placeholder="Contoh: 013/LSSM-GIS/V/2026" required autocomplete="off">
                 </div>
                 <button class="btn btn-primary btn-block">Cek Status</button>
             </form>
@@ -78,7 +81,21 @@
                         </div>
                     @endforeach
                     @if ($result['certificate_available'])
-                        <div class="alert-success mt-2"><strong>Sertifikat telah tersedia.</strong> Pengunduhan tetap melalui login klien atau link aman dari Tim Teknis.</div>
+                        <div class="alert-success mt-2">
+                            <strong>Sertifikat telah tersedia.</strong>
+                            @if ($result['certificate_number'])
+                                <div style="margin-top:6px">
+                                    Nomor sertifikat <strong>{{ $result['certificate_number'] }}</strong>
+                                    @if ($result['issued_date'])
+                                        · Terbit {{ $result['issued_date'] }}
+                                    @endif
+                                    @if ($result['expiry_date'])
+                                        · Berlaku sampai {{ $result['expiry_date'] }}
+                                    @endif
+                                </div>
+                            @endif
+                            <div style="margin-top:6px">Pengunduhan tetap melalui login klien atau link aman dari Tim Teknis.</div>
+                        </div>
                     @endif
                 </div>
             </div>
