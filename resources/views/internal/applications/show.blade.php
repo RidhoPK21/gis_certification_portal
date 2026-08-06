@@ -172,18 +172,32 @@
 
     <section class="card mt-2" id="dokumen">
         <h2>Kajian Dokumen Administrasi</h2>
-        <p class="muted small">Dokumen teknis tidak dikaji di sini — bagian itu dinilai Tim Teknis pada tahap tinjauan teknis.</p>
+        {{-- Sengaja bentuk blok, bukan inline: berkas ini memakai bentuk blok di
+             bawah, dan bentuk inline di atasnya akan berpasangan dengan penutup
+             blok tersebut sehingga isi di antaranya ikut tertelan Blade. --}}
+        @php
+            $formCode = config('review.form_meta.'.$application->scheme->code.'.code')
+                ?? config('review.form_meta_default.code');
+        @endphp
+        <p class="muted small">
+            Mengikuti formulir <strong>{{ $formCode }}</strong>. Pilihan yang tidak dipilih akan tercetak dicoret pada PDF
+            tinjauan. Dokumen teknis tidak dikaji di sini — bagian itu dinilai Tim Teknis pada tahap tinjauan teknis.
+        </p>
         <form method="post" action="{{ route('internal.applications.review', $application) }}">
             @csrf
             <input type="hidden" name="review_type" value="administration">
             <div class="table-wrap">
                 <table class="table">
                     <thead>
-                        <tr><th>No</th><th>Dokumen</th><th>File</th><th>Hasil Kajian</th><th>Keterangan</th></tr>
+                        <tr><th>No</th><th>Dokumen</th><th>File</th><th>Hasil Kajian*)</th><th>Keterangan*)</th></tr>
                     </thead>
                     <tbody>
                         @foreach ($adminDocuments as $i => $required)
-                            @php($doc = $application->documents->firstWhere('document_code', $required->code))
+                            @php
+                                $doc = $application->documents->firstWhere('document_code', $required->code);
+                                $item = $adminReviewItems->get($required->code);
+                                $remark = old("items.$i.remark_option", $item?->remark_option);
+                            @endphp
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td>
@@ -194,7 +208,10 @@
                                     <input type="hidden" name="items[{{ $i }}][presence]" value="{{ $doc?->currentVersion ? 'Ada' : 'Tidak Ada' }}">
                                 </td>
                                 <td>
-                                    @if ($doc?->currentVersion)
+                                    @if (! $required->expects_document)
+                                        {{-- Baris penilaian peninjau, bukan berkas unggahan klien. --}}
+                                        <span class="small muted">—</span>
+                                    @elseif ($doc?->currentVersion)
                                         <a class="btn btn-light btn-sm" href="{{ route('secure-files.application-document', $doc) }}">{{ $doc->currentVersion->original_name }}</a>
                                         <div class="small muted">v{{ $doc->currentVersion->version }}</div>
                                     @else
@@ -203,19 +220,37 @@
                                 </td>
                                 <td>
                                     <select class="form-select" name="items[{{ $i }}][status]">
-                                        <option value="pending" @selected(($doc?->review_status ?? 'pending') === 'pending')>Belum dikaji</option>
-                                        <option value="sufficient" @selected($doc?->review_status === 'sufficient')>Cukup</option>
-                                        <option value="insufficient" @selected($doc?->review_status === 'insufficient')>Belum cukup</option>
-                                        <option value="meets" @selected($doc?->review_status === 'meets')>Memenuhi</option>
-                                        <option value="not_meets" @selected($doc?->review_status === 'not_meets')>Tidak memenuhi</option>
+                                        <option value="pending" @selected(($item?->review_status ?? $doc?->review_status ?? 'pending') === 'pending')>Belum dikaji</option>
+                                        @foreach (config('review.result_options') as $value => $label)
+                                            <option value="{{ $value }}" @selected(($item?->review_status ?? $doc?->review_status) === $value)>{{ $label }}</option>
+                                        @endforeach
                                     </select>
                                 </td>
-                                <td><input class="form-control" name="items[{{ $i }}][notes]" value="{{ $doc?->review_note }}"></td>
+                                <td>
+                                    @if ($required->free_remark)
+                                        <input class="form-control" name="items[{{ $i }}][notes]"
+                                               value="{{ old("items.$i.notes", $item?->notes) }}" placeholder="Keterangan">
+                                    @else
+                                        <select class="form-select js-remark-select" name="items[{{ $i }}][remark_option]" data-target="remark-date-{{ $i }}">
+                                            <option value="">— belum diisi —</option>
+                                            @foreach (config('review.remark_options') as $value => $label)
+                                                <option value="{{ $value }}" @selected($remark === $value)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <input class="form-control mt-1" type="date" id="remark-date-{{ $i }}"
+                                               name="items[{{ $i }}][remark_date]"
+                                               value="{{ old("items.$i.remark_date", optional($item?->remark_date)->format('Y-m-d')) }}"
+                                               style="{{ $remark === 'tgl_berlaku' ? '' : 'display:none' }}">
+                                        <input class="form-control mt-1" name="items[{{ $i }}][notes]"
+                                               value="{{ old("items.$i.notes", $doc?->review_note) }}" placeholder="Catatan tambahan (opsional)">
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
+            <p class="small muted">*) coret yang tidak perlu — pilihan yang tidak dipilih dicoret otomatis saat PDF dibuat.</p>
             <div class="grid-3 mt-2">
                 <div class="form-group">
                     <label class="form-label">Tanggal Tinjauan</label>
@@ -223,15 +258,36 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Nama Peninjau</label>
-                    <input class="form-control" name="signed_name" value="{{ auth()->user()->name }}" required>
+                    <input class="form-control" value="{{ auth()->user()->name }}" readonly>
+                    <p class="small muted" style="margin-top:6px">Diambil dari akun Anda dan tercetak pada kolom tanda tangan.</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Catatan Umum</label>
-                    <input class="form-control" name="notes">
+                    <label class="form-label">Jumlah Site (bila Multi site)</label>
+                    <input class="form-control" type="number" min="1" max="9999" name="site_count"
+                           value="{{ old('site_count', $adminReview?->site_count) }}" placeholder="Kosongkan bila Single Site">
                 </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Catatan Belum Memenuhi</label>
+                <input class="form-control" name="notes" value="{{ old('notes', $adminReview?->notes) }}" placeholder="Isi bila ada dokumen yang belum memenuhi">
             </div>
             <button class="btn btn-primary">Simpan Kajian Administrasi</button>
         </form>
+
+        @push('scripts')
+        <script>
+        /* Kolom tanggal hanya relevan saat Keterangan memilih "Tgl Berlaku". */
+        document.addEventListener('change', function (event) {
+            const select = event.target.closest('.js-remark-select');
+            if (!select) return;
+            const field = document.getElementById(select.dataset.target);
+            if (!field) return;
+            const active = select.value === 'tgl_berlaku';
+            field.style.display = active ? '' : 'none';
+            if (!active) field.value = '';
+        });
+        </script>
+        @endpush
     </section>
 
     @if ($technicalDocuments->isNotEmpty())

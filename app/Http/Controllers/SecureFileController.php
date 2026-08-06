@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\AuditStageFile;
 use App\Models\CertificationApplication;
 use App\Models\CorrectiveActionFile;
+use App\Models\GisFormTemplate;
 use App\Models\Invoice;
 use App\Services\AuditLogger;
 use App\Services\FileStorageService;
+use App\Services\GisFormService;
 use Illuminate\Http\Request;
 
 class SecureFileController extends Controller
@@ -50,6 +52,29 @@ class SecureFileController extends Controller
         $audit->log('file.corrective_action_downloaded', $file, [], ['application_id' => $application->id]);
 
         return $files->response($file->file_path, $file->original_name);
+    }
+
+    /**
+     * Template Formulir Wajib GIS hanya boleh diunduh oleh internal, atau oleh
+     * klien yang permintaan templatenya sudah disetujui pada skema yang sama.
+     */
+    public function gisFormTemplate(Request $request, GisFormTemplate $template, FileStorageService $files, AuditLogger $audit, GisFormService $gisForms)
+    {
+        $user = $request->user();
+        $allowed = $user->hasRole(['admin_application', 'superadmin', 'technical']);
+
+        if (! $allowed && $user->hasRole('client')) {
+            $allowed = CertificationApplication::query()
+                ->where('client_id', $user->id)
+                ->where('certification_scheme_id', $template->certification_scheme_id)
+                ->get()
+                ->contains(fn (CertificationApplication $application) => $gisForms->isUnlocked($application));
+        }
+
+        abort_unless($allowed && $template->is_active, 403);
+        $audit->log('file.gis_form_template_downloaded', $template, [], ['code' => $template->code]);
+
+        return $files->response($template->file_path, $template->original_name);
     }
 
     public function fieldFile(Request $request, CertificationApplication $application, string $code, FileStorageService $files, AuditLogger $audit)

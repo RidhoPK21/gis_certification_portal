@@ -262,8 +262,9 @@ class DynamicFormService
                 ])->all(),
             ])->all(),
             'documents' => $scheme->requiredDocuments->map->only([
-                'id', 'code', 'name', 'description', 'requirement', 'conditional_rules',
-                'allowed_extensions', 'max_size_mb', 'review_group', 'sort_order', 'is_active',
+                'id', 'code', 'name', 'description', 'requirement', 'document_group',
+                'conditional_rules', 'allowed_extensions', 'max_size_mb', 'review_group',
+                'sort_order', 'is_active',
             ])->all(),
         ];
     }

@@ -129,6 +129,21 @@ class ClientApplicationTest extends TestCase
         }
         app(\App\Services\ApplicationSubmissionService::class)->saveValues($app, $values, $client->id);
 
+        /*
+         * Skema ini memakai Formulir Wajib GIS, jadi slot unggahannya baru
+         * terbuka setelah Admin Permohonan menyetujui permintaan template.
+         */
+        $this->actingAs($client)->post(route('client.gis-form-requests.store', $app));
+        $admin = User::create([
+            'name' => 'Admin Permohonan', 'email' => 'admin.permohonan@example.com',
+            'password' => 'RahasiaKuat123', 'is_active' => true,
+        ]);
+        $admin->roles()->attach(Role::where('code', 'admin_application')->value('id'));
+        $this->actingAs($admin)->post(route(
+            'internal.gis-form-requests.approve',
+            \App\Models\GisFormRequest::where('application_id', $app->id)->firstOrFail()
+        ));
+
         // Unggah semua dokumen wajib.
         $requiredDocs = $forms->applicableDocuments($schemeSnapshot, $values)->where('requirement', 'required');
         foreach ($requiredDocs as $doc) {
@@ -193,7 +208,10 @@ class ClientApplicationTest extends TestCase
         $app = $this->draftFor($client, $scheme);
 
         $forms = app(\App\Services\DynamicFormService::class);
-        $doc = $forms->applicableDocuments($forms->schemeForApplication($app), [])->firstOrFail();
+
+        // Formulir Wajib GIS terkunci sampai templatenya dibagikan.
+        $doc = $forms->applicableDocuments($forms->schemeForApplication($app), [])
+            ->firstWhere(fn ($document) => ($document->document_group ?? 'company') !== 'gis_form');
 
         $this->actingAs($client)->post(route('client.documents.store', $app), [
             'document_code' => $doc->code,

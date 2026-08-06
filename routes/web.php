@@ -6,12 +6,14 @@ use App\Http\Controllers\Auth\RegistrationOtpController;
 use App\Http\Controllers\Client\ApplicationController as ClientApplicationController;
 use App\Http\Controllers\Client\CorrectiveActionController as ClientCorrectiveActionController;
 use App\Http\Controllers\Client\DocumentController as ClientDocumentController;
+use App\Http\Controllers\Client\GisFormRequestController as ClientGisFormRequestController;
 use App\Http\Controllers\CertificateShareController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Internal\ApplicationReviewController;
 use App\Http\Controllers\Internal\AuditController;
 use App\Http\Controllers\Internal\FinanceController;
 use App\Http\Controllers\Internal\GeneratedPdfController;
+use App\Http\Controllers\Internal\GisFormRequestController;
 use App\Http\Controllers\Internal\TechnicalController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\PublicTrackingController;
 use App\Http\Controllers\SecureFileController;
 use App\Http\Controllers\Superadmin\AuditTrailController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
+use App\Http\Controllers\Superadmin\GisFormTemplateController;
 use App\Http\Controllers\Superadmin\SchemeController;
 use App\Http\Controllers\Superadmin\SettingController;
 use App\Http\Controllers\Superadmin\SniProductController;
@@ -124,6 +127,8 @@ Route::middleware([
         ->name('secure-files.audit');
     Route::get('/secure-files/corrective-action/{file}', [SecureFileController::class, 'correctiveAction'])
         ->name('secure-files.corrective-action');
+    Route::get('/secure-files/gis-form-template/{template}', [SecureFileController::class, 'gisFormTemplate'])
+        ->name('secure-files.gis-form-template');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -153,6 +158,7 @@ Route::middleware([
             Route::post('/applications/{application}/submit', [ClientApplicationController::class, 'submit'])->name('applications.submit');
             Route::delete('/applications/{application}', [ClientApplicationController::class, 'destroy'])->name('applications.destroy');
             Route::post('/applications/{application}/documents', [ClientDocumentController::class, 'store'])->name('documents.store');
+            Route::post('/applications/{application}/gis-form-request', [ClientGisFormRequestController::class, 'store'])->name('gis-form-requests.store');
 
             Route::get('/corrective-actions', [ClientCorrectiveActionController::class, 'index'])->name('corrective-actions.index');
             Route::post('/findings/{finding}/corrective-actions', [ClientCorrectiveActionController::class, 'store'])->name('corrective-actions.store');
@@ -174,6 +180,20 @@ Route::middleware([
             Route::put('/{application}/order', [ApplicationReviewController::class, 'updateOrder'])->name('applications.order');
             Route::get('/generated-pdf/{pdf}/download', [GeneratedPdfController::class, 'download'])->name('generated-pdf.download');
             Route::post('/{application}/audit-assignments', [ApplicationReviewController::class, 'assignAuditor'])->name('applications.audit-assignments.store');
+        });
+
+    /*
+     * Permintaan template Formulir Wajib GIS ditangani Admin Permohonan yang
+     * sehari-hari memegang antrean permohonan; superadmin ikut agar tidak
+     * tertahan saat admin berhalangan.
+     */
+    Route::middleware('role:admin_application,superadmin')
+        ->prefix('internal/gis-form-requests')
+        ->name('internal.gis-form-requests.')
+        ->group(function (): void {
+            Route::get('/', [GisFormRequestController::class, 'index'])->name('index');
+            Route::post('/{gisFormRequest}/approve', [GisFormRequestController::class, 'approve'])->name('approve');
+            Route::post('/{gisFormRequest}/reject', [GisFormRequestController::class, 'reject'])->name('reject');
         });
 
     Route::middleware('role:finance,superadmin')
@@ -255,6 +275,11 @@ Route::middleware([
                 ->name('form-builder.documents.update');
             Route::post('/schemes/{scheme}/builder/documents/{document}/toggle', [FormBuilderController::class, 'toggleDocument'])
                 ->name('form-builder.documents.toggle');
+
+            Route::get('/gis-forms', [GisFormTemplateController::class, 'index'])->name('gis-forms.index');
+            Route::post('/gis-forms/{scheme}', [GisFormTemplateController::class, 'store'])->name('gis-forms.store');
+            Route::post('/gis-forms/template/{template}/toggle', [GisFormTemplateController::class, 'toggle'])->name('gis-forms.toggle');
+            Route::delete('/gis-forms/template/{template}', [GisFormTemplateController::class, 'destroy'])->name('gis-forms.destroy');
 
             Route::get('/sni-products', [SniProductController::class, 'index'])->name('sni-products.index');
             Route::post('/sni-products', [SniProductController::class, 'store'])->name('sni-products.store');

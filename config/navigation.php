@@ -72,6 +72,16 @@ return [
             'superadmin',
         ],
     ],
+    [
+        'section' => 'Admin Permohonan',
+        'label' => 'Permintaan Formulir GIS',
+        'route' => 'internal.gis-form-requests.index',
+        'active' => 'internal.gis-form-requests.*',
+        'roles' => [
+            'admin_application',
+            'superadmin',
+        ],
+    ],
 
     [
         'section' => 'Finance',
@@ -137,6 +147,13 @@ return [
         'label' => 'Master Skema',
         'route' => 'superadmin.schemes.index',
         'active' => 'superadmin.schemes.*',
+        'roles' => ['superadmin'],
+    ],
+    [
+        'section' => 'Superadmin',
+        'label' => 'Formulir Wajib GIS',
+        'route' => 'superadmin.gis-forms.index',
+        'active' => 'superadmin.gis-forms.*',
         'roles' => ['superadmin'],
     ],
     [

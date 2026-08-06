@@ -4,6 +4,21 @@
 
 @push('styles')
 <style>
+.gis-form-block {
+    padding: 18px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-left: 4px solid var(--primary, #0f4c81);
+    border-radius: 12px;
+    background: var(--card-bg, #ffffff);
+}
+.gis-form-block h3 {
+    margin: 0 0 4px;
+}
+/* Slot terkunci tetap terlihat supaya klien tahu apa yang menantinya. */
+.doc-item-locked {
+    opacity: 0.62;
+}
 .wizard-horizontal-nav {
     display: flex;
     gap: 8px;
@@ -260,35 +275,119 @@
                  data-upload-url="{{ route('client.documents.store', $application) }}">
             <h2>Upload Dokumen</h2>
             <p class="muted">Pilih file dan dokumen langsung terunggah tanpa perlu memuat ulang halaman. Anda bisa memilih ulang untuk mengganti versi. File lama tidak dihapus saat revisi; sistem membuat versi baru dan menyimpan checksum SHA-256.</p>
-            <div class="doc-list">
-                @foreach ($applicableDocuments as $required)
-                    @php
-                        $doc = $application->documents->firstWhere('document_code', $required->code);
-                    @endphp
-                    <div class="doc-item" id="field-{{ $required->code }}">
-                        <div>
-                            <h4>
-                                {{ $required->name }}
-                                @if ($required->requirement === 'required')<span class="required">*</span>
-                                @elseif ($required->requirement === 'conditional')<span class="badge badge-warning">Conditional</span>@endif
-                            </h4>
-                            <p>{{ $required->description }} · Format: {{ implode(', ', $required->allowed_extensions ?? config('gis.allowed_extensions')) }} · Maks. {{ $required->max_size_mb }} MB</p>
-                            <div class="small text-success doc-current" id="doc-current-{{ $required->code }}"
-                                 style="{{ $doc?->currentVersion ? '' : 'display:none' }}">
-                                @if ($doc?->currentVersion)
-                                    ✓ {{ $doc->currentVersion->original_name }} · versi {{ $doc->currentVersion->version }} · kajian: {{ $doc->review_status }}
-                                @endif
+
+            @php
+                /*
+                 * Formulir terbitan LS dipisah dari dokumen milik perusahaan dan
+                 * diberi penomoran sendiri, mengikuti checklist resmi GIS.
+                 */
+                $grouped = $applicableDocuments->groupBy(
+                    fn ($doc) => ($doc->document_group ?? 'company') === 'gis_form' ? 'gis_form' : 'company'
+                );
+                $gisFormDocuments = $grouped->get('gis_form', collect());
+                $companyDocuments = $grouped->get('company', collect());
+            @endphp
+
+            @if ($usesGisForms && $gisFormDocuments->isNotEmpty())
+                <div class="gis-form-block">
+                    <h3>Form Wajib GIS</h3>
+                    <p class="muted small">
+                        Formulir ini diterbitkan PT GIS. Minta templatenya lebih dulu; setelah tim GIS menyetujui,
+                        template dapat diunduh, diisi, lalu diunggah kembali di sini.
+                    </p>
+
+                    @if ($gisFormUnlocked)
+                        <div class="alert alert-success">
+                            <strong>Template sudah dibagikan.</strong>
+                            Unduh, isi, tanda tangani, lalu unggah kembali pada slot di bawah.
+                            @if ($gisFormRequest?->response_note)
+                                <div class="small" style="margin-top:6px">Catatan tim GIS: {{ $gisFormRequest->response_note }}</div>
+                            @endif
+                        </div>
+                        <div class="table-wrap" style="margin-bottom:16px">
+                            <table class="table">
+                                <thead><tr><th>Kode</th><th>Formulir</th><th>Berkas</th><th></th></tr></thead>
+                                <tbody>
+                                    @forelse ($gisFormTemplates as $template)
+                                        <tr>
+                                            <td><strong>{{ $template->code }}</strong></td>
+                                            <td>
+                                                {{ $template->name }}
+                                                @if ($template->description)
+                                                    <br><span class="small muted">{{ $template->description }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="small muted">{{ $template->extension }} · {{ $template->size_label }}</td>
+                                            <td>
+                                                <a class="btn btn-primary btn-sm" href="{{ route('secure-files.gis-form-template', $template) }}">
+                                                    Unduh Template
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="4"><div class="empty">Tim GIS belum mengunggah berkas template. Hubungi Admin Permohonan.</div></td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    @elseif ($gisFormRequest?->isPending())
+                        <div class="alert alert-info">
+                            <strong>Permintaan terkirim {{ $gisFormRequest->created_at->format('d M Y H:i') }}.</strong>
+                            Menunggu persetujuan tim GIS. Anda akan menerima notifikasi begitu template dibagikan.
+                        </div>
+                    @else
+                        @if ($gisFormRequest?->isRejected())
+                            <div class="alert alert-danger">
+                                <strong>Permintaan sebelumnya ditolak.</strong>
+                                {{ $gisFormRequest->response_note }}
                             </div>
-                            <div class="small doc-status" id="doc-status-{{ $required->code }}" style="display:none;margin-top:4px"></div>
+                        @endif
+                        <div class="alert alert-warning">
+                            Slot unggahan di bawah masih terkunci. Ajukan permintaan template lebih dulu.
                         </div>
-                        <div>
-                            <input class="form-control doc-upload-input" type="file"
-                                   data-doc-code="{{ $required->code }}"
-                                   data-doc-name="{{ $required->name }}">
-                        </div>
+                        <form method="post" action="{{ route('client.gis-form-requests.store', $application) }}"
+                              data-confirm="Permintaan template Formulir Wajib GIS akan dikirim ke tim GIS. Lanjutkan?"
+                              data-confirm-title="Minta Template Formulir"
+                              data-confirm-yes="Ya, kirim permintaan"
+                              style="margin-bottom:16px">
+                            @csrf
+                            <div class="form-group">
+                                <label class="form-label">Catatan untuk tim GIS (opsional)</label>
+                                <input class="form-control" name="client_note" maxlength="1000" placeholder="Contoh: mohon dikirim untuk lingkup produksi di dua lokasi">
+                            </div>
+                            <button class="btn btn-primary">Minta Template Formulir GIS</button>
+                        </form>
+                    @endif
+
+                    <div class="doc-list">
+                        @foreach ($gisFormDocuments as $required)
+                            @include('client.applications.partials.document-item', [
+                                'required' => $required,
+                                'document' => $application->documents->firstWhere('document_code', $required->code),
+                                'number' => $loop->iteration,
+                                'locked' => ! $gisFormUnlocked,
+                            ])
+                        @endforeach
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endif
+
+            @if ($companyDocuments->isNotEmpty())
+                @if ($usesGisForms && $gisFormDocuments->isNotEmpty())
+                    <h3 style="margin-top:22px">Dokumen Wajib Perusahaan</h3>
+                    <p class="muted small">Dokumen milik perusahaan yang wajib dilampirkan.</p>
+                @endif
+                <div class="doc-list">
+                    @foreach ($companyDocuments as $required)
+                        @include('client.applications.partials.document-item', [
+                            'required' => $required,
+                            'document' => $application->documents->firstWhere('document_code', $required->code),
+                            'number' => $loop->iteration,
+                            'locked' => false,
+                        ])
+                    @endforeach
+                </div>
+            @endif
             <div class="flex justify-between items-center gap-2 mt-3 pt-2 border-t wrap">
                 <button type="button" class="btn btn-light wizard-prev-btn">← Sebelumnya</button>
                 <button type="button" class="btn btn-primary wizard-next-btn">Selanjutnya: Pernyataan →</button>

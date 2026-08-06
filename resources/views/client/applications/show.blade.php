@@ -52,6 +52,54 @@
         </section>
     </div>
 
+    @if ($usesGisForms)
+        <section class="card mt-2">
+            <h2>Form Wajib GIS</h2>
+            @if ($gisFormUnlocked)
+                <div class="alert alert-success">
+                    Template Formulir Wajib GIS sudah dibagikan tim GIS
+                    @if ($gisFormRequest?->responded_at)
+                        pada {{ $gisFormRequest->responded_at->format('d M Y H:i') }}
+                    @endif.
+                </div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>Kode</th><th>Formulir</th><th>Berkas</th><th></th></tr></thead>
+                        <tbody>
+                            @forelse ($gisFormTemplates as $template)
+                                <tr>
+                                    <td><strong>{{ $template->code }}</strong></td>
+                                    <td>{{ $template->name }}</td>
+                                    <td class="small muted">{{ $template->extension }} · {{ $template->size_label }}</td>
+                                    <td><a class="btn btn-light btn-sm" href="{{ route('secure-files.gis-form-template', $template) }}">Unduh Template</a></td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4"><div class="empty">Berkas template belum diunggah tim GIS.</div></td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            @elseif ($gisFormRequest?->isPending())
+                <div class="alert alert-info">
+                    Permintaan template dikirim {{ $gisFormRequest->created_at->format('d M Y H:i') }} dan sedang menunggu persetujuan tim GIS.
+                </div>
+            @elseif ($gisFormRequest?->isRejected())
+                <div class="alert alert-danger">
+                    Permintaan template ditolak. {{ $gisFormRequest->response_note }}
+                </div>
+            @else
+                <div class="alert alert-warning">
+                    Anda belum meminta template Formulir Wajib GIS.
+                    @if ($application->canBeEditedByClient())
+                        Ajukan permintaannya di <a href="{{ route('client.applications.edit', $application) }}">halaman pengisian</a>.
+                    @else
+                        Hubungi Admin Permohonan GIS.
+                    @endif
+                </div>
+            @endif
+        </section>
+    @endif
+
     @if ($trackingQr)
         <section class="card mt-2">
             <h2>QR Pelacakan Permohonan</h2>

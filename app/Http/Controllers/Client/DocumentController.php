@@ -9,11 +9,12 @@ use App\Models\SchemeRequiredDocument;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
 use App\Services\FileStorageService;
+use App\Services\GisFormService;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
-    public function store(Request $request, CertificationApplication $application, FileStorageService $files, DynamicFormService $forms, AuditLogger $audit)
+    public function store(Request $request, CertificationApplication $application, FileStorageService $files, DynamicFormService $forms, AuditLogger $audit, GisFormService $gisForms)
     {
         abort_unless($application->client_id === $request->user()->id && $application->canBeEditedByClient(), 403);
 
@@ -30,6 +31,19 @@ class DocumentController extends Controller
             ->where('code', $data['document_code'])
             ->first();
         $required = $snapshotDocument;
+
+        /*
+         * Formulir Wajib GIS baru boleh diunggah setelah tim GIS membagikan
+         * templatenya: tanpa template, berkas yang diunggah klien hampir pasti
+         * bukan format resmi LS.
+         */
+        $group = $required->document_group ?? $currentDocument?->document_group ?? 'company';
+
+        abort_if(
+            $group === GisFormService::GROUP && ! $gisForms->isUnlocked($application),
+            403,
+            'Template Formulir Wajib GIS belum dibagikan. Ajukan permintaan template lebih dulu.'
+        );
 
         $document = ApplicationDocument::firstOrCreate(
             ['application_id' => $application->id, 'document_code' => $required->code],

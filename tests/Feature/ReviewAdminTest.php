@@ -227,9 +227,10 @@ class ReviewAdminTest extends TestCase
         // irisannya menelan hampir seluruh halaman.
         $sectionKajian = Str::betweenFirst($html, 'id="dokumen"', '</section>');
 
+        // process_information hanya ada di tabel teknis FrM.9107.
         $this->assertStringContainsString('value="nib"', $sectionKajian);
-        $this->assertStringNotContainsString('value="system_manual"', $sectionKajian);
-        $this->assertStringContainsString('value="system_manual"', $html);
+        $this->assertStringNotContainsString('value="process_information"', $sectionKajian);
+        $this->assertStringContainsString('value="process_information"', $html);
     }
 
     /**
@@ -261,11 +262,13 @@ class ReviewAdminTest extends TestCase
                 'submitted_at' => now(),
             ]);
 
-            $groups = $scheme->requiredDocuments->groupBy(
-                fn ($doc) => ($doc->review_group ?? 'administration') === 'technical' ? 'technical' : 'administration'
-            );
-            $adminCodes = ($groups['administration'] ?? collect())->pluck('code');
-            $technicalCodes = ($groups['technical'] ?? collect())->pluck('code');
+            /*
+             * Acuannya baris formulir tinjauan, bukan seluruh checklist klien:
+             * FrM.9107 dan FrM.9101 hanya mengkaji sebagian dokumen.
+             */
+            $reviews = app(\App\Services\ReviewService::class);
+            $adminCodes = $reviews->formRows($app, 'administration')->pluck('code');
+            $technicalCodes = $reviews->formRows($app, 'technical')->pluck('code')->diff($adminCodes);
 
             $this->assertTrue($adminCodes->isNotEmpty(), $scheme->code.': tidak punya dokumen administrasi.');
             $this->assertTrue($technicalCodes->isNotEmpty(), $scheme->code.': tidak punya dokumen teknis.');
@@ -312,12 +315,12 @@ class ReviewAdminTest extends TestCase
                 'action_date' => now()->format('Y-m-d'),
                 'signed_name' => 'Reviewer',
                 'items' => [
-                    ['type' => 'document', 'code' => 'system_manual', 'label' => 'Manual Sistem', 'status' => 'sufficient'],
+                    ['type' => 'document', 'code' => 'process_information', 'label' => 'Proses Produksi', 'status' => 'sufficient'],
                 ],
             ])
             ->assertStatus(422);
 
-        $this->assertDatabaseMissing('review_form_items', ['item_code' => 'system_manual']);
+        $this->assertDatabaseMissing('review_form_items', ['item_code' => 'process_information']);
     }
 
     public function test_menyetujui_menandai_kajian_administrasi_dan_teknis_diterima(): void

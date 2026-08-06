@@ -83,6 +83,16 @@ class SchemeCatalogSeeder extends Seeder
                     }
                 }
 
+                /*
+                 * Dokumen yang sudah dicabut dari katalog harus ikut hilang,
+                 * bukan tertinggal di basis data. application_documents memakai
+                 * nullOnDelete sehingga berkas yang terlanjur diunggah tetap ada
+                 * beserta document_code-nya.
+                 */
+                SchemeRequiredDocument::where('certification_scheme_id', $scheme->id)
+                    ->whereNotIn('code', array_column($schemeData['documents'], 'code'))
+                    ->delete();
+
                 foreach ($schemeData['documents'] as $docData) {
                     SchemeRequiredDocument::updateOrCreate(
                         ['certification_scheme_id' => $scheme->id, 'code' => $docData['code']],
@@ -90,6 +100,7 @@ class SchemeCatalogSeeder extends Seeder
                             'name' => $docData['name'],
                             'description' => $docData['description'] ?? null,
                             'requirement' => $docData['requirement'],
+                            'document_group' => $docData['document_group'] ?? 'company',
                             'conditional_rules' => $docData['condition'] ?? null,
                             'allowed_extensions' => $docData['extensions'],
                             'max_size_mb' => $docData['max_mb'],

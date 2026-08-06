@@ -8,6 +8,7 @@ use App\Models\CertificateFinal;
 use App\Models\CertificateShareLink;
 use App\Models\CertificationApplication;
 use App\Models\SurveillanceSchedule;
+use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\CertificateLinkService;
 use App\Services\DynamicFormService;
@@ -20,6 +21,7 @@ use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TechnicalController extends Controller
 {
@@ -80,20 +82,23 @@ class TechnicalController extends Controller
         ]);
     }
 
-    public function reviewShow(CertificationApplication $application, DynamicFormService $forms)
+    public function reviewShow(CertificationApplication $application, DynamicFormService $forms, ReviewService $reviews)
     {
         abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
-        $application->load(['scheme.requiredDocuments', 'client', 'values', 'documents.currentVersion', 'reviews.items']);
+        $application->load(['scheme.requiredDocuments', 'client', 'values', 'documents.currentVersion', 'reviews.items', 'auditAssignments.auditor']);
         $application->setRelation('scheme', $forms->schemeForApplication($application));
         $review = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first();
 
         return view('internal.technical.review-show', [
             'application' => $application,
             'technicalFields' => config('review.technical_fields'),
-            'technicalDocuments' => $application->scheme->requiredDocuments
-                ->filter(fn ($doc) => ($doc->review_group ?? 'administration') === 'technical')
-                ->values(),
+            // Baris tabel mengikuti formulir tinjauan, bukan seluruh checklist klien.
+            'technicalDocuments' => $reviews->formRows($application, 'technical'),
             'review' => $review,
+            'panelistCandidates' => User::where('is_active', true)
+                ->whereHas('roles', fn ($query) => $query->whereIn('code', config('review.panelist_roles')))
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -101,14 +106,39 @@ class TechnicalController extends Controller
     {
         abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
         $data = $request->validate([
-            'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['required', 'string', 'max:150'],
+            // signed_name diabaikan bila dikirim: nilainya diambil dari akun peninjau.
+            'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['nullable', 'string', 'max:150'],
             'aspects' => ['nullable', 'array'],
             'aspects.*' => ['nullable', 'string', 'max:3000'],
+            'scope_conformity' => ['nullable', Rule::in(array_keys(config('review.technical_conclusion.scope_conformity.options')))],
+            'audit_capability_choice' => ['nullable', Rule::in(array_keys(config('review.technical_conclusion.audit_capability_choice.options')))],
+            'panelist_ids' => ['nullable', 'array'],
+            'panelist_ids.*' => ['integer', 'exists:users,id'],
+            'auditor_competence_codes' => ['nullable', 'array'],
+            'auditor_competence_codes.*' => [Rule::in(array_keys(config('review.environmental_competences')))],
             'items' => ['nullable', 'array'], 'items.*.type' => ['required_with:items', 'string'], 'items.*.code' => ['required_with:items', 'string'],
             'items.*.label' => ['required_with:items', 'string'], 'items.*.presence' => ['nullable', 'string'],
             'items.*.status' => ['required_with:items', Rule::in(ReviewService::STATUSES)],
+            'items.*.remark_option' => ['nullable', Rule::in(ReviewService::REMARK_OPTIONS)],
+            'items.*.remark_date' => ['nullable', 'date', 'required_if:items.*.remark_option,tgl_berlaku'],
             'items.*.notes' => ['nullable', 'string'],
+        ], [
+            'items.*.remark_date.required_if' => 'Tanggal berlaku wajib diisi bila keterangan memilih "Tgl Berlaku".',
         ]);
+
+        /*
+         * Panelis harus benar-benar akun berperan panelis; tanpa pagar ini
+         * sembarang id pengguna bisa dikirim lewat request.
+         */
+        if (! empty($data['panelist_ids'])) {
+            $valid = User::whereIn('id', $data['panelist_ids'])
+                ->where('is_active', true)
+                ->whereHas('roles', fn ($query) => $query->whereIn('code', config('review.panelist_roles')))
+                ->pluck('id')
+                ->all();
+
+            abort_if(count($valid) !== count(array_unique($data['panelist_ids'])), 422, 'Panelis yang dipilih tidak valid.');
+        }
         $review = $reviews->save($application, 'technical', $data, $request->user()->id, 'technical');
         $reviews->storeTechnicalAspects($application, $data['aspects'] ?? [], $request->user()->id);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => 'technical']);

@@ -9,6 +9,7 @@ use App\Models\PortalNotification;
 use App\Services\ApplicationSubmissionService;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
+use App\Services\GisFormService;
 use App\Services\QrCodeService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
@@ -73,7 +74,7 @@ class ApplicationController extends Controller
             ->with('success', 'Draft permohonan dibuat. Isi setiap tahap secara bertahap.');
     }
 
-    public function edit(Request $request, CertificationApplication $application, DynamicFormService $forms, WorkflowService $workflow)
+    public function edit(Request $request, CertificationApplication $application, DynamicFormService $forms, WorkflowService $workflow, GisFormService $gisForms)
     {
         $this->own($request, $application);
         if (! $application->canBeEditedByClient()) {
@@ -93,12 +94,23 @@ class ApplicationController extends Controller
             ? \App\Models\SniProductGroup::with('categories')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get()
             : null;
 
+        $usesGisForms = $gisForms->schemeUsesGisForms($application->certification_scheme_id);
+        $gisFormUnlocked = $gisForms->isUnlocked($application);
+
         return view('client.applications.edit', [
             'application' => $application,
             'values' => $forms->values($application),
             'applicableDocuments' => $forms->applicableDocuments($application->scheme, $forms->values($application)),
             'completion' => $forms->completion($application),
             'productGroups' => $productGroups,
+            'usesGisForms' => $usesGisForms,
+            'gisFormRequest' => $gisForms->latestRequest($application),
+            'gisFormUnlocked' => $gisFormUnlocked,
+            // Template hanya diambil bila sudah boleh dibagikan, agar daftarnya
+            // tidak bocor sebelum permintaan klien disetujui.
+            'gisFormTemplates' => $usesGisForms && $gisFormUnlocked
+                ? $gisForms->templatesForScheme($application->certification_scheme_id)
+                : collect(),
         ]);
     }
 
@@ -234,7 +246,7 @@ class ApplicationController extends Controller
             ->with('success', 'Draft permohonan berhasil dihapus.');
     }
 
-    public function show(Request $request, CertificationApplication $application, DynamicFormService $forms, QrCodeService $qr)
+    public function show(Request $request, CertificationApplication $application, DynamicFormService $forms, QrCodeService $qr, GisFormService $gisForms)
     {
         $this->own($request, $application);
         $application->load(['scheme', 'values', 'documents.currentVersion', 'revisions', 'statusHistory', 'invoice.payments', 'auditStages', 'findings.correctiveActions', 'certificateDrafts', 'certificateFinal', 'surveillanceSchedules']);
@@ -298,6 +310,12 @@ class ApplicationController extends Controller
             'trackingUrl' => $trackingUrl,
             'trackingQr' => $trackingQr,
             'trackingQrDownloadUrl' => $trackingQrDownloadUrl,
+            'usesGisForms' => $gisForms->schemeUsesGisForms($application->certification_scheme_id),
+            'gisFormRequest' => $gisForms->latestRequest($application),
+            'gisFormUnlocked' => $gisForms->isUnlocked($application),
+            'gisFormTemplates' => $gisForms->isUnlocked($application)
+                ? $gisForms->templatesForScheme($application->certification_scheme_id)
+                : collect(),
         ]);
     }
 

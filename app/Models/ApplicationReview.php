@@ -14,6 +14,8 @@ class ApplicationReview extends Model
         return [
             'action_date' => 'date',
             'completed_at' => 'datetime',
+            'panelist_ids' => 'array',
+            'auditor_competence_codes' => 'array',
         ];
     }
 

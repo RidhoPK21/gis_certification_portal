@@ -69,8 +69,14 @@ class AjaxUploadTest extends TestCase
         ]);
 
         $snapshot = app(DynamicFormService::class)->schemeForApplication($app);
-        $doc = $snapshot->requiredDocuments->firstWhere('requirement', 'required')
-            ?? $snapshot->requiredDocuments->first();
+
+        /*
+         * Formulir Wajib GIS terkunci sampai templatenya dibagikan, jadi yang
+         * diuji di sini dokumen milik perusahaan.
+         */
+        $companyDocuments = $snapshot->requiredDocuments
+            ->filter(fn ($document) => ($document->document_group ?? 'company') !== 'gis_form');
+        $doc = $companyDocuments->firstWhere('requirement', 'required') ?? $companyDocuments->first();
 
         $response = $this->actingAs($client)->post(route('client.documents.store', $app), [
             'document_code' => $doc->code,

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             SchemeCatalogSeeder::class,
             WorkflowSeeder::class,
             SniProductTaxonomySeeder::class,
+            GisFormTemplateSeeder::class,
         ]);
 
         /*

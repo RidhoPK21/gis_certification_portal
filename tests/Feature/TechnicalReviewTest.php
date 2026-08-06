@@ -211,19 +211,25 @@ class TechnicalReviewTest extends TestCase
                 'submitted_at' => now(),
             ]);
 
-            $groups = $scheme->requiredDocuments->groupBy(
-                fn ($doc) => ($doc->review_group ?? 'administration') === 'technical' ? 'technical' : 'administration'
-            );
+            /*
+             * Acuannya baris formulir tinjauan. Dokumen yang muncul di kedua
+             * tabel memang tampil di dua form (Admin menilai kelengkapan, Tim
+             * Teknis menilai substansi), jadi yang tidak boleh bocor hanyalah
+             * baris yang khusus administrasi.
+             */
+            $reviews = app(\App\Services\ReviewService::class);
+            $technicalCodes = $reviews->formRows($app, 'technical')->pluck('code');
+            $adminOnlyCodes = $reviews->formRows($app, 'administration')->pluck('code')->diff($technicalCodes);
 
             $html = $this->actingAs($tech)
                 ->get(route('technical.reviews.show', $app))
                 ->assertOk()
                 ->getContent();
 
-            foreach (($groups['technical'] ?? collect())->pluck('code') as $code) {
+            foreach ($technicalCodes as $code) {
                 $this->assertStringContainsString('value="'.$code.'"', $html, $scheme->code.': dokumen teknis '.$code.' tidak ada di form Tim Teknis.');
             }
-            foreach (($groups['administration'] ?? collect())->pluck('code') as $code) {
+            foreach ($adminOnlyCodes as $code) {
                 $this->assertStringNotContainsString('value="'.$code.'"', $html, $scheme->code.': dokumen administrasi '.$code.' bocor ke form Tim Teknis.');
             }
         }
@@ -240,14 +246,18 @@ class TechnicalReviewTest extends TestCase
         $this->actingAs($tech)->post(route('technical.reviews.save', $app), [
             'action_date' => now()->format('Y-m-d'),
             'signed_name' => 'Peninjau Teknis',
-            'aspects' => ['audit_mandays' => '5', 'assigned_auditor_team' => 'LA: Ani, A: Budi'],
+            /*
+             * Tim auditor tidak lagi diketik di sini — namanya diambil dari
+             * penugasan auditor — jadi yang diuji tinggal aspek teks lainnya.
+             */
+            'aspects' => ['audit_mandays' => '5', 'required_auditor_competence' => 'Ruang lingkup beton'],
         ])->assertRedirect();
 
         $this->assertDatabaseHas('application_values', [
             'application_id' => $app->id, 'field_code' => 'audit_mandays', 'value_text' => '5',
         ]);
         $this->assertDatabaseHas('application_values', [
-            'application_id' => $app->id, 'field_code' => 'assigned_auditor_team', 'value_text' => 'LA: Ani, A: Budi',
+            'application_id' => $app->id, 'field_code' => 'required_auditor_competence', 'value_text' => 'Ruang lingkup beton',
         ]);
 
         // Simpan ulang harus meng-update baris yang sama, bukan menambah.

@@ -164,6 +164,11 @@ class CertificationApplication extends Model
         return $this->hasMany(ApplicationWorkflowStep::class, 'application_id');
     }
 
+    public function gisFormRequests(): HasMany
+    {
+        return $this->hasMany(GisFormRequest::class, 'application_id')->latest('id');
+    }
+
     public function value(string $code, mixed $default = null): mixed
     {
         $record = $this->relationLoaded('values')

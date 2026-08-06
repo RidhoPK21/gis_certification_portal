@@ -38,7 +38,7 @@ class ApplicationReviewController extends Controller
         ]);
     }
 
-    public function show(CertificationApplication $application, DynamicFormService $forms)
+    public function show(CertificationApplication $application, DynamicFormService $forms, ReviewService $reviews)
     {
         // Catatan: relasi sertifikat/surveillance ditambahkan pada Fase 7-8.
         $application->load([
@@ -57,16 +57,17 @@ class ApplicationReviewController extends Controller
          * 'technical' dinilai Tim Teknis pada tahap tinjauan teknis. values()
          * wajib agar indeks items[] pada form tetap rapat mulai dari nol.
          */
-        $documents = $application->scheme->requiredDocuments
-            ->groupBy(fn ($doc) => ($doc->review_group ?? 'administration') === 'technical'
-                ? 'technical'
-                : 'administration');
+        $adminReview = $application->reviews->where('review_type', 'administration')->sortByDesc('round')->first();
 
         return view('internal.applications.show', [
             'application' => $application,
             'auditors' => $auditors,
-            'adminDocuments' => ($documents['administration'] ?? collect())->values(),
-            'technicalDocuments' => ($documents['technical'] ?? collect())->values(),
+            // Baris tabel mengikuti formulir tinjauan, bukan seluruh checklist klien.
+            'adminDocuments' => $reviews->formRows($application, 'administration'),
+            'technicalDocuments' => $reviews->formRows($application, 'technical'),
+            'adminReview' => $adminReview,
+            // Dipakai untuk mengisi ulang dropdown Keterangan*) FrM.9107.
+            'adminReviewItems' => $adminReview?->items->keyBy('item_code') ?? collect(),
         ]);
     }
 
@@ -95,11 +96,17 @@ class ApplicationReviewController extends Controller
         // Bagian teknis kini diisi oleh Tim Teknis (TechnicalController), bukan admin.
         $data = $request->validate([
             'review_type' => ['required', Rule::in(['administration'])],
-            'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['required', 'string', 'max:150'],
+            // signed_name diabaikan bila dikirim: nilainya diambil dari akun peninjau.
+            'notes' => ['nullable', 'string'], 'action_date' => ['required', 'date'], 'signed_name' => ['nullable', 'string', 'max:150'],
+            'site_count' => ['nullable', 'integer', 'min:1', 'max:9999'],
             'items' => ['nullable', 'array'], 'items.*.type' => ['required_with:items', 'string'], 'items.*.code' => ['required_with:items', 'string'],
             'items.*.label' => ['required_with:items', 'string'], 'items.*.presence' => ['nullable', 'string'],
             'items.*.status' => ['required_with:items', Rule::in(ReviewService::STATUSES)],
+            'items.*.remark_option' => ['nullable', Rule::in(ReviewService::REMARK_OPTIONS)],
+            'items.*.remark_date' => ['nullable', 'date', 'required_if:items.*.remark_option,tgl_berlaku'],
             'items.*.notes' => ['nullable', 'string'],
+        ], [
+            'items.*.remark_date.required_if' => 'Tanggal berlaku wajib diisi bila keterangan memilih "Tgl Berlaku".',
         ]);
         $review = $reviews->save($application, $data['review_type'], $data, $request->user()->id, 'administration');
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => $data['review_type']]);

@@ -555,9 +555,11 @@
     ],
     "documents": [
       {
-        "code": "nib",
-        "name": "Nomor Induk Berusaha (NIB)",
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SM (FrM.9100/GIS)",
         "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -575,10 +577,12 @@
         "sort_order": 1
       },
       {
-        "code": "npwp",
-        "name": "NPWP Perusahaan",
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi FrM.9104/GIS yang Telah Terisi",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -595,10 +599,12 @@
         "sort_order": 2
       },
       {
-        "code": "company_deed",
-        "name": "Akta Pendirian dan Perubahan Perusahaan",
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -615,8 +621,8 @@
         "sort_order": 3
       },
       {
-        "code": "organization_structure",
-        "name": "Struktur Organisasi",
+        "code": "company_deed",
+        "name": "Akte Pendirian Perusahaan",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -635,10 +641,10 @@
         "sort_order": 4
       },
       {
-        "code": "application_letter",
-        "name": "Surat Permohonan Sertifikasi",
+        "code": "npwp",
+        "name": "NPWP Perusahaan",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -655,10 +661,10 @@
         "sort_order": 5
       },
       {
-        "code": "application_form_signed",
-        "name": "Form Aplikasi Permohonan yang Ditandatangani",
+        "code": "director_id",
+        "name": "KTP Direktur",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -675,9 +681,9 @@
         "sort_order": 6
       },
       {
-        "code": "previous_certificate",
-        "name": "Sertifikat Sebelumnya",
-        "requirement": "conditional",
+        "code": "nib",
+        "name": "NIB Berbasis Risiko",
+        "requirement": "required",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -692,22 +698,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
         "sort_order": 7
       },
       {
-        "code": "site_list",
-        "name": "Daftar Site/Lokasi dan Personel",
-        "requirement": "conditional",
-        "review_group": "administration",
+        "code": "system_manual",
+        "name": "Panduan Mutu / Daftar Informasi Terdokumentasi (optional) / Quality Manual",
+        "requirement": "optional",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -721,18 +718,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "site_type",
-          "operator": "equals",
-          "value": "multi"
-        },
         "sort_order": 8
       },
       {
-        "code": "system_manual",
-        "name": "Panduan Sistem/Daftar Informasi Terdokumentasi",
-        "requirement": "optional",
-        "review_group": "technical",
+        "code": "master_document_list",
+        "name": "Daftar Induk Dokumen",
+        "requirement": "required",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -749,10 +741,10 @@
         "sort_order": 9
       },
       {
-        "code": "master_document_list",
-        "name": "Daftar Induk Dokumen",
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan / Flowchart",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -770,7 +762,7 @@
       },
       {
         "code": "internal_audit_evidence",
-        "name": "Program dan Hasil Audit Internal",
+        "name": "Dokumen Internal Audit Terakhir",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -790,9 +782,9 @@
       },
       {
         "code": "management_review_evidence",
-        "name": "Bukti Tinjauan Manajemen",
+        "name": "Dokumen Tinjauan Manajemen Terakhir",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -809,8 +801,8 @@
         "sort_order": 12
       },
       {
-        "code": "corrective_action_evidence",
-        "name": "Bukti Penanganan Ketidaksesuaian/Tindakan Korektif",
+        "code": "risk_management_file",
+        "name": "Dokumen Manajemen Risiko / Analisa Risiko",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -829,8 +821,8 @@
         "sort_order": 13
       },
       {
-        "code": "qms_scope",
-        "name": "Dokumen Ruang Lingkup QMS",
+        "code": "process_information",
+        "name": "Proses Produksi/Bisnis pada Perusahaan beserta Informasi Terkait",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -849,10 +841,10 @@
         "sort_order": 14
       },
       {
-        "code": "quality_policy",
-        "name": "Kebijakan Mutu",
-        "requirement": "required",
-        "review_group": "technical",
+        "code": "previous_certificate",
+        "name": "Sertifikasi Sistem Manajemen (jika sudah tersertifikasi)",
+        "requirement": "conditional",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -869,8 +861,895 @@
         "sort_order": 15
       },
       {
-        "code": "quality_objectives",
-        "name": "Sasaran Mutu",
+        "code": "business_license",
+        "name": "Izin Usaha dan Industri (IUI)",
+        "requirement": "required",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 16
+      }
+    ],
+    "sort_order": 1
+  },
+  {
+    "code": "ISO14001",
+    "slug": "iso-14001",
+    "name": "Sertifikasi Sistem Manajemen Lingkungan SNI ISO 14001:2015",
+    "short_name": "ISO 14001",
+    "category": "management_system",
+    "standard": "SNI ISO 14001:2015",
+    "prefix": "LSML-GIS",
+    "template": "lsml",
+    "description": "Sertifikasi sistem manajemen lingkungan berdasarkan SNI ISO 14001:2015 untuk organisasi yang mengelola aspek dan dampak lingkungan kegiatannya.",
+    "sections": [
+      {
+        "code": "general",
+        "title": "1. Informasi Umum",
+        "fields": [
+          {
+            "code": "company_name",
+            "label": "Nama perusahaan/organisasi",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "company_address",
+            "label": "Alamat kantor pusat",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "postal_city",
+            "label": "Kode Pos / Kota",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "country",
+            "label": "Negara",
+            "type": "text",
+            "required": true,
+            "placeholder": "Indonesia",
+            "sort_order": 4
+          },
+          {
+            "code": "contact_name",
+            "label": "Nama kontak/PIC",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "contact_position",
+            "label": "Jabatan PIC",
+            "type": "text",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "phone",
+            "label": "Telepon/HP",
+            "type": "text",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "email",
+            "label": "Email",
+            "type": "email",
+            "required": true,
+            "sort_order": 8
+          },
+          {
+            "code": "website",
+            "label": "Website",
+            "type": "url",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "fax",
+            "label": "Faksimili",
+            "type": "text",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "business_sector",
+            "label": "Bidang usaha",
+            "type": "text",
+            "required": true,
+            "sort_order": 11
+          }
+        ],
+        "sort_order": 1
+      },
+      {
+        "code": "scope",
+        "title": "2. Ruang Lingkup & Site",
+        "fields": [
+          {
+            "code": "industry_scope",
+            "label": "Lingkup usaha",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "nace_code",
+            "label": "NACE Code",
+            "type": "text",
+            "required": false,
+            "sort_order": 2
+          },
+          {
+            "code": "certification_scope",
+            "label": "Lingkup usaha spesifik (produk atau jasa yang dihasilkan)",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "site_type",
+            "label": "Tipe lokasi sertifikasi",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "single",
+                "label": "Single Site"
+              },
+              {
+                "value": "multi",
+                "label": "Multi-Site"
+              }
+            ],
+            "sort_order": 4
+          },
+          {
+            "code": "sites_information",
+            "label": "Daftar site/bagian: nama, alamat, proses, kesamaan proses, jumlah karyawan dan shift",
+            "type": "textarea",
+            "required": true,
+            "help": "Satu site per paragraf. Lampiran terpisah dapat diunggah pada dokumen daftar site.",
+            "sort_order": 5
+          },
+          {
+            "code": "total_employees",
+            "label": "Jumlah karyawan keseluruhan",
+            "type": "number",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "temporary_employees",
+            "label": "Jumlah karyawan sementara",
+            "type": "number",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "shift_employees",
+            "label": "Jumlah karyawan bekerja shift",
+            "type": "number",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "number_of_shifts",
+            "label": "Jumlah shift",
+            "type": "number",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "part_time_employees",
+            "label": "Jumlah karyawan paruh waktu",
+            "type": "number",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "part_time_hours",
+            "label": "Jumlah jam kerja paruh waktu",
+            "type": "number",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "effective_employees",
+            "label": "Jumlah efektif karyawan",
+            "type": "number",
+            "required": true,
+            "sort_order": 12
+          }
+        ],
+        "sort_order": 2
+      },
+      {
+        "code": "certification",
+        "title": "3. Permohonan Sertifikasi",
+        "fields": [
+          {
+            "code": "certification_type",
+            "label": "Tipe sertifikasi",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "initial",
+                "label": "Sertifikasi Awal"
+              },
+              {
+                "value": "surveillance",
+                "label": "Surveillance"
+              },
+              {
+                "value": "recertification",
+                "label": "Re-Sertifikasi"
+              },
+              {
+                "value": "transfer",
+                "label": "Transfer Sertifikat"
+              },
+              {
+                "value": "scope_change",
+                "label": "Perluasan/Perubahan Ruang Lingkup"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "previous_certificate_number",
+            "label": "Nomor sertifikat sebelumnya",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "certification_type",
+              "operator": "in",
+              "value": [
+                "transfer",
+                "recertification",
+                "scope_change"
+              ]
+            },
+            "sort_order": 2
+          },
+          {
+            "code": "audit_type",
+            "label": "Jenis audit",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "single",
+                "label": "Single Audit"
+              },
+              {
+                "value": "combined",
+                "label": "Combined Audit"
+              },
+              {
+                "value": "joint",
+                "label": "Joint Audit"
+              },
+              {
+                "value": "integrated",
+                "label": "Integrated Audit"
+              }
+            ],
+            "sort_order": 3
+          },
+          {
+            "code": "management_integration_level",
+            "label": "Besarnya integrasi antar sistem manajemen",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "20",
+                "label": "20%"
+              },
+              {
+                "value": "40",
+                "label": "40%"
+              },
+              {
+                "value": "60",
+                "label": "60%"
+              },
+              {
+                "value": "80",
+                "label": "80%"
+              }
+            ],
+            "sort_order": 4
+          },
+          {
+            "code": "system_implementation_duration",
+            "label": "Berapa lama sistem telah diaplikasikan?",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "consultant_information",
+            "label": "Informasi konsultan implementasi jika ada",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "proposed_audit_date",
+            "label": "Tanggal audit yang diajukan",
+            "type": "date",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "applicable_regulations",
+            "label": "Regulasi/standar teknis yang menjadi persyaratan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "outsourced_processes",
+            "label": "Proses yang dialihdayakan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "internal_audit_completed",
+            "label": "Audit internal telah dilaksanakan?",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 10
+          },
+          {
+            "code": "internal_audit_schedule",
+            "label": "Jadwal audit internal jika belum",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "internal_audit_completed",
+              "operator": "equals",
+              "value": "no"
+            },
+            "sort_order": 11
+          },
+          {
+            "code": "management_review_completed",
+            "label": "Tinjauan manajemen telah dilaksanakan?",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 12
+          },
+          {
+            "code": "management_review_schedule",
+            "label": "Jadwal tinjauan manajemen jika belum",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "management_review_completed",
+              "operator": "equals",
+              "value": "no"
+            },
+            "sort_order": 13
+          }
+        ],
+        "sort_order": 3
+      },
+      {
+        "code": "ems",
+        "title": "4. Informasi Sistem Manajemen Lingkungan",
+        "fields": [
+          {
+            "code": "products_services",
+            "label": "Produk/jasa utama",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "business_process",
+            "label": "Penjelasan proses bisnis/produksi",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "environmental_policy_summary",
+            "label": "Ringkasan kebijakan lingkungan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 3
+          },
+          {
+            "code": "environmental_objectives",
+            "label": "Sasaran lingkungan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 4
+          },
+          {
+            "code": "significant_aspects",
+            "label": "Aspek lingkungan penting yang teridentifikasi",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "aspect_identification_method",
+            "label": "Metode identifikasi dan kriteria penentuan aspek penting",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "environmental_permits",
+            "label": "Perizinan lingkungan yang dimiliki (AMDAL / UKL-UPL / SPPL)",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "air_emission",
+            "label": "Emisi ke udara (6.1)",
+            "type": "textarea",
+            "help": "Sumber emisi dan pengendaliannya, bila ada.",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "land_discharge",
+            "label": "Pembuangan ke tanah (6.2)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "water_discharge",
+            "label": "Pembuangan ke air (6.3)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "resource_use",
+            "label": "Penggunaan bahan baku, energi, dan sumber daya alam (6.4)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "emitted_energy",
+            "label": "Energi yang dipancarkan: panas, cahaya, radiasi ion, getaran, kebisingan (6.5)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 12
+          },
+          {
+            "code": "waste_handling",
+            "label": "Limbah yang dihasilkan dan penanganannya (6.6)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 13
+          },
+          {
+            "code": "physical_attributes",
+            "label": "Atribut fisik: ukuran, bentuk, warna, penampakan (6.7)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 14
+          },
+          {
+            "code": "emergency_preparedness",
+            "label": "Kesiapsiagaan dan tanggap darurat lingkungan",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 15
+          },
+          {
+            "code": "other_information",
+            "label": "Informasi lain yang perlu disampaikan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 16
+          }
+        ],
+        "sort_order": 4,
+        "description": "Data aspek dan dampak lingkungan sesuai SNI ISO 14001:2015."
+      },
+      {
+        "code": "declaration",
+        "title": "5. Pernyataan",
+        "fields": [
+          {
+            "code": "declaration_place",
+            "label": "Tempat penandatanganan",
+            "type": "text",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "declaration_date",
+            "label": "Tanggal pernyataan",
+            "type": "date",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "declaration_name",
+            "label": "Nama penandatangan",
+            "type": "text",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "declaration_title",
+            "label": "Jabatan penandatangan",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "declaration_truth",
+            "label": "Saya menyatakan informasi yang diberikan benar",
+            "type": "boolean",
+            "required": true,
+            "sort_order": 6
+          }
+        ],
+        "sort_order": 5
+      }
+    ],
+    "documents": [
+      {
+        "code": "siup",
+        "name": "SIUP (Surat Ijin Usaha Perdagangan)",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 1
+      },
+      {
+        "code": "company_deed",
+        "name": "Akte Pendirian Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 2
+      },
+      {
+        "code": "npwp",
+        "name": "NPWP Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 3
+      },
+      {
+        "code": "tdp",
+        "name": "TDP (Tanda Daftar Perusahaan)",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 4
+      },
+      {
+        "code": "nib",
+        "name": "NIB Berbasis Risiko",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 5
+      },
+      {
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SM (FrM.9100/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 6
+      },
+      {
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi (FrM.9104/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 7
+      },
+      {
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (Fr.7202/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 8
+      },
+      {
+        "code": "system_manual",
+        "name": "Panduan Mutu / Daftar Informasi Terdokumentasi (optional)",
+        "requirement": "optional",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 9
+      },
+      {
+        "code": "master_document_list",
+        "name": "Daftar Induk Dokumen",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 10
+      },
+      {
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 11
+      },
+      {
+        "code": "internal_audit_evidence",
+        "name": "Dokumen Internal Audit dan Tinjauan Manajemen",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 12
+      },
+      {
+        "code": "previous_certificate",
+        "name": "Sertifikasi Sistem Manajemen (jika sudah tersertifikasi)",
+        "requirement": "conditional",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 13
+      },
+      {
+        "code": "process_information",
+        "name": "Proses Produksi/Bisnis pada Perusahaan beserta Informasi Terkait",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 14
+      },
+      {
+        "code": "environmental_legality",
+        "name": "Legalitas Terkait Lingkungan (AMDAL, UKL/UPL, SPPL)",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 15
+      },
+      {
+        "code": "environmental_risk",
+        "name": "Risiko dan Peluang Terkait Lingkungan",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -889,9 +1768,10 @@
         "sort_order": 16
       },
       {
-        "code": "process_map",
-        "name": "Peta Proses / Business Process Map",
-        "requirement": "required",
+        "code": "risk_management_file",
+        "name": "Risk Management File",
+        "description": "Berkas manajemen risiko organisasi. Opsional, dilampirkan bila tersedia.",
+        "requirement": "optional",
         "review_group": "technical",
         "extensions": [
           "pdf",
@@ -909,9 +1789,9 @@
         "sort_order": 17
       },
       {
-        "code": "document_control",
-        "name": "Prosedur Pengendalian Dokumen/Rekaman",
-        "requirement": "optional",
+        "code": "aspect_identification_document",
+        "name": "Metode Identifikasi dan Kriteria Penentuan Aspek Lingkungan Penting",
+        "requirement": "required",
         "review_group": "technical",
         "extensions": [
           "pdf",
@@ -929,9 +1809,9 @@
         "sort_order": 18
       },
       {
-        "code": "customer_regulations",
-        "name": "Daftar Regulasi/Persyaratan Pelanggan",
-        "requirement": "optional",
+        "code": "environmental_aspects",
+        "name": "Aspek Lingkungan dan Aspek Penting Lingkungan",
+        "requirement": "required",
         "review_group": "technical",
         "extensions": [
           "pdf",
@@ -947,9 +1827,69 @@
         ],
         "max_mb": 20,
         "sort_order": 19
+      },
+      {
+        "code": "environmental_policy_document",
+        "name": "Kebijakan dan Sasaran Lingkungan",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 20
+      },
+      {
+        "code": "environmental_program",
+        "name": "Program Pencapaian Sasaran Lingkungan",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 21
+      },
+      {
+        "code": "emergency_response_plan",
+        "name": "Dokumen Tanggap Darurat / Emergency Response Plan",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 22
       }
     ],
-    "sort_order": 1
+    "sort_order": 2
   },
   {
     "code": "ISO27001",
@@ -1552,9 +2492,11 @@
     ],
     "documents": [
       {
-        "code": "nib",
-        "name": "Nomor Induk Berusaha (NIB)",
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SM (FrM.9100/GIS)",
         "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -1572,10 +2514,12 @@
         "sort_order": 1
       },
       {
-        "code": "npwp",
-        "name": "NPWP Perusahaan",
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi FrM.9104/GIS yang Telah Terisi",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -1592,10 +2536,12 @@
         "sort_order": 2
       },
       {
-        "code": "company_deed",
-        "name": "Akta Pendirian dan Perubahan Perusahaan",
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -1612,8 +2558,8 @@
         "sort_order": 3
       },
       {
-        "code": "organization_structure",
-        "name": "Struktur Organisasi",
+        "code": "company_deed",
+        "name": "Salinan Akte Notaris Perusahaan",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -1632,10 +2578,10 @@
         "sort_order": 4
       },
       {
-        "code": "application_letter",
-        "name": "Surat Permohonan Sertifikasi",
+        "code": "business_license",
+        "name": "Ijin Usaha atau Ijin Industri / SIUP",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -1652,10 +2598,10 @@
         "sort_order": 5
       },
       {
-        "code": "application_form_signed",
-        "name": "Form Aplikasi Permohonan yang Ditandatangani",
+        "code": "tdp",
+        "name": "Tanda Daftar Perusahaan (TDP)",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -1672,9 +2618,9 @@
         "sort_order": 6
       },
       {
-        "code": "previous_certificate",
-        "name": "Sertifikat Sebelumnya",
-        "requirement": "conditional",
+        "code": "nib",
+        "name": "NIB Berbasis Risiko",
+        "requirement": "required",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -1689,22 +2635,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
         "sort_order": 7
       },
       {
-        "code": "site_list",
-        "name": "Daftar Site/Lokasi dan Personel",
-        "requirement": "conditional",
-        "review_group": "administration",
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
+        "requirement": "required",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -1718,18 +2655,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "site_type",
-          "operator": "equals",
-          "value": "multi"
-        },
         "sort_order": 8
       },
       {
         "code": "system_manual",
-        "name": "Panduan Sistem/Daftar Informasi Terdokumentasi",
+        "name": "Panduan Mutu / Quality Manual / Daftar Informasi Terdokumentasi (Optional)",
         "requirement": "optional",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -1749,7 +2681,7 @@
         "code": "master_document_list",
         "name": "Daftar Induk Dokumen",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -1766,8 +2698,8 @@
         "sort_order": 10
       },
       {
-        "code": "internal_audit_evidence",
-        "name": "Program dan Hasil Audit Internal",
+        "code": "risk_management_file",
+        "name": "Dokumentasi Manajemen Risiko",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -1786,10 +2718,10 @@
         "sort_order": 11
       },
       {
-        "code": "management_review_evidence",
-        "name": "Bukti Tinjauan Manajemen",
+        "code": "process_information",
+        "name": "Proses Produksi/Bisnis yang Dilakukan serta Informasi Terkait",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -1806,8 +2738,8 @@
         "sort_order": 12
       },
       {
-        "code": "corrective_action_evidence",
-        "name": "Bukti Penanganan Ketidaksesuaian/Tindakan Korektif",
+        "code": "soa",
+        "name": "Statement of Applicability (SoA) beserta Rencana Penanganan Risiko Keamanan Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -1826,8 +2758,8 @@
         "sort_order": 13
       },
       {
-        "code": "isms_scope_doc",
-        "name": "Dokumen Ruang Lingkup ISMS",
+        "code": "risk_methodology",
+        "name": "Prosedur Penentuan dan Penilaian Tingkat Risiko Keamanan Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -1866,8 +2798,8 @@
         "sort_order": 15
       },
       {
-        "code": "risk_methodology",
-        "name": "Metodologi Risk Assessment & Treatment",
+        "code": "security_objectives",
+        "name": "Sasaran Keamanan Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -1886,8 +2818,8 @@
         "sort_order": 16
       },
       {
-        "code": "risk_register",
-        "name": "Risk Register/Hasil Penilaian Risiko",
+        "code": "internal_audit_evidence",
+        "name": "Hasil Audit Internal Sistem Manajemen Keamanan Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -1906,8 +2838,8 @@
         "sort_order": 17
       },
       {
-        "code": "risk_treatment_plan",
-        "name": "Risk Treatment Plan",
+        "code": "management_review_evidence",
+        "name": "Hasil Tinjauan Manajemen Puncak terhadap Kinerja Sistem Manajemen Keamanan Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -1926,9 +2858,9 @@
         "sort_order": 18
       },
       {
-        "code": "soa",
-        "name": "Statement of Applicability (SoA)",
-        "requirement": "required",
+        "code": "data_center_document",
+        "name": "Dokumen Lokasi Data Center dan Disaster Recovery Site (jika ada)",
+        "requirement": "conditional",
         "review_group": "technical",
         "extensions": [
           "pdf",
@@ -1944,129 +2876,9 @@
         ],
         "max_mb": 20,
         "sort_order": 19
-      },
-      {
-        "code": "asset_register",
-        "name": "Daftar Aset Informasi",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 20
-      },
-      {
-        "code": "access_control",
-        "name": "Kebijakan/Prosedur Kontrol Akses",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 21
-      },
-      {
-        "code": "incident_response",
-        "name": "Prosedur Incident Response",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 22
-      },
-      {
-        "code": "bcp_drp",
-        "name": "BCP/DRP dan Bukti Uji",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 23
-      },
-      {
-        "code": "supplier_security",
-        "name": "Bukti Pengelolaan Keamanan Supplier",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 24
-      },
-      {
-        "code": "control_monitoring",
-        "name": "Bukti Monitoring/Pengukuran Kontrol",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 25
       }
     ],
-    "sort_order": 2
+    "sort_order": 3
   },
   {
     "code": "ISO20000",
@@ -2682,9 +3494,11 @@
     ],
     "documents": [
       {
-        "code": "nib",
-        "name": "Nomor Induk Berusaha (NIB)",
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi Sistem Manajemen (FrM.9100/GIS)",
         "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -2702,10 +3516,12 @@
         "sort_order": 1
       },
       {
-        "code": "npwp",
-        "name": "NPWP Perusahaan",
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi (FrM.9104/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -2722,10 +3538,12 @@
         "sort_order": 2
       },
       {
-        "code": "company_deed",
-        "name": "Akta Pendirian dan Perubahan Perusahaan",
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -2742,8 +3560,8 @@
         "sort_order": 3
       },
       {
-        "code": "organization_structure",
-        "name": "Struktur Organisasi",
+        "code": "company_deed",
+        "name": "Salinan Akte Notaris Perusahaan",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -2762,10 +3580,10 @@
         "sort_order": 4
       },
       {
-        "code": "application_letter",
-        "name": "Surat Permohonan Sertifikasi",
+        "code": "business_license",
+        "name": "Ijin Usaha atau Ijin Industri / SIUP",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -2782,10 +3600,10 @@
         "sort_order": 5
       },
       {
-        "code": "application_form_signed",
-        "name": "Form Aplikasi Permohonan yang Ditandatangani",
+        "code": "tdp",
+        "name": "Tanda Daftar Perusahaan (TDP)",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -2802,9 +3620,9 @@
         "sort_order": 6
       },
       {
-        "code": "previous_certificate",
-        "name": "Sertifikat Sebelumnya",
-        "requirement": "conditional",
+        "code": "nib",
+        "name": "NIB Berbasis Risiko",
+        "requirement": "required",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -2819,22 +3637,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
         "sort_order": 7
       },
       {
-        "code": "site_list",
-        "name": "Daftar Site/Lokasi dan Personel",
-        "requirement": "conditional",
-        "review_group": "administration",
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
+        "requirement": "required",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -2848,18 +3657,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "site_type",
-          "operator": "equals",
-          "value": "multi"
-        },
         "sort_order": 8
       },
       {
         "code": "system_manual",
-        "name": "Panduan Sistem/Daftar Informasi Terdokumentasi",
+        "name": "Panduan Mutu / Quality Manual / Daftar Informasi Terdokumentasi (Optional)",
         "requirement": "optional",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -2879,7 +3683,7 @@
         "code": "master_document_list",
         "name": "Daftar Induk Dokumen",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -2896,8 +3700,8 @@
         "sort_order": 10
       },
       {
-        "code": "internal_audit_evidence",
-        "name": "Program dan Hasil Audit Internal",
+        "code": "risk_management_file",
+        "name": "Dokumentasi Manajemen Risiko",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -2916,10 +3720,10 @@
         "sort_order": 11
       },
       {
-        "code": "management_review_evidence",
-        "name": "Bukti Tinjauan Manajemen",
+        "code": "process_information",
+        "name": "Proses Produksi/Bisnis yang Dilakukan serta Informasi Terkait",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -2936,8 +3740,8 @@
         "sort_order": 12
       },
       {
-        "code": "corrective_action_evidence",
-        "name": "Bukti Penanganan Ketidaksesuaian/Tindakan Korektif",
+        "code": "sla_document",
+        "name": "Dokumen Service Level Agreement (SLA)",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -2956,8 +3760,8 @@
         "sort_order": 13
       },
       {
-        "code": "sms_scope",
-        "name": "Ruang Lingkup SMS",
+        "code": "service_catalog",
+        "name": "Dokumen Katalog Layanan",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -2976,8 +3780,8 @@
         "sort_order": 14
       },
       {
-        "code": "service_management_policy",
-        "name": "Kebijakan Service Management",
+        "code": "internal_audit_evidence",
+        "name": "Hasil Audit Internal Sistem Manajemen Layanan Teknologi Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -2996,10 +3800,10 @@
         "sort_order": 15
       },
       {
-        "code": "service_management_objectives",
-        "name": "Sasaran Service Management",
+        "code": "management_review_evidence",
+        "name": "Hasil Tinjauan Manajemen Puncak terhadap Kinerja Sistem Manajemen Layanan Teknologi Informasi",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -3014,169 +3818,9 @@
         ],
         "max_mb": 20,
         "sort_order": 16
-      },
-      {
-        "code": "service_catalog",
-        "name": "Service Catalog",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 17
-      },
-      {
-        "code": "sla_ola_uc",
-        "name": "SLA/OLA/Underpinning Contract",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 18
-      },
-      {
-        "code": "incident_request",
-        "name": "Prosedur Incident & Request Fulfilment",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 19
-      },
-      {
-        "code": "problem_management",
-        "name": "Prosedur Problem Management",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 20
-      },
-      {
-        "code": "change_release",
-        "name": "Prosedur Change/Release/Deployment",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 21
-      },
-      {
-        "code": "cmdb_evidence",
-        "name": "CMDB/Configuration Management Evidence",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 22
-      },
-      {
-        "code": "service_report",
-        "name": "Service Report/SLA Report",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 23
-      },
-      {
-        "code": "supplier_management",
-        "name": "Evaluasi/Pengelolaan Supplier",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 24
       }
     ],
-    "sort_order": 3
+    "sort_order": 4
   },
   {
     "code": "ISO37001",
@@ -4270,7 +4914,7 @@
         "sort_order": 24
       }
     ],
-    "sort_order": 4
+    "sort_order": 5
   },
   {
     "code": "ISO37301",
@@ -5320,7 +5964,7 @@
         "sort_order": 22
       }
     ],
-    "sort_order": 5
+    "sort_order": 6
   },
   {
     "code": "ISO22000",
@@ -5937,9 +6581,11 @@
     ],
     "documents": [
       {
-        "code": "nib",
-        "name": "Nomor Induk Berusaha (NIB)",
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SM (FrM.9100/GIS)",
         "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -5957,10 +6603,12 @@
         "sort_order": 1
       },
       {
-        "code": "npwp",
-        "name": "NPWP Perusahaan",
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi FrM.9104/GIS yang Telah Terisi",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -5977,10 +6625,12 @@
         "sort_order": 2
       },
       {
-        "code": "company_deed",
-        "name": "Akta Pendirian dan Perubahan Perusahaan",
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -5997,8 +6647,8 @@
         "sort_order": 3
       },
       {
-        "code": "organization_structure",
-        "name": "Struktur Organisasi",
+        "code": "company_deed",
+        "name": "Akte Pendirian Perusahaan",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -6017,10 +6667,10 @@
         "sort_order": 4
       },
       {
-        "code": "application_letter",
-        "name": "Surat Permohonan Sertifikasi",
+        "code": "npwp",
+        "name": "NPWP Perusahaan",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -6037,10 +6687,10 @@
         "sort_order": 5
       },
       {
-        "code": "application_form_signed",
-        "name": "Form Aplikasi Permohonan yang Ditandatangani",
+        "code": "director_id",
+        "name": "KTP Direktur",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -6057,9 +6707,9 @@
         "sort_order": 6
       },
       {
-        "code": "previous_certificate",
-        "name": "Sertifikat Sebelumnya",
-        "requirement": "conditional",
+        "code": "nib",
+        "name": "NIB Berbasis Risiko",
+        "requirement": "required",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -6074,22 +6724,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
         "sort_order": 7
       },
       {
-        "code": "site_list",
-        "name": "Daftar Site/Lokasi dan Personel",
-        "requirement": "conditional",
-        "review_group": "administration",
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
+        "requirement": "required",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -6103,18 +6744,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "site_type",
-          "operator": "equals",
-          "value": "multi"
-        },
         "sort_order": 8
       },
       {
         "code": "system_manual",
-        "name": "Panduan Sistem/Daftar Informasi Terdokumentasi",
+        "name": "Panduan Mutu / Quality Manual / Daftar Informasi Terdokumentasi (Optional)",
         "requirement": "optional",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -6134,7 +6770,7 @@
         "code": "master_document_list",
         "name": "Daftar Induk Dokumen",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -6151,8 +6787,8 @@
         "sort_order": 10
       },
       {
-        "code": "internal_audit_evidence",
-        "name": "Program dan Hasil Audit Internal",
+        "code": "risk_management_file",
+        "name": "Dokumentasi Manajemen Risiko",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -6171,10 +6807,10 @@
         "sort_order": 11
       },
       {
-        "code": "management_review_evidence",
-        "name": "Bukti Tinjauan Manajemen",
+        "code": "process_information",
+        "name": "Proses Produksi/Bisnis yang Dilakukan serta Informasi Terkait",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -6191,8 +6827,8 @@
         "sort_order": 12
       },
       {
-        "code": "corrective_action_evidence",
-        "name": "Bukti Penanganan Ketidaksesuaian/Tindakan Korektif",
+        "code": "prp_document",
+        "name": "Dokumen Program Prasyarat Dasar",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -6211,10 +6847,10 @@
         "sort_order": 13
       },
       {
-        "code": "fsms_scope_doc",
-        "name": "Ruang Lingkup FSMS",
-        "requirement": "required",
-        "review_group": "technical",
+        "code": "food_incident_report",
+        "name": "Dokumen Laporan Insiden Keamanan Pangan (jika ada)",
+        "requirement": "conditional",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -6231,8 +6867,8 @@
         "sort_order": 14
       },
       {
-        "code": "food_safety_policy",
-        "name": "Kebijakan Keamanan Pangan",
+        "code": "internal_audit_evidence",
+        "name": "Hasil Audit Internal Sistem Manajemen Keamanan Pangan",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -6251,10 +6887,10 @@
         "sort_order": 15
       },
       {
-        "code": "food_safety_objectives",
-        "name": "Sasaran Keamanan Pangan",
+        "code": "management_review_evidence",
+        "name": "Hasil Tinjauan Manajemen Puncak terhadap Kinerja Sistem Manajemen Keamanan Pangan",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -6269,169 +6905,9 @@
         ],
         "max_mb": 20,
         "sort_order": 16
-      },
-      {
-        "code": "product_description",
-        "name": "Deskripsi Produk",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 17
-      },
-      {
-        "code": "process_flow",
-        "name": "Diagram Alir Proses Produksi",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 18
-      },
-      {
-        "code": "hazard_analysis",
-        "name": "Analisis Bahaya",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 19
-      },
-      {
-        "code": "haccp_plan",
-        "name": "HACCP Plan",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 20
-      },
-      {
-        "code": "prp_oprp_ccp",
-        "name": "PRP/OPRP/CCP Matrix",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 21
-      },
-      {
-        "code": "traceability",
-        "name": "Prosedur Ketertelusuran",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 22
-      },
-      {
-        "code": "recall",
-        "name": "Prosedur Withdrawal/Recall",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 23
-      },
-      {
-        "code": "validation_verification",
-        "name": "Bukti Validasi dan Verifikasi",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 24
       }
     ],
-    "sort_order": 6
+    "sort_order": 7
   },
   {
     "code": "HACCP",
@@ -7366,7 +7842,7 @@
         "sort_order": 20
       }
     ],
-    "sort_order": 7
+    "sort_order": 8
   },
   {
     "code": "SNI",
@@ -8450,7 +8926,7 @@
         "sort_order": 28
       }
     ],
-    "sort_order": 8
+    "sort_order": 9
   },
   {
     "code": "ISPO_PEK",
@@ -9484,7 +9960,7 @@
         "sort_order": 12
       }
     ],
-    "sort_order": 9
+    "sort_order": 10
   },
   {
     "code": "ISPO_COMP",
@@ -10669,6 +11145,6 @@
         "sort_order": 12
       }
     ],
-    "sort_order": 10
+    "sort_order": 11
   }
 ]

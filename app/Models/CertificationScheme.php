@@ -29,10 +29,16 @@ class CertificationScheme extends Model
         return $this->hasMany(FormConfigurationVersion::class);
     }
 
+    public function gisFormTemplates(): HasMany
+    {
+        return $this->hasMany(GisFormTemplate::class)->orderBy('sort_order');
+    }
+
     public function getColorToneAttribute(): string
     {
         return match (strtoupper((string) $this->code)) {
             'ISO9001' => 'blue',
+            'ISO14001' => 'green',
             'ISO27001' => 'indigo',
             'ISO20000' => 'teal',
             'ISO37001' => 'rose',
@@ -55,6 +61,7 @@ class CertificationScheme extends Model
     {
         return match (strtoupper((string) $this->code)) {
             'ISO9001' => '#0284c7',
+            'ISO14001' => '#15803d',
             'ISO27001' => '#4f46e5',
             'ISO20000' => '#0d9488',
             'ISO37001' => '#e11d48',

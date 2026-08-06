@@ -18,6 +18,7 @@ class ApplicationSubmissionService
         private readonly WorkflowService $workflow,
         private readonly AuditLogger $audit,
         private readonly PortalNotificationService $notifications,
+        private readonly GisFormService $gisForms,
     ) {
     }
 
@@ -92,6 +93,18 @@ class ApplicationSubmissionService
 
         if ($validator->fails()) {
             throw new ValidationException($validator);
+        }
+
+        /*
+         * Diperiksa sebelum daftar dokumen kurang, supaya klien membaca akar
+         * masalahnya ("template belum dibagikan") alih-alih daftar panjang
+         * formulir yang memang belum mungkin ia unggah.
+         */
+        if ($this->gisForms->schemeUsesGisForms($application->certification_scheme_id)
+            && ! $this->gisForms->isUnlocked($application)) {
+            throw ValidationException::withMessages([
+                'documents' => 'Template Formulir Wajib GIS belum dibagikan. Ajukan permintaan template pada bagian Formulir Wajib GIS dan tunggu persetujuan tim GIS.',
+            ]);
         }
 
         $missing = $this->forms->applicableDocuments($application->scheme, $values)
