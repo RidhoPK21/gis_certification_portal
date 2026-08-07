@@ -16,10 +16,101 @@ use Illuminate\Support\Facades\Storage;
 class GisFormTemplateSeeder extends Seeder
 {
     /**
+     * Sepuluh formulir terbitan LSPro. Berkasnya sama untuk pemohon dalam
+     * negeri maupun importir, jadi didefinisikan sekali lalu dipakai kedua
+     * skema — kalau disalin, salah satunya cepat atau lambat akan tertinggal
+     * saat formulirnya direvisi.
+     */
+    private const LSPRO_FORMS = [
+        [
+            'code' => 'Fr.7200',
+            'name' => 'Surat Permohonan Sertifikasi Produk',
+            'description' => 'Dicetak pada kop surat perusahaan, ditandatangani, dan bermaterai 10.000.',
+            'document_code' => 'application_letter',
+            'file' => 'Fr.7200-Permohonan-Sertifikasi-Produk.doc',
+            'sort_order' => 1,
+        ],
+        [
+            'code' => 'Fr.7203',
+            'name' => 'Surat Pernyataan Jaminan Proses Sertifikasi',
+            'description' => 'Khusus produk wajib SNI. Wajib bermaterai dan distempel.',
+            'document_code' => 'process_guarantee_letter',
+            'file' => 'Surat-Pernyataan-Jaminan-Proses-Sertifikasi.docx',
+            'sort_order' => 2,
+        ],
+        [
+            'code' => 'Fr.7204',
+            'name' => 'Informasi Produsen',
+            'description' => 'Data pabrik pembuat produk yang dimohonkan.',
+            'document_code' => 'producer_information',
+            'file' => 'Fr.7204-Informasi-Produsen.doc',
+            'sort_order' => 3,
+        ],
+        [
+            'code' => 'Fr.41315',
+            'name' => 'Perjanjian Lisensi System 5',
+            'description' => 'Wajib bermaterai dan ditandatangani kedua belah pihak.',
+            'document_code' => 'license_agreement',
+            'file' => 'Fr.41315-Perjanjian-Lisensi-System-5.doc',
+            'sort_order' => 4,
+        ],
+        [
+            'code' => 'Fr.7202',
+            'name' => 'Surat Perjanjian Kerjasama Sertifikasi',
+            'description' => 'Wajib bermaterai dan ditandatangani kedua belah pihak.',
+            'document_code' => 'cooperation_agreement',
+            'file' => 'Fr.7202-Perjanjian-Kerjasama-Sertifikasi-LSPro.doc',
+            'sort_order' => 5,
+        ],
+        [
+            'code' => 'Fr.7205',
+            'name' => 'Form Pengendalian Mutu Bahan Baku',
+            'description' => 'Diisi sesuai bahan baku yang dipakai pada lingkup produk yang dimohon.',
+            'document_code' => 'raw_material_control_form',
+            'file' => 'Fr.7205-Pengendalian-Mutu-Bahan-Baku.doc',
+            'sort_order' => 6,
+        ],
+        [
+            'code' => 'Fr.7206',
+            'name' => 'Form Pengendalian Mutu Produk',
+            'description' => 'Diisi sesuai parameter mutu produk yang dimohon.',
+            'document_code' => 'product_control_form',
+            'file' => 'Fr.7206-Pengendalian-Mutu-Produk.doc',
+            'sort_order' => 7,
+        ],
+        [
+            'code' => 'Fr.7207',
+            'name' => 'Form Pengendalian Proses Produksi',
+            'description' => 'Diisi mengikuti tahapan proses produksi di pabrik.',
+            'document_code' => 'process_control_form',
+            'file' => 'Fr.7207-Pengendalian-Proses-Produksi.doc',
+            'sort_order' => 8,
+        ],
+        [
+            'code' => 'Fr.7208',
+            'name' => 'Form Peralatan Produksi',
+            'description' => 'Daftar peralatan produksi beserta kapasitas dan kondisinya.',
+            'document_code' => 'production_equipment_form',
+            'file' => 'Fr.7208-Peralatan-Produksi.doc',
+            'sort_order' => 9,
+        ],
+        [
+            'code' => 'Fr.7209',
+            'name' => 'Form Peralatan Inspeksi dan Pengujian',
+            'description' => 'Daftar alat uji QC beserta status kalibrasinya.',
+            'document_code' => 'inspection_equipment_form',
+            'file' => 'Fr.7209-Peralatan-Inspeksi-Pengujian.doc',
+            'sort_order' => 10,
+        ],
+    ];
+
+    /**
      * Template per skema; kode template dipetakan ke item checklist yang harus
      * diisi klien. Tiap skema memakai berkas terbitan GIS masing-masing.
      */
     private const TEMPLATES = [
+        'SNI_LOKAL' => self::LSPRO_FORMS,
+        'SNI_IMPORT' => self::LSPRO_FORMS,
         'ISO9001' => [
             [
                 'code' => 'FrM.9100',

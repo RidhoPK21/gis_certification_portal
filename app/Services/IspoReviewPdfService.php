@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CertificationApplication;
 use App\Models\User;
+use App\Services\Concerns\DrawsSignatures;
 use App\Support\SimplePdf;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Storage;
  */
 class IspoReviewPdfService
 {
+    use DrawsSignatures;
+
     public function __construct(
         private readonly IspoReviewService $ispo,
         private readonly DynamicFormService $forms,
@@ -536,31 +539,6 @@ class IspoReviewPdfService
     {
         $pdf->line($x + 1, $y + 1, $x + 2.5, $y + 3.5, 1.0);
         $pdf->line($x + 2.5, $y + 3.5, $x + 6, $y - 2.5, 1.0);
-    }
-
-    private function drawSignature(SimplePdf $pdf, ?string $relativePath, float $x, float $y, float $maxW, float $maxH): void
-    {
-        if (! $relativePath) {
-            return;
-        }
-
-        $absolute = Storage::disk('private')->path($relativePath);
-        if (! is_file($absolute)) {
-            return;
-        }
-
-        $info = @getimagesize($absolute);
-        if (! $info || (int) $info[0] <= 0 || (int) $info[1] <= 0) {
-            return;
-        }
-
-        $scale = min($maxW / (int) $info[0], $maxH / (int) $info[1]);
-
-        try {
-            $pdf->imageJpeg($absolute, $x, $y, (int) $info[0] * $scale, (int) $info[1] * $scale);
-        } catch (\Throwable $e) {
-            // abaikan: nama ketik tetap tercetak
-        }
     }
 
     /**

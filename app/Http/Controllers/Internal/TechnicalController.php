@@ -101,6 +101,8 @@ class TechnicalController extends Controller
             'technicalDocuments' => $reviews->formRows($application, 'technical'),
             'review' => $review,
             'isIspo' => $isIspo,
+            // LSPro: Tim Teknis memverifikasi kajian Admin, tidak menilai ulang.
+            'isSni' => $application->scheme->review_template === 'sni',
             'ispoGroups' => $isIspo ? $ispo->groupedRows($application, 'technical') : [],
             'ispoSaved' => $isIspo ? $ispo->savedItems($application, 'technical') : [],
             'panelistCandidates' => User::where('is_active', true)
@@ -142,9 +144,24 @@ class TechnicalController extends Controller
             'ispo.mandays.*.stage_1' => ['nullable', 'numeric', 'min:0'],
             'ispo.mandays.*.stage_2' => ['nullable', 'numeric', 'min:0'],
             'ispo.mandays.*.note' => ['nullable', 'string'],
+            // Verifikasi Fr.7201 (LSPro): menerima kajian Admin atau mengembalikannya.
+            'sni_verification' => ['nullable', Rule::in(['accept', 'return'])],
         ], [
             'items.*.remark_date.required_if' => 'Tanggal berlaku wajib diisi bila keterangan memilih "Tgl Berlaku".',
         ]);
+
+        /*
+         * Pada LSPro, Tim Teknis tidak menilai dokumen baris per baris melainkan
+         * memverifikasi pekerjaan Admin secara menyeluruh. Hasilnya menentukan
+         * apakah kolom "Hasil Kajian Peninjau" pada Fr.7201 ikut tercetak.
+         */
+        if (($data['sni_verification'] ?? null) === 'return') {
+            abort_if(
+                blank($data['notes'] ?? null),
+                422,
+                'Catatan untuk Admin wajib diisi bila tinjauan dikembalikan untuk diperbaiki.'
+            );
+        }
 
         /*
          * Panelis harus benar-benar akun berperan panelis; tanpa pagar ini
@@ -166,6 +183,12 @@ class TechnicalController extends Controller
         $documentGroup = app(IspoReviewService::class)->isIspo($application) ? null : 'technical';
 
         $review = $reviews->save($application, 'technical', $data, $request->user()->id, $documentGroup);
+
+        // Status verifikasi dibaca ReviewPdfService untuk mengisi kolom Peninjau.
+        if (isset($data['sni_verification'])) {
+            $review->update(['status' => $data['sni_verification'] === 'accept' ? 'approved' : 'in_progress']);
+        }
+
         $reviews->storeTechnicalAspects($application, $data['aspects'] ?? [], $request->user()->id);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => 'technical']);
 

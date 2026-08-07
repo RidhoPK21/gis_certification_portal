@@ -36,7 +36,13 @@ class SchemeCatalogSeeder extends Seeder
                         'form_version' => 1,
                         'order_prefix' => $schemeData['prefix'],
                         'review_template' => $schemeData['template'],
-                        'is_active' => true,
+                        /*
+                         * Skema yang digantikan versi baru ditandai
+                         * "active": false pada katalog, bukan dihapus: FK
+                         * permohonan memakai restrictOnDelete, dan permohonan
+                         * lama tetap harus bisa dibuka lewat form_snapshot-nya.
+                         */
+                        'is_active' => $schemeData['active'] ?? true,
                         'sort_order' => $schemeData['sort_order'],
                     ]
                 );

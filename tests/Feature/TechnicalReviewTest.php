@@ -212,6 +212,20 @@ class TechnicalReviewTest extends TestCase
             ]);
 
             /*
+             * Dua formulir tidak membagi penilaian per dokumen antara Admin dan
+             * Tim Teknis, jadi pemeriksaan di bawah tidak berlaku:
+             *
+             * - ISPO (FrO.7204) membaginya per bagian formulir, bukan per
+             *   dokumen, dan barisnya punya kode sendiri.
+             * - LSPro (Fr.7201) hanya dikaji Admin; Tim Teknis memverifikasi
+             *   pekerjaan Admin secara menyeluruh lewat tampilan baca-saja,
+             *   sehingga form-nya memang tidak memuat input per dokumen.
+             */
+            if (in_array($scheme->review_template, ['ispo', 'sni'], true)) {
+                continue;
+            }
+
+            /*
              * Acuannya baris formulir tinjauan. Dokumen yang muncul di kedua
              * tabel memang tampil di dua form (Admin menilai kelengkapan, Tim
              * Teknis menilai substansi), jadi yang tidak boleh bocor hanyalah

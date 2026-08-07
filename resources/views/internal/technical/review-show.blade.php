@@ -24,6 +24,8 @@
 
     @if ($isIspo ?? false)
         @include('internal.partials.ispo-technical-review')
+    @elseif ($isSni ?? false)
+        @include('internal.partials.sni-technical-review')
     @else
     <section class="card" id="tinjauan-teknis">
         <h2>Penilaian Aspek Teknis</h2>

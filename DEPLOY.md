@@ -11,7 +11,7 @@ Stack: **Laravel 13, PHP 8.3, MySQL**. Aplikasi ini **tidak memerlukan Node.js/n
 | Kebutuhan | Keterangan |
 |---|---|
 | PHP | **8.3** (project dikunci ke platform 8.3 lewat `composer.json`) |
-| Ekstensi PHP | `gd` (**wajib**, untuk tanda tangan elektronik), `mbstring`, `openssl`, `pdo_mysql`, `xml`, `ctype`, `fileinfo`, `curl`, `zip` |
+| Ekstensi PHP | `gd` (**wajib**, untuk tanda tangan elektronik — harus mendukung **JPEG dan PNG**), `mbstring`, `openssl`, `pdo_mysql`, `xml`, `ctype`, `fileinfo`, `curl`, `zip` |
 | Database | MySQL/MariaDB |
 | Akses SSH | **Wajib** — migrasi dan pembuatan superadmin memerlukan `php artisan` |
 | Composer | 2.x |
@@ -295,6 +295,8 @@ cd ~/gis_app            # VPS: cd /var/www/gis_app
 git pull origin main
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
+php artisan db:seed --class=SchemeCatalogSeeder --force
+php artisan db:seed --class=GisFormTemplateSeeder --force
 mkdir -p public/branding && chmod 775 public/branding
 php artisan cache:clear
 php artisan config:clear && php artisan config:cache
@@ -304,9 +306,13 @@ php artisan route:cache && php artisan view:cache
 Catatan tiap langkah:
 
 - **`migrate --force` jangan dilewatkan.** Identitas portal dibaca pada setiap halaman; bila ada migrasi baru yang belum dijalankan, aplikasi memang tetap hidup dengan nilai bawaan, tetapi menu *Pengaturan Sistem* tidak akan berfungsi.
+- **`SchemeCatalogSeeder`** memuat katalog skema dari `database/seeders/data/schemes.json`: skema, bagian formulir, field, dan daftar dokumen wajib. Wajib dijalankan setiap kali rilis menambah atau mengubah skema — tanpa ini skema baru tidak akan muncul di portal. Seeder ini **idempoten**: memakai `updateOrCreate`, jadi aman diulang. Skema yang digantikan versi baru ditandai `"active": false` (bukan dihapus), sehingga permohonan lama tetap bisa dibuka.
+- **`GisFormTemplateSeeder`** mendaftarkan berkas *Form Wajib GIS* yang diunduh klien. **Wajar bila lambat** (bisa beberapa menit): tiap berkas `.doc`/`.docx` disalin ke storage dan dihitung checksum-nya. Biarkan sampai selesai, jangan dihentikan di tengah.
 - **`mkdir public/branding`** memastikan unggahan logo tidak gagal karena folder belum ada.
 - **`cache:clear`** membuang cache pengaturan lama agar perubahan branding langsung terlihat.
 - Urutan `config:clear` lalu `config:cache` — jangan dibalik.
+
+> **Jangan pernah menjalankan `php artisan test` di server.** Sebagian test memakai `RefreshDatabase` (mengosongkan seluruh database) dan menghapus direktori `applications/{id}` pada disk `private` — sementara ID permohonan ikut tereset ke 1, sehingga **dokumen klien yang sudah diunggah bisa ikut terhapus**. Test hanya dijalankan di mesin pengembang.
 
 Bila di server pernah ada perubahan file manual, buang dulu supaya `git pull` tidak bentrok:
 
@@ -424,6 +430,8 @@ Beberapa hal yang mungkin ditanyakan pengguna:
 | Menu **Pengaturan Sistem** error | Tabel `settings` belum ada — jalankan `php artisan migrate --force`. Halaman lain tetap berjalan dengan identitas bawaan. |
 | Unggah logo gagal / logo tidak muncul | Folder `public/branding` belum ada atau tidak bisa ditulis: `mkdir -p public/branding && chmod 775 public/branding`. Pada VPS, pastikan pemiliknya `www-data`. |
 | Logo sudah diganti tapi tampilan lama | Cache pengaturan: `php artisan cache:clear`. |
+| Skema baru tidak muncul di portal | `SchemeCatalogSeeder` belum dijalankan setelah `git pull`: `php artisan db:seed --class=SchemeCatalogSeeder --force`. |
+| Tanda tangan tidak muncul di PDF (kotaknya kosong, nama tetap tercetak) | `gd` tidak mendukung PNG. PDF hanya menerima JPEG, jadi unggahan PNG/GIF/WEBP dikonversi lebih dulu; bila `imagecreatefrompng` tidak ada, gambar dilewati diam-diam agar PDF tetap terbit. Cek: `php -r "var_dump(function_exists('imagecreatefrompng'));"` |
 
 > **Jangan pernah** menyalakan `APP_DEBUG=true` di server publik — halaman error Laravel menampilkan seluruh isi `.env`, termasuk password.
 

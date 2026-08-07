@@ -8610,6 +8610,7 @@
   },
   {
     "code": "SNI",
+    "active": false,
     "slug": "sni-lspro",
     "name": "Sertifikasi Produk SNI / LSPro",
     "short_name": "SNI / LSPro",
@@ -9691,6 +9692,2306 @@
       }
     ],
     "sort_order": 10
+  },
+  {
+    "code": "SNI_LOKAL",
+    "slug": "sni-lspro-lokal",
+    "name": "Sertifikasi Produk SNI (LSPro) — Produsen Dalam Negeri",
+    "short_name": "SNI / LSPro Lokal",
+    "category": "product",
+    "standard": "SNI Produk (LSPro)",
+    "prefix": "SNILOKAL-GIS",
+    "template": "sni",
+    "description": "Permohonan sertifikasi produk SNI untuk produsen dalam negeri, mengikuti daftar persyaratan LSPro GIS.",
+    "sections": [
+      {
+        "code": "applicant",
+        "title": "1. Data Pemohon",
+        "fields": [
+          {
+            "code": "applicant_type",
+            "label": "Jenis pemohon",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "local_producer",
+                "label": "Produsen Lokal"
+              },
+              {
+                "value": "importer",
+                "label": "Importir"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "applicant_name",
+            "label": "Nama pemohon/pimpinan",
+            "type": "text",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "company_name",
+            "label": "Nama perusahaan",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "company_address",
+            "label": "Alamat perusahaan",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "pic_name",
+            "label": "PIC pemohon",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "pic_position",
+            "label": "Jabatan PIC",
+            "type": "text",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "phone",
+            "label": "Telepon/HP",
+            "type": "text",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "email",
+            "label": "Email",
+            "type": "email",
+            "required": true,
+            "sort_order": 8
+          },
+          {
+            "code": "website",
+            "label": "Website",
+            "type": "url",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "npwp_number",
+            "label": "NPWP",
+            "type": "text",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "nib_number",
+            "label": "NIB",
+            "type": "text",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "legal_status",
+            "label": "Status hukum perusahaan",
+            "type": "text",
+            "required": false,
+            "sort_order": 12
+          },
+          {
+            "code": "nationality",
+            "label": "Kewarganegaraan pemohon",
+            "type": "text",
+            "required": false,
+            "sort_order": 13
+          }
+        ],
+        "sort_order": 1
+      },
+      {
+        "code": "product",
+        "title": "2. Data Produk",
+        "fields": [
+          {
+            "code": "product_name",
+            "label": "Tipe/Kategori produk",
+            "type": "text",
+            "required": true,
+            "help": "Pada implementasi produksi dapat dipilih dari master produk SNI.",
+            "sort_order": 1
+          },
+          {
+            "code": "product_category",
+            "label": "Produk",
+            "type": "text",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "sni_number",
+            "label": "Nomor Standar SNI",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "brand",
+            "label": "Merek",
+            "type": "text",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "certification_system",
+            "label": "Sistem sertifikasi",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "system_1",
+                "label": "System 1"
+              },
+              {
+                "value": "system_5",
+                "label": "System 5"
+              }
+            ],
+            "sort_order": 5
+          },
+          {
+            "code": "certification_type",
+            "label": "Jenis pengajuan",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "initial",
+                "label": "Sertifikasi Awal"
+              },
+              {
+                "value": "surveillance",
+                "label": "Surveillance"
+              },
+              {
+                "value": "recertification",
+                "label": "Re-Sertifikasi"
+              },
+              {
+                "value": "transfer",
+                "label": "Transfer Sertifikat"
+              },
+              {
+                "value": "scope_change",
+                "label": "Perluasan/Perubahan Ruang Lingkup"
+              }
+            ],
+            "sort_order": 6
+          },
+          {
+            "code": "annual_production_capacity",
+            "label": "Kapasitas produksi per tahun",
+            "type": "text",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "production_start_year",
+            "label": "Tahun mulai berproduksi",
+            "type": "number",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "product_identification",
+            "label": "Identifikasi/list produk",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 9
+          },
+          {
+            "code": "sni_marking_method",
+            "label": "Ilustrasi dan metode pelabelan tanda SNI",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 10
+          }
+        ],
+        "sort_order": 2
+      },
+      {
+        "code": "producer",
+        "title": "3. Produsen, Shipper & Sampling",
+        "fields": [
+          {
+            "code": "producer_name",
+            "label": "Nama produsen",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "producer_address",
+            "label": "Alamat produsen/pabrik",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "production_location",
+            "label": "Lokasi produksi",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "sampling_address",
+            "label": "Nama dan alamat pengambilan contoh",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "sampling_contact",
+            "label": "Kontak lokasi pengambilan contoh",
+            "type": "text",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "shipper_name",
+            "label": "Nama shipper",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 6
+          },
+          {
+            "code": "shipper_address",
+            "label": "Alamat shipper",
+            "type": "textarea",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 7
+          },
+          {
+            "code": "origin_country",
+            "label": "Negara asal",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 8
+          },
+          {
+            "code": "api_number",
+            "label": "API",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 9
+          },
+          {
+            "code": "customs_id",
+            "label": "NIK kepabeanan",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 10
+          },
+          {
+            "code": "producer_association",
+            "label": "Keanggotaan asosiasi produsen",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 11
+          }
+        ],
+        "sort_order": 3
+      },
+      {
+        "code": "quality",
+        "title": "4. Informasi Sistem Mutu & Produksi",
+        "fields": [
+          {
+            "code": "organization_structure_summary",
+            "label": "Struktur organisasi",
+            "type": "file",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "production_flow",
+            "label": "Alur proses produksi",
+            "type": "file",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "raw_material_quality_control",
+            "label": "Pengendalian mutu bahan baku",
+            "type": "file",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "production_process_control",
+            "label": "Pengendalian proses produksi",
+            "type": "file",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "product_quality_control",
+            "label": "Pengendalian mutu produk",
+            "type": "file",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "production_equipment",
+            "label": "Daftar peralatan produksi",
+            "type": "file",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "inspection_test_equipment",
+            "label": "Daftar peralatan inspeksi/pengujian",
+            "type": "file",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "quality_manual_available",
+            "label": "Panduan mutu tersedia?",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 8
+          },
+          {
+            "code": "quality_manual_file",
+            "label": "Upload panduan mutu",
+            "type": "file",
+            "required": false,
+            "condition": {
+              "field": "quality_manual_available",
+              "operator": "equals",
+              "value": "yes"
+            },
+            "sort_order": 9
+          },
+          {
+            "code": "iso9001_certificate_available",
+            "label": "Sertifikat ISO 9001/sistem mutu lain tersedia?",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 10
+          },
+          {
+            "code": "iso9001_certificate_file",
+            "label": "Upload sertifikat ISO 9001/sistem mutu lain",
+            "type": "file",
+            "required": false,
+            "condition": {
+              "field": "iso9001_certificate_available",
+              "operator": "equals",
+              "value": "yes"
+            },
+            "sort_order": 11
+          }
+        ],
+        "sort_order": 4
+      },
+      {
+        "code": "declaration",
+        "title": "5. Pernyataan & Penandatangan",
+        "fields": [
+          {
+            "code": "application_letter_number",
+            "label": "Nomor surat permohonan",
+            "type": "text",
+            "required": false,
+            "sort_order": 1
+          },
+          {
+            "code": "application_letter_date",
+            "label": "Tanggal surat permohonan",
+            "type": "date",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "client_signatory_name",
+            "label": "Nama penandatangan klien",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "client_signatory_title",
+            "label": "Jabatan penandatangan",
+            "type": "text",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "declaration_truth",
+            "label": "Pernyataan jaminan proses sertifikasi disetujui",
+            "type": "boolean",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "client_signature",
+            "label": "Tanda tangan Pihak Klien",
+            "type": "signature_list",
+            "required": false,
+            "help": "Unggah tanda tangan beserta cap perusahaan. Tercetak pada kotak Pihak Klien di Formulir Tinjauan Permohonan Fr.7201/GIS.",
+            "columns": [
+              {
+                "code": "tempat",
+                "label": "Tempat",
+                "type": "text"
+              },
+              {
+                "code": "tanggal",
+                "label": "Tanggal",
+                "type": "date"
+              },
+              {
+                "code": "nama",
+                "label": "Nama",
+                "type": "text"
+              },
+              {
+                "code": "jabatan",
+                "label": "Jabatan",
+                "type": "text"
+              },
+              {
+                "code": "tanda_tangan",
+                "label": "Tanda Tangan dan Cap",
+                "type": "image"
+              }
+            ],
+            "sort_order": 6,
+            "rows": [
+              {
+                "code": "klien",
+                "label": "Pihak Klien"
+              }
+            ]
+          }
+        ],
+        "sort_order": 5
+      }
+    ],
+    "documents": [
+      {
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi Produk (Fr.7200/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 1
+      },
+      {
+        "code": "process_guarantee_letter",
+        "name": "Surat Pernyataan Jaminan Proses Sertifikasi",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 2
+      },
+      {
+        "code": "producer_information",
+        "name": "Informasi Produsen (Fr.7204/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 3
+      },
+      {
+        "code": "license_agreement",
+        "name": "Perjanjian Lisensi (Fr.41315/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 4
+      },
+      {
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (Fr.7202/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 5
+      },
+      {
+        "code": "raw_material_control_form",
+        "name": "Form Pengendalian Mutu Bahan Baku (Fr.7205/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 6
+      },
+      {
+        "code": "product_control_form",
+        "name": "Form Pengendalian Mutu Produk (Fr.7206/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 7
+      },
+      {
+        "code": "process_control_form",
+        "name": "Form Pengendalian Proses Produksi (Fr.7207/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 8
+      },
+      {
+        "code": "production_equipment_form",
+        "name": "Form Peralatan Produksi (Fr.7208/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 9
+      },
+      {
+        "code": "inspection_equipment_form",
+        "name": "Form Peralatan Inspeksi dan Pengujian (Fr.7209/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 10
+      },
+      {
+        "code": "api_number_doc",
+        "name": "API (untuk importir) — dapat menggunakan NIB Berbasis Risiko",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 11
+      },
+      {
+        "code": "nib",
+        "name": "NIB (Nomor Induk Berusaha) — wajib NIB Berbasis Risiko",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 12
+      },
+      {
+        "code": "npb_nrp",
+        "name": "NPB (produk impor) / NRP (produk dalam negeri)",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 13
+      },
+      {
+        "code": "company_deed",
+        "name": "Akte Pendirian Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 14
+      },
+      {
+        "code": "npwp",
+        "name": "NPWP Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 15
+      },
+      {
+        "code": "director_id",
+        "name": "KTP / Tanda Pengenal Direktur",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 16
+      },
+      {
+        "code": "brand_certificate",
+        "name": "Sertifikat Hak Paten Merek / Surat Pendaftaran Merek",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 17
+      },
+      {
+        "code": "quality_manual",
+        "name": "Panduan Mutu System 5 / Quality Manual ISO 9001:2015",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 18
+      },
+      {
+        "code": "internal_audit_evidence",
+        "name": "Dokumen Audit Internal dan Tinjauan Manajemen",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 19
+      },
+      {
+        "code": "process_flow_diagram",
+        "name": "Diagram Alir Proses Produksi",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 20
+      },
+      {
+        "code": "risk_analysis_doc",
+        "name": "Dokumen Analisa Risiko untuk Lingkup Produksi dan QC",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 21
+      },
+      {
+        "code": "equipment_list",
+        "name": "Daftar Peralatan Produksi dan Alat Uji QC",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 22
+      },
+      {
+        "code": "organization_structure",
+        "name": "Struktur Organisasi / Flowchart",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 23
+      },
+      {
+        "code": "product_list",
+        "name": "Daftar List Produk",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 24
+      },
+      {
+        "code": "product_photo",
+        "name": "Foto Produk",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 25
+      },
+      {
+        "code": "packing_list_invoice",
+        "name": "Packing List / Invoice (untuk importir)",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 26
+      },
+      {
+        "code": "producer_appointment",
+        "name": "Surat Penunjukkan Produsen (untuk importir)",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 27
+      },
+      {
+        "code": "customs_id_doc",
+        "name": "NIK (Nomor Identitas Kepabeanan) (untuk importir)",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 28
+      },
+      {
+        "code": "iso9001_certificate",
+        "name": "Sertifikat ISO 9001 atau yang lainnya (System 5)",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 29
+      }
+    ],
+    "sort_order": 10
+  },
+  {
+    "code": "SNI_IMPORT",
+    "slug": "sni-lspro-import",
+    "name": "Sertifikasi Produk SNI (LSPro) — Importir",
+    "short_name": "SNI / LSPro Import",
+    "category": "product",
+    "standard": "SNI Produk (LSPro)",
+    "prefix": "SNIIMPOR-GIS",
+    "template": "sni",
+    "description": "Permohonan sertifikasi produk SNI untuk importir, mencakup dokumen importir dan dokumen produsen di luar negeri.",
+    "sections": [
+      {
+        "code": "applicant",
+        "title": "1. Data Pemohon",
+        "fields": [
+          {
+            "code": "applicant_type",
+            "label": "Jenis pemohon",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "local_producer",
+                "label": "Produsen Lokal"
+              },
+              {
+                "value": "importer",
+                "label": "Importir"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "applicant_name",
+            "label": "Nama pemohon/pimpinan",
+            "type": "text",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "company_name",
+            "label": "Nama perusahaan",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "company_address",
+            "label": "Alamat perusahaan",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "pic_name",
+            "label": "PIC pemohon",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "pic_position",
+            "label": "Jabatan PIC",
+            "type": "text",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "phone",
+            "label": "Telepon/HP",
+            "type": "text",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "email",
+            "label": "Email",
+            "type": "email",
+            "required": true,
+            "sort_order": 8
+          },
+          {
+            "code": "website",
+            "label": "Website",
+            "type": "url",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "npwp_number",
+            "label": "NPWP",
+            "type": "text",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "nib_number",
+            "label": "NIB",
+            "type": "text",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "legal_status",
+            "label": "Status hukum perusahaan",
+            "type": "text",
+            "required": false,
+            "sort_order": 12
+          },
+          {
+            "code": "nationality",
+            "label": "Kewarganegaraan pemohon",
+            "type": "text",
+            "required": false,
+            "sort_order": 13
+          }
+        ],
+        "sort_order": 1
+      },
+      {
+        "code": "product",
+        "title": "2. Data Produk",
+        "fields": [
+          {
+            "code": "product_name",
+            "label": "Tipe/Kategori produk",
+            "type": "text",
+            "required": true,
+            "help": "Pada implementasi produksi dapat dipilih dari master produk SNI.",
+            "sort_order": 1
+          },
+          {
+            "code": "product_category",
+            "label": "Produk",
+            "type": "text",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "sni_number",
+            "label": "Nomor Standar SNI",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "brand",
+            "label": "Merek",
+            "type": "text",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "certification_system",
+            "label": "Sistem sertifikasi",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "system_1",
+                "label": "System 1"
+              },
+              {
+                "value": "system_5",
+                "label": "System 5"
+              }
+            ],
+            "sort_order": 5
+          },
+          {
+            "code": "certification_type",
+            "label": "Jenis pengajuan",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "initial",
+                "label": "Sertifikasi Awal"
+              },
+              {
+                "value": "surveillance",
+                "label": "Surveillance"
+              },
+              {
+                "value": "recertification",
+                "label": "Re-Sertifikasi"
+              },
+              {
+                "value": "transfer",
+                "label": "Transfer Sertifikat"
+              },
+              {
+                "value": "scope_change",
+                "label": "Perluasan/Perubahan Ruang Lingkup"
+              }
+            ],
+            "sort_order": 6
+          },
+          {
+            "code": "annual_production_capacity",
+            "label": "Kapasitas produksi per tahun",
+            "type": "text",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "production_start_year",
+            "label": "Tahun mulai berproduksi",
+            "type": "number",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "product_identification",
+            "label": "Identifikasi/list produk",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 9
+          },
+          {
+            "code": "sni_marking_method",
+            "label": "Ilustrasi dan metode pelabelan tanda SNI",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 10
+          }
+        ],
+        "sort_order": 2
+      },
+      {
+        "code": "producer",
+        "title": "3. Produsen, Shipper & Sampling",
+        "fields": [
+          {
+            "code": "producer_name",
+            "label": "Nama produsen",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "producer_address",
+            "label": "Alamat produsen/pabrik",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "production_location",
+            "label": "Lokasi produksi",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "sampling_address",
+            "label": "Nama dan alamat pengambilan contoh",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "sampling_contact",
+            "label": "Kontak lokasi pengambilan contoh",
+            "type": "text",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "shipper_name",
+            "label": "Nama shipper",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 6
+          },
+          {
+            "code": "shipper_address",
+            "label": "Alamat shipper",
+            "type": "textarea",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 7
+          },
+          {
+            "code": "origin_country",
+            "label": "Negara asal",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 8
+          },
+          {
+            "code": "api_number",
+            "label": "API",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 9
+          },
+          {
+            "code": "customs_id",
+            "label": "NIK kepabeanan",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "equals",
+              "value": "importer"
+            },
+            "sort_order": 10
+          },
+          {
+            "code": "producer_association",
+            "label": "Keanggotaan asosiasi produsen",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 11
+          }
+        ],
+        "sort_order": 3
+      },
+      {
+        "code": "quality",
+        "title": "4. Informasi Sistem Mutu & Produksi",
+        "fields": [
+          {
+            "code": "organization_structure_summary",
+            "label": "Struktur organisasi",
+            "type": "file",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "production_flow",
+            "label": "Alur proses produksi",
+            "type": "file",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "raw_material_quality_control",
+            "label": "Pengendalian mutu bahan baku",
+            "type": "file",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "production_process_control",
+            "label": "Pengendalian proses produksi",
+            "type": "file",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "product_quality_control",
+            "label": "Pengendalian mutu produk",
+            "type": "file",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "production_equipment",
+            "label": "Daftar peralatan produksi",
+            "type": "file",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "inspection_test_equipment",
+            "label": "Daftar peralatan inspeksi/pengujian",
+            "type": "file",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "quality_manual_available",
+            "label": "Panduan mutu tersedia?",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 8
+          },
+          {
+            "code": "quality_manual_file",
+            "label": "Upload panduan mutu",
+            "type": "file",
+            "required": false,
+            "condition": {
+              "field": "quality_manual_available",
+              "operator": "equals",
+              "value": "yes"
+            },
+            "sort_order": 9
+          },
+          {
+            "code": "iso9001_certificate_available",
+            "label": "Sertifikat ISO 9001/sistem mutu lain tersedia?",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 10
+          },
+          {
+            "code": "iso9001_certificate_file",
+            "label": "Upload sertifikat ISO 9001/sistem mutu lain",
+            "type": "file",
+            "required": false,
+            "condition": {
+              "field": "iso9001_certificate_available",
+              "operator": "equals",
+              "value": "yes"
+            },
+            "sort_order": 11
+          }
+        ],
+        "sort_order": 4
+      },
+      {
+        "code": "declaration",
+        "title": "5. Pernyataan & Penandatangan",
+        "fields": [
+          {
+            "code": "application_letter_number",
+            "label": "Nomor surat permohonan",
+            "type": "text",
+            "required": false,
+            "sort_order": 1
+          },
+          {
+            "code": "application_letter_date",
+            "label": "Tanggal surat permohonan",
+            "type": "date",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "client_signatory_name",
+            "label": "Nama penandatangan klien",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "client_signatory_title",
+            "label": "Jabatan penandatangan",
+            "type": "text",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "declaration_truth",
+            "label": "Pernyataan jaminan proses sertifikasi disetujui",
+            "type": "boolean",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "client_signature",
+            "label": "Tanda tangan Pihak Klien",
+            "type": "signature_list",
+            "required": false,
+            "help": "Unggah tanda tangan beserta cap perusahaan. Tercetak pada kotak Pihak Klien di Formulir Tinjauan Permohonan Fr.7201/GIS.",
+            "columns": [
+              {
+                "code": "tempat",
+                "label": "Tempat",
+                "type": "text"
+              },
+              {
+                "code": "tanggal",
+                "label": "Tanggal",
+                "type": "date"
+              },
+              {
+                "code": "nama",
+                "label": "Nama",
+                "type": "text"
+              },
+              {
+                "code": "jabatan",
+                "label": "Jabatan",
+                "type": "text"
+              },
+              {
+                "code": "tanda_tangan",
+                "label": "Tanda Tangan dan Cap",
+                "type": "image"
+              }
+            ],
+            "sort_order": 6,
+            "rows": [
+              {
+                "code": "klien",
+                "label": "Pihak Klien"
+              }
+            ]
+          }
+        ],
+        "sort_order": 5
+      }
+    ],
+    "documents": [
+      {
+        "code": "application_letter",
+        "name": "[Importir] Surat Permohonan Sertifikasi Produk (Fr.7200/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 1
+      },
+      {
+        "code": "process_guarantee_letter",
+        "name": "[Importir] Surat Pernyataan Jaminan Proses Sertifikasi",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 2
+      },
+      {
+        "code": "producer_information",
+        "name": "[Importir] Informasi Produsen (Fr.7204/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 3
+      },
+      {
+        "code": "license_agreement",
+        "name": "[Importir] Perjanjian Lisensi (Fr.41315/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 4
+      },
+      {
+        "code": "cooperation_agreement",
+        "name": "[Importir] Surat Perjanjian Kerjasama Sertifikasi (Fr.7202/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 5
+      },
+      {
+        "code": "raw_material_control_form",
+        "name": "[Importir] Form Pengendalian Mutu Bahan Baku (Fr.7205/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 6
+      },
+      {
+        "code": "product_control_form",
+        "name": "[Importir] Form Pengendalian Mutu Produk (Fr.7206/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 7
+      },
+      {
+        "code": "process_control_form",
+        "name": "[Importir] Form Pengendalian Proses Produksi (Fr.7207/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 8
+      },
+      {
+        "code": "production_equipment_form",
+        "name": "[Importir] Form Peralatan Produksi (Fr.7208/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 9
+      },
+      {
+        "code": "inspection_equipment_form",
+        "name": "[Importir] Form Peralatan Inspeksi dan Pengujian (Fr.7209/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan LSPro GIS. Isi, tanda tangani, bermaterai, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 10
+      },
+      {
+        "code": "nib",
+        "name": "[Importir] NIB (Nomor Induk Berusaha) — NIB Berbasis Risiko",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 11
+      },
+      {
+        "code": "company_deed",
+        "name": "[Importir] Akte Pendirian Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 12
+      },
+      {
+        "code": "npwp",
+        "name": "[Importir] NPWP Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 13
+      },
+      {
+        "code": "director_id",
+        "name": "[Importir] KTP / Tanda Pengenal Direktur",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 14
+      },
+      {
+        "code": "brand_certificate",
+        "name": "[Importir] Hak Paten Merek / Surat Pendaftaran Merek",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 15
+      },
+      {
+        "code": "product_list",
+        "name": "[Importir] Daftar List Produk",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 16
+      },
+      {
+        "code": "product_photo",
+        "name": "[Importir] Foto Produk",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 17
+      },
+      {
+        "code": "producer_appointment",
+        "name": "[Importir] Surat Penunjukkan Produsen / Letter of Support",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 18
+      },
+      {
+        "code": "organization_structure",
+        "name": "[Importir] Struktur Organisasi / Flowchart",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 19
+      },
+      {
+        "code": "producer_deed",
+        "name": "[Produsen Luar Negeri] Akta Pendirian Pabrik",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 20
+      },
+      {
+        "code": "producer_industry_license",
+        "name": "[Produsen Luar Negeri] Izin Usaha Industri Pabrik",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 21
+      },
+      {
+        "code": "producer_embassy_legalization",
+        "name": "[Produsen Luar Negeri] Dokumen Legalisir Kedutaan (Import)",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 22
+      },
+      {
+        "code": "producer_business_license",
+        "name": "[Produsen Luar Negeri] Dokumen Business License Certification",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 23
+      },
+      {
+        "code": "producer_master_list",
+        "name": "[Produsen Luar Negeri] Master List Dokumen Pabrik",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 24
+      },
+      {
+        "code": "producer_quality_manual",
+        "name": "[Produsen Luar Negeri] Panduan Mutu / Quality Manual ISO 9001:2015",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 25
+      },
+      {
+        "code": "producer_audit_evidence",
+        "name": "[Produsen Luar Negeri] Dokumen Audit Internal dan Eksternal",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 26
+      },
+      {
+        "code": "producer_process_flow",
+        "name": "[Produsen Luar Negeri] Diagram Alir Proses Produksi",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 27
+      },
+      {
+        "code": "producer_risk_analysis",
+        "name": "[Produsen Luar Negeri] Dokumen Analisa Risiko untuk Lingkup Produksi dan QC",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 28
+      },
+      {
+        "code": "producer_equipment_list",
+        "name": "[Produsen Luar Negeri] Daftar Peralatan Produksi dan Alat Uji QC",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 29
+      },
+      {
+        "code": "producer_org_structure",
+        "name": "[Produsen Luar Negeri] Struktur Organisasi / Flowchart",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 30
+      }
+    ],
+    "sort_order": 11
   },
   {
     "code": "ISPO",

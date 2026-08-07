@@ -8,9 +8,15 @@
     pada PDF FrO.7201.
 --}}
 @php
-    $maxSignatories = 3;
-    $rows = array_values(is_array($value) ? $value : []);
-    $rows = array_slice($rows, 0, $maxSignatories);
+    /*
+     * Jumlah dan penamaan slot berasal dari row_definitions, karena tiap
+     * formulir berbeda: FrO.7201 (ISPO) menyediakan tiga baris penanda tangan
+     * tanpa nama, sedangkan Fr.7201 (LSPro) hanya satu kotak "Pihak Klien".
+     * Tiga slot dipakai sebagai bawaan bila formulirnya belum mendefinisikan.
+     */
+    $slots = $field->row_definitions ?: [];
+    $maxSignatories = $slots ? count($slots) : 3;
+    $rows = array_slice(array_values(is_array($value) ? $value : []), 0, $maxSignatories);
 @endphp
 
 <div class="signature-list" data-field-code="{{ $field->code }}" data-max="{{ $maxSignatories }}">
@@ -22,7 +28,10 @@
                 $prefix = 'fields[' . $field->code . '][' . $i . ']';
             @endphp
             <div class="signature-card {{ $i > 0 && empty($signaturePath) && empty($rowData['nama']) ? 'signature-optional' : '' }}">
-                <div class="signature-card-title">Penanda tangan {{ $i + 1 }}@if ($i > 0) <span class="muted">(opsional)</span>@endif</div>
+                <div class="signature-card-title">
+                    {{ $slots[$i]['label'] ?? 'Penanda tangan '.($i + 1) }}
+                    @if ($i > 0) <span class="muted">(opsional)</span>@endif
+                </div>
 
                 <label class="form-label" for="sig-{{ $i }}-tempat">Tempat</label>
                 <input class="form-control" id="sig-{{ $i }}-tempat" type="text"

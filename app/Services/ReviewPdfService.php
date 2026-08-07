@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CertificationApplication;
 use App\Models\GeneratedPdf;
 use App\Models\User;
+use App\Services\Concerns\DrawsSignatures;
 use App\Services\ReviewService;
 use App\Support\SimplePdf;
 use Illuminate\Support\Carbon;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ReviewPdfService
 {
+    use DrawsSignatures;
+
     /**
      * Identitas formulir tinjauan (judul kop, kode, nama lembaga) untuk sebuah
      * skema. Tata letaknya sama, hanya teksnya yang berbeda antar skema.
@@ -415,39 +418,6 @@ class ReviewPdfService
         $pdf->line($rx + 6, $y + $boxH - 18, $rx + $rw - 6, $y + $boxH - 18, 0.4);
         $pdf->text($rx + 6, $y + $boxH - 6, '('.$name.')', 8, true);
         $pdf->moveY($boxH + 12);
-    }
-
-    /**
-     * Sisipkan gambar tanda tangan (JPEG) di dalam kotak keputusan bila
-     * penanda tangan sudah mengunggah e-sign. Ukuran diskalakan mengikuti
-     * rasio asli agar pas di dalam area (maks $maxW x $maxH) tanpa menimpa
-     * teks. Gagal diam-diam agar pembuatan PDF tidak pernah terganggu.
-     */
-    private function drawSignature(SimplePdf $pdf, ?string $relativePath, float $x, float $y, float $maxW, float $maxH): void
-    {
-        if (! $relativePath) {
-            return;
-        }
-
-        $absolute = Storage::disk('private')->path($relativePath);
-        if (! is_file($absolute)) {
-            return;
-        }
-
-        $info = @getimagesize($absolute);
-        if (! $info || (int) $info[0] <= 0 || (int) $info[1] <= 0) {
-            return;
-        }
-
-        $scale = min($maxW / (int) $info[0], $maxH / (int) $info[1]);
-        $drawW = (int) $info[0] * $scale;
-        $drawH = (int) $info[1] * $scale;
-
-        try {
-            $pdf->imageJpeg($absolute, $x, $y, $drawW, $drawH);
-        } catch (\Throwable $e) {
-            // abaikan: tetap tampil nama ketik saja
-        }
     }
 
     /**
@@ -859,47 +829,154 @@ class ReviewPdfService
         ]);
     }
 
+    /**
+     * Formulir Fr.7201/GIS-4 — Tinjauan Permohonan Sertifikasi Produk (LSPro).
+     *
+     * Berbeda dari formulir LSSM, tabelnya punya dua kolom hasil kajian:
+     * Pengoleksi diisi Admin Permohonan, sedangkan Peninjau adalah verifikasi
+     * Tim Teknis atas pekerjaan Admin — Tim Teknis tidak menilai ulang baris
+     * per baris, melainkan menerima seluruhnya atau mengembalikannya untuk
+     * diperbaiki. Karena itu kolom Peninjau baru terisi setelah tinjauan
+     * teknis disetujui.
+     *
+     * Bagian bawah memuat tiga kotak tanda tangan: Pengoleksi (Admin),
+     * Peninjau (Tim Teknis), dan Pihak Klien yang diambil dari unggahan
+     * tanda tangan pemohon pada formulir permohonan.
+     */
     private function renderSni(SimplePdf $pdf, array $s): void
     {
         $this->renderHeader($pdf, 'TINJAUAN PERMOHONAN SERTIFIKASI PRODUK (LSPro)', 'Fr.7201/GIS-4');
-        $v = $s['values']; $a = $s['application'];
+        $v = $s['values'];
+        $a = $s['application'];
+
+        $this->frmOrderRow($pdf, $a);
         $this->infoRows($pdf, [
-            ['Hari/tanggal', $a['review_date'].'   |   No Order: '.$a['order_number'].'   |   Tanggal Order: '.$a['order_date']],
-            ['Nama & alamat pemohon', $a['company_name'].' - '.($v['company_address'] ?? '-')],
-            ['Produk', $v['product_name'] ?? '-'], ['Tipe/Kategori', $v['product_category'] ?? '-'],
-            ['Nomor Standar SNI', $v['sni_number'] ?? '-'], ['Merek', $v['brand'] ?? '-'],
-            ['Nama dan alamat shipper', trim(($v['shipper_name'] ?? '').' '.($v['shipper_address'] ?? '')) ?: '-'],
-            ['Nama dan alamat pengambilan contoh', trim(($v['producer_name'] ?? '').' '.($v['sampling_address'] ?? '')) ?: '-'],
+            ['Nama & Alamat Pemohon', trim($a['company_name'].' - '.($v['company_address'] ?? '')) ?: '-'],
+            ['Produk', $v['product_category'] ?? '-'],
+            ['Tipe/Kategori', $v['product_name'] ?? '-'],
+            ['Nomor Standar SNI', $v['sni_number'] ?? '-'],
+            ['Merek', $v['brand'] ?? '-'],
+            ['Nama dan Alamat Shipper (Import)', trim(($v['shipper_name'] ?? '').' '.($v['shipper_address'] ?? '')) ?: '-'],
+            ['Nama dan Alamat Pengambilan Contoh', trim(($v['producer_name'] ?? '').' '.($v['sampling_address'] ?? '')) ?: '-'],
         ]);
-        $this->reviewTable($pdf, 'Checklist Dokumen Permohonan', $s['documents']);
-        $this->decisionBox($pdf, 'Kesimpulan Tinjauan Permohonan', $s['administration_review']);
-        $pdf->ensureSpace(85);
-        $this->infoRows($pdf, [
-            ['Pihak LSPro - Pengoleksi', $v['collector_name'] ?? '-'],
-            ['Pihak LSPro - Peninjau', $v['reviewer_name'] ?? '-'],
-            ['Pihak Klien', $v['client_signatory_name'] ?? $a['company_name']],
-        ]);
+
+        $this->sniDocumentTable($pdf, $s);
+        $this->frmNotes($pdf, $s['administration_review']['notes'] ?? null);
+        $this->sniSignatureBoxes($pdf, $s);
     }
 
     /**
-     * Nilai baris identitas tambahan.
+     * Tabel checklist Fr.7201 dengan dua kolom hasil kajian.
      *
-     * Isian klien tersimpan sebagai kode pilihan (mis. "tinggi"), sedangkan
-     * formulir mencetak labelnya, jadi kodenya dimanusiakan di sini.
+     * Kolom Peninjau mengikuti hasil Admin dan hanya dicetak bila tinjauan
+     * teknis sudah disetujui; selama belum, selnya dibiarkan kosong supaya
+     * terlihat bahwa verifikasinya memang belum dilakukan.
      */
-    private function identityValue(array $values, string $field): string
+    private function sniDocumentTable(SimplePdf $pdf, array $s): void
     {
-        $value = $values[$field] ?? null;
+        $options = array_values(config('review.result_options'));
+        $verified = in_array($s['technical_review']['status'] ?? '', ['approved', 'accepted'], true);
 
-        if (! filled($value)) {
-            return '-';
+        $pdf->ensureSpace(70, $this->pageHeader());
+        $pdf->text(34, $pdf->y() + 10, 'Checklist Dokumen Permohonan', 11, true);
+        $pdf->moveY(18);
+
+        $x = 34;
+        $widths = [26, 214, 104, 104, $pdf->contentWidth() - 448];
+        $headers = ['No', 'Dokumen', 'Hasil Kajian Pengoleksi*)', 'Hasil Kajian Peninjau*)', 'Keterangan'];
+
+        $y = $pdf->y();
+        $cx = $x;
+        foreach ($headers as $i => $header) {
+            $pdf->fillRect($cx, $y, $widths[$i], 30, .92);
+            $pdf->cell($cx, $y, $widths[$i], 30, $header, 7.5, true, 'center');
+            $cx += $widths[$i];
+        }
+        $pdf->moveY(30);
+
+        foreach (array_values($s['documents']) as $index => $item) {
+            $label = $item['name'] ?? '-';
+            $status = $item['stages']['administration']['review_status'] ?? 'pending';
+            $chosen = config('review.result_options')[$status] ?? null;
+            $note = $item['stages']['administration']['notes'] ?? $item['notes'] ?? '';
+
+            $lines = max(
+                count($pdf->wrappedLines($label, $widths[1] - 8, 7)),
+                count($pdf->wrappedLines($note ?: '-', $widths[4] - 8, 7))
+            );
+            $h = max(26, $lines * 9 + 12);
+
+            $pdf->ensureSpace($h + 32, $this->pageHeader('Checklist Dokumen Permohonan (lanjutan)'));
+            $y = $pdf->y();
+
+            $pdf->cell($x, $y, $widths[0], $h, (string) ($index + 1), 7, false, 'center');
+            $pdf->cell($x + $widths[0], $y, $widths[1], $h, $label, 7, false);
+
+            $cx = $x + $widths[0] + $widths[1];
+            $pdf->rect($cx, $y, $widths[2], $h);
+            $this->choiceRow($pdf, $cx + 4, $y + ($h / 2) + 3, $options, $chosen, 7);
+
+            $cx += $widths[2];
+            $pdf->rect($cx, $y, $widths[3], $h);
+            // Verifikasi teknis bersifat menyeluruh, jadi mengikuti hasil Admin.
+            $this->choiceRow($pdf, $cx + 4, $y + ($h / 2) + 3, $options, $verified ? $chosen : null, 7);
+
+            $pdf->cell($cx + $widths[3], $y, $widths[4], $h, $note ?: '-', 7, false);
+            $pdf->moveY($h);
         }
 
-        if (is_array($value)) {
-            return implode(', ', array_map('strval', $value));
+        $pdf->moveY(6);
+        $pdf->paragraph('*) Coret salah satu', 7.5, 10);
+        $pdf->paragraph('**) Apabila ada', 7.5, 10);
+        $pdf->moveY(4);
+    }
+
+    /**
+     * Tiga kotak tanda tangan Fr.7201.
+     *
+     * Dua kotak pertama memakai tanda tangan akun peninjau; kotak Pihak Klien
+     * memakai gambar yang diunggah pemohon pada bagian Pernyataan.
+     */
+    private function sniSignatureBoxes(SimplePdf $pdf, array $s): void
+    {
+        $w = $pdf->contentWidth();
+        $colW = $w / 3;
+        $h = 104;
+
+        $pdf->ensureSpace($h + 30, $this->pageHeader());
+        $y = $pdf->y();
+
+        $admin = $s['administration_review'] ?? null;
+        $technical = $s['technical_review'] ?? null;
+        $client = collect($s['values']['client_signature'] ?? [])->first() ?? [];
+
+        $columns = [
+            ["Pihak LSPro
+(Pengoleksi Dokumen Permohonan)", 'Staf Administrasi', $admin['signed_name'] ?? null, $admin['signature_path'] ?? null],
+            ["Pihak LSPro
+(Peninjau Dokumen Permohonan)", 'Manajer Administrasi', $technical['signed_name'] ?? null, $technical['signature_path'] ?? null],
+            ['Pihak Klien', '', $client['nama'] ?? null, $client['tanda_tangan'] ?? null],
+        ];
+
+        $cursor = 34;
+        foreach ($columns as [$title, $role, $name, $signature]) {
+            $pdf->rect($cursor, $y, $colW, $h);
+
+            foreach ($pdf->wrappedLines($title, $colW - 12, 7.5) as $i => $line) {
+                $pdf->text($cursor + 6, $y + 14 + ($i * 10), $line, 7.5);
+            }
+
+            $this->drawSignature($pdf, $signature, $cursor + 10, $y + 38, $colW - 20, 38);
+
+            if ($role !== '') {
+                $pdf->text($cursor + 6, $y + $h - 16, $role, 7.5);
+            }
+            $pdf->text($cursor + 6, $y + $h - 5, '('.($name ?: '.....................................').')', 7.5);
+
+            $cursor += $colW;
         }
 
-        return ucfirst(str_replace('_', ' ', (string) $value));
+        $pdf->moveY($h + 10);
     }
 
     private function statusText(string $status): string
