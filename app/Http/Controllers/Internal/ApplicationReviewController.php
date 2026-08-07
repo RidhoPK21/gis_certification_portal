@@ -9,6 +9,7 @@ use App\Models\CertificationApplication;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
+use App\Services\IspoReviewService;
 use App\Services\PortalNotificationService;
 use App\Services\ReviewPdfService;
 use App\Services\ReviewService;
@@ -59,6 +60,13 @@ class ApplicationReviewController extends Controller
          */
         $adminReview = $application->reviews->where('review_type', 'administration')->sortByDesc('round')->first();
 
+        /*
+         * ISPO memakai formulir FrO.7204 yang bentuknya berbeda: bagian 1-3
+         * dikerjakan Admin dengan kolom bercentang per ruang lingkup pemohon.
+         */
+        $ispo = app(IspoReviewService::class);
+        $isIspo = $ispo->isIspo($application);
+
         return view('internal.applications.show', [
             'application' => $application,
             'auditors' => $auditors,
@@ -68,7 +76,33 @@ class ApplicationReviewController extends Controller
             'adminReview' => $adminReview,
             // Dipakai untuk mengisi ulang dropdown Keterangan*) FrM.9107.
             'adminReviewItems' => $adminReview?->items->keyBy('item_code') ?? collect(),
+            'isIspo' => $isIspo,
+            'ispoGroups' => $isIspo ? $ispo->groupedRows($application, 'administration') : [],
+            'ispoSaved' => $isIspo ? $ispo->savedItems($application, 'administration') : [],
+            'ispoScopeLabel' => $isIspo ? $this->ispoScopeLabel($ispo, $application) : '',
         ]);
+    }
+
+    /**
+     * Ringkasan ruang lingkup yang dipilih pemohon, untuk menjelaskan kepada
+     * peninjau mengapa hanya sebagian kelompok checklist yang ditampilkan.
+     */
+    private function ispoScopeLabel(IspoReviewService $ispo, CertificationApplication $application): string
+    {
+        $labels = [
+            'pekebun_perorangan' => 'Pekebun Perorangan',
+            'kelompok_pekebun' => 'Kelompok Pekebun',
+            'perusahaan_perkebunan' => 'Perusahaan Perkebunan',
+            'industri_hilir' => 'Industri Hilir',
+            'perusahaan_bioenergi' => 'Usaha Bioenergi',
+        ];
+
+        $scopes = array_map(
+            fn ($code) => $labels[$code] ?? $code,
+            $ispo->applicantScopes($application)
+        );
+
+        return $scopes ? implode(', ', $scopes) : 'belum dipilih pemohon — seluruh kelompok ditampilkan';
     }
 
     public function assignAuditor(Request $request, CertificationApplication $application, AuditLogger $audit, PortalNotificationService $notifications)
@@ -105,10 +139,22 @@ class ApplicationReviewController extends Controller
             'items.*.remark_option' => ['nullable', Rule::in(ReviewService::REMARK_OPTIONS)],
             'items.*.remark_date' => ['nullable', 'date', 'required_if:items.*.remark_option,tgl_berlaku'],
             'items.*.notes' => ['nullable', 'string'],
+            // Isian bagian 1 FrO.7204 (khusus ISPO).
+            'ispo' => ['nullable', 'array'],
+            'ispo.documents_received_at' => ['nullable', 'date'],
+            'ispo.initial_completeness' => ['nullable', Rule::in(['lengkap', 'perlu_dilengkapi'])],
+            'ispo.administrative_notes' => ['nullable', 'string'],
         ], [
             'items.*.remark_date.required_if' => 'Tanggal berlaku wajib diisi bila keterangan memilih "Tgl Berlaku".',
         ]);
-        $review = $reviews->save($application, $data['review_type'], $data, $request->user()->id, 'administration');
+
+        /*
+         * Baris FrO.7204 bukan dokumen checklist skema, jadi pagar kode dokumen
+         * tidak berlaku — kodenya milik formulir tinjauan ISPO sendiri.
+         */
+        $documentGroup = app(IspoReviewService::class)->isIspo($application) ? null : 'administration';
+
+        $review = $reviews->save($application, $data['review_type'], $data, $request->user()->id, $documentGroup);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => $data['review_type']]);
 
         return back()->with('success', 'Hasil kajian administrasi berhasil disimpan.');

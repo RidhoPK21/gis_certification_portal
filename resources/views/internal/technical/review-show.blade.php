@@ -22,6 +22,9 @@
 
     @php($itemsByCode = $review ? $review->items->keyBy('item_code') : collect())
 
+    @if ($isIspo ?? false)
+        @include('internal.partials.ispo-technical-review')
+    @else
     <section class="card" id="tinjauan-teknis">
         <h2>Penilaian Aspek Teknis</h2>
         @php($formCode = config('review.form_meta.'.$application->scheme->code.'.code') ?? config('review.form_meta_default.code'))
@@ -239,8 +242,12 @@
         </script>
         @endpush
 
-        <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+    </section>
+    @endif
 
+    {{-- Di luar percabangan: langkah penyelesaian ini berlaku untuk semua skema,
+         termasuk ISPO yang memakai formulir FrO.7204. --}}
+    <section class="card mt-2">
         <form method="post" action="{{ route('technical.reviews.complete', $application) }}"
               data-confirm="Kirim hasil tinjauan teknis ke Admin untuk keputusan akhir? Pastikan penilaian sudah disimpan."
               data-confirm-title="Selesai & Kirim ke Admin" data-confirm-yes="Ya, kirim">

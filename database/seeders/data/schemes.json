@@ -1892,6 +1892,1001 @@
     "sort_order": 2
   },
   {
+    "code": "ISO45001",
+    "slug": "iso-45001",
+    "name": "Sertifikasi Sistem Manajemen Keselamatan dan Kesehatan Kerja SNI ISO 45001:2018",
+    "short_name": "ISO 45001",
+    "category": "management_system",
+    "standard": "SNI ISO 45001:2018",
+    "prefix": "ISO45001-GIS",
+    "template": "lssm",
+    "description": "Sertifikasi sistem manajemen K3 (SMK3) mencakup identifikasi bahaya, penilaian risiko, dan tanggap darurat.",
+    "sections": [
+      {
+        "code": "general",
+        "title": "1. Informasi Umum",
+        "fields": [
+          {
+            "code": "company_name",
+            "label": "Nama perusahaan/organisasi",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "company_address",
+            "label": "Alamat kantor pusat",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "postal_city",
+            "label": "Kode Pos / Kota",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "country",
+            "label": "Negara",
+            "type": "text",
+            "required": true,
+            "placeholder": "Indonesia",
+            "sort_order": 4
+          },
+          {
+            "code": "contact_name",
+            "label": "Nama kontak/PIC",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "contact_position",
+            "label": "Jabatan PIC",
+            "type": "text",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "phone",
+            "label": "Telepon/HP",
+            "type": "text",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "email",
+            "label": "Email",
+            "type": "email",
+            "required": true,
+            "sort_order": 8
+          },
+          {
+            "code": "website",
+            "label": "Website",
+            "type": "url",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "fax",
+            "label": "Faksimili",
+            "type": "text",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "business_sector",
+            "label": "Bidang usaha",
+            "type": "text",
+            "required": true,
+            "sort_order": 11
+          },
+          {
+            "code": "k3_risk_level",
+            "label": "Tingkat Risiko (SMK3)",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "tinggi",
+                "label": "Tinggi"
+              },
+              {
+                "value": "menengah",
+                "label": "Menengah"
+              },
+              {
+                "value": "rendah",
+                "label": "Rendah"
+              },
+              {
+                "value": "terbatas",
+                "label": "Terbatas"
+              }
+            ],
+            "sort_order": 12
+          },
+          {
+            "code": "audit_language",
+            "label": "Bahasa audit",
+            "type": "text",
+            "required": true,
+            "placeholder": "Indonesia",
+            "sort_order": 13
+          }
+        ],
+        "sort_order": 1
+      },
+      {
+        "code": "scope",
+        "title": "2. Ruang Lingkup & Site",
+        "fields": [
+          {
+            "code": "industry_scope",
+            "label": "Lingkup industri",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "iaf_code",
+            "label": "IAF Code",
+            "type": "text",
+            "required": false,
+            "sort_order": 2
+          },
+          {
+            "code": "certification_scope",
+            "label": "Lingkup sertifikasi dan batasan (produk/jasa/proses)",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "site_type",
+            "label": "Tipe lokasi sertifikasi",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "single",
+                "label": "Single Site"
+              },
+              {
+                "value": "multi",
+                "label": "Multi-Site"
+              }
+            ],
+            "sort_order": 4
+          },
+          {
+            "code": "sites_information",
+            "label": "Daftar site/bagian: nama, alamat, proses, kesamaan proses, jumlah karyawan dan shift",
+            "type": "textarea",
+            "required": true,
+            "help": "Satu site per paragraf. Lampiran terpisah dapat diunggah pada dokumen daftar site.",
+            "sort_order": 5
+          },
+          {
+            "code": "total_employees",
+            "label": "Jumlah karyawan keseluruhan",
+            "type": "number",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "temporary_employees",
+            "label": "Jumlah karyawan sementara",
+            "type": "number",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "shift_employees",
+            "label": "Jumlah karyawan bekerja shift",
+            "type": "number",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "number_of_shifts",
+            "label": "Jumlah shift",
+            "type": "number",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "part_time_employees",
+            "label": "Jumlah karyawan paruh waktu",
+            "type": "number",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "part_time_hours",
+            "label": "Jumlah jam kerja paruh waktu",
+            "type": "number",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "effective_employees",
+            "label": "Jumlah efektif karyawan",
+            "type": "number",
+            "required": true,
+            "sort_order": 12
+          }
+        ],
+        "sort_order": 2
+      },
+      {
+        "code": "certification",
+        "title": "3. Permohonan Sertifikasi",
+        "fields": [
+          {
+            "code": "certification_type",
+            "label": "Tipe sertifikasi",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "initial",
+                "label": "Sertifikasi Awal"
+              },
+              {
+                "value": "surveillance",
+                "label": "Surveillance"
+              },
+              {
+                "value": "recertification",
+                "label": "Re-Sertifikasi"
+              },
+              {
+                "value": "transfer",
+                "label": "Transfer Sertifikat"
+              },
+              {
+                "value": "scope_change",
+                "label": "Perluasan/Perubahan Ruang Lingkup"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "previous_certificate_number",
+            "label": "Nomor sertifikat sebelumnya",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "certification_type",
+              "operator": "in",
+              "value": [
+                "transfer",
+                "recertification",
+                "scope_change"
+              ]
+            },
+            "sort_order": 2
+          },
+          {
+            "code": "audit_type",
+            "label": "Jenis audit",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "single",
+                "label": "Single Audit"
+              },
+              {
+                "value": "combined",
+                "label": "Combined Audit"
+              },
+              {
+                "value": "joint",
+                "label": "Joint Audit"
+              },
+              {
+                "value": "integrated",
+                "label": "Integrated Audit"
+              }
+            ],
+            "sort_order": 3
+          },
+          {
+            "code": "management_integration_level",
+            "label": "Besarnya integrasi antar sistem manajemen",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "20",
+                "label": "20%"
+              },
+              {
+                "value": "40",
+                "label": "40%"
+              },
+              {
+                "value": "60",
+                "label": "60%"
+              },
+              {
+                "value": "80",
+                "label": "80%"
+              }
+            ],
+            "sort_order": 4
+          },
+          {
+            "code": "system_implementation_duration",
+            "label": "Berapa lama sistem telah diaplikasikan?",
+            "type": "text",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "consultant_information",
+            "label": "Informasi konsultan implementasi jika ada",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "proposed_audit_date",
+            "label": "Tanggal audit yang diajukan",
+            "type": "date",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "applicable_regulations",
+            "label": "Regulasi K3 yang menjadi persyaratan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "outsourced_processes",
+            "label": "Proses yang dialihdayakan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "internal_audit_completed",
+            "label": "Audit internal telah dilaksanakan?",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 10
+          },
+          {
+            "code": "internal_audit_schedule",
+            "label": "Jadwal audit internal jika belum",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "internal_audit_completed",
+              "operator": "equals",
+              "value": "no"
+            },
+            "sort_order": 11
+          },
+          {
+            "code": "management_review_completed",
+            "label": "Tinjauan manajemen telah dilaksanakan?",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 12
+          },
+          {
+            "code": "management_review_schedule",
+            "label": "Jadwal tinjauan manajemen jika belum",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "management_review_completed",
+              "operator": "equals",
+              "value": "no"
+            },
+            "sort_order": 13
+          }
+        ],
+        "sort_order": 3
+      },
+      {
+        "code": "ohsms",
+        "title": "4. Informasi Sistem Manajemen K3",
+        "fields": [
+          {
+            "code": "k3_policy_summary",
+            "label": "Ringkasan kebijakan K3",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "k3_objectives",
+            "label": "Sasaran K3",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "hira_summary",
+            "label": "Ringkasan HIRA (Hazard Identification and Risk Assessment)",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "significant_hazards",
+            "label": "Bahaya signifikan yang teridentifikasi",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "k3_structure",
+            "label": "Struktur organisasi K3 / P2K3",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 5
+          },
+          {
+            "code": "emergency_response",
+            "label": "Struktur dan prosedur tanggap darurat",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 6
+          },
+          {
+            "code": "safety_equipment",
+            "label": "Peralatan keselamatan (safety equipment) yang tersedia",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 7
+          },
+          {
+            "code": "ppe_program",
+            "label": "Program alat pelindung diri (APD)",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "incident_record",
+            "label": "Rekaman insiden/kecelakaan kerja tiga tahun terakhir",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 9
+          },
+          {
+            "code": "occupational_health",
+            "label": "Program kesehatan kerja dan pemeriksaan kesehatan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "worker_consultation",
+            "label": "Konsultasi dan partisipasi pekerja",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "legal_compliance_k3",
+            "label": "Evaluasi kepatuhan peraturan K3",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 12
+          },
+          {
+            "code": "business_process",
+            "label": "Penjelasan proses bisnis/produksi",
+            "type": "textarea",
+            "required": true,
+            "sort_order": 13
+          },
+          {
+            "code": "production_lines",
+            "label": "Jumlah jalur produksi",
+            "type": "number",
+            "required": false,
+            "sort_order": 14
+          },
+          {
+            "code": "production_capacity",
+            "label": "Kapasitas produksi",
+            "type": "text",
+            "required": false,
+            "sort_order": 15
+          },
+          {
+            "code": "production_equipment",
+            "label": "Peralatan produksi yang digunakan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 16
+          },
+          {
+            "code": "measurement_equipment",
+            "label": "Peralatan pengukuran/pengujian",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 17
+          },
+          {
+            "code": "documented_manual",
+            "label": "Panduan/manual sistem terdokumentasi?",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 18
+          },
+          {
+            "code": "documented_risk_management",
+            "label": "Manajemen risiko terdokumentasi?",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "yes",
+                "label": "Ya"
+              },
+              {
+                "value": "no",
+                "label": "Tidak"
+              }
+            ],
+            "sort_order": 19
+          },
+          {
+            "code": "other_information",
+            "label": "Informasi lain yang perlu disampaikan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 20
+          }
+        ],
+        "sort_order": 4
+      },
+      {
+        "code": "declaration",
+        "title": "5. Pernyataan",
+        "fields": [
+          {
+            "code": "declaration_place",
+            "label": "Tempat penandatanganan",
+            "type": "text",
+            "required": true,
+            "sort_order": 1
+          },
+          {
+            "code": "declaration_date",
+            "label": "Tanggal pernyataan",
+            "type": "date",
+            "required": true,
+            "sort_order": 2
+          },
+          {
+            "code": "declaration_name",
+            "label": "Nama penandatangan",
+            "type": "text",
+            "required": true,
+            "sort_order": 3
+          },
+          {
+            "code": "declaration_title",
+            "label": "Jabatan penandatangan",
+            "type": "text",
+            "required": true,
+            "sort_order": 4
+          },
+          {
+            "code": "declaration_truth",
+            "label": "Saya menyatakan informasi yang diberikan benar",
+            "type": "boolean",
+            "required": true,
+            "sort_order": 5
+          }
+        ],
+        "sort_order": 5
+      }
+    ],
+    "documents": [
+      {
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SMK3 (FrM.9100/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 1
+      },
+      {
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi FrM.9104/GIS yang Telah Terisi",
+        "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 2
+      },
+      {
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
+        "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 3
+      },
+      {
+        "code": "company_deed",
+        "name": "Akte Pendirian Perusahaan",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 4
+      },
+      {
+        "code": "npwp",
+        "name": "NPWP Perusahaan",
+        "requirement": "required",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 5
+      },
+      {
+        "code": "director_id",
+        "name": "KTP Direktur",
+        "requirement": "required",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 6
+      },
+      {
+        "code": "siup",
+        "name": "SIUP (Surat Ijin Usaha Perdagangan)",
+        "requirement": "required",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 7
+      },
+      {
+        "code": "tdp",
+        "name": "TDP (Tanda Daftar Perusahaan)",
+        "requirement": "required",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 8
+      },
+      {
+        "code": "nib",
+        "name": "NIB Berisiko (Nomor Induk Berusaha)",
+        "requirement": "required",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 9
+      },
+      {
+        "code": "system_manual",
+        "name": "Panduan Mutu / Daftar Informasi Terdokumentasi (optional) / Quality Manual",
+        "requirement": "optional",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 10
+      },
+      {
+        "code": "master_document_list",
+        "name": "Daftar Induk Dokumen",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 11
+      },
+      {
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
+        "requirement": "required",
+        "review_group": "both",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 12
+      },
+      {
+        "code": "internal_audit_evidence",
+        "name": "Dokumen Internal Audit dan Tinjauan Manajemen",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 13
+      },
+      {
+        "code": "previous_certificate",
+        "name": "Sertifikasi Sistem Manajemen (jika sudah tersertifikasi)",
+        "requirement": "conditional",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "certification_type",
+          "operator": "in",
+          "value": [
+            "transfer",
+            "recertification",
+            "scope_change"
+          ]
+        },
+        "sort_order": 14
+      },
+      {
+        "code": "process_information",
+        "name": "Proses Produksi / Bisnis pada Perusahaan beserta Informasi Terkait",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 15
+      },
+      {
+        "code": "business_license",
+        "name": "Izin Usaha dan Industri (IUI)",
+        "requirement": "required",
+        "review_group": "none",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 16
+      },
+      {
+        "code": "risk_management_file",
+        "name": "Dokumen Manajemen Risiko / Analisa Risiko terkait K3",
+        "requirement": "required",
+        "review_group": "technical",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "sort_order": 17
+      }
+    ],
+    "sort_order": 3
+  },
+  {
     "code": "ISO27001",
     "slug": "iso-iec-27001",
     "name": "Sertifikasi Sistem Manajemen Keamanan Informasi SNI ISO/IEC 27001:2022",
@@ -2878,7 +3873,7 @@
         "sort_order": 19
       }
     ],
-    "sort_order": 3
+    "sort_order": 4
   },
   {
     "code": "ISO20000",
@@ -3820,7 +4815,7 @@
         "sort_order": 16
       }
     ],
-    "sort_order": 4
+    "sort_order": 5
   },
   {
     "code": "ISO37001",
@@ -4420,9 +5415,11 @@
     ],
     "documents": [
       {
-        "code": "nib",
-        "name": "Nomor Induk Berusaha (NIB)",
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SM (FrM.9100/GIS)",
         "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -4440,10 +5437,12 @@
         "sort_order": 1
       },
       {
-        "code": "npwp",
-        "name": "NPWP Perusahaan",
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi FrM.9104/GIS yang Telah Terisi",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -4460,10 +5459,12 @@
         "sort_order": 2
       },
       {
-        "code": "company_deed",
-        "name": "Akta Pendirian dan Perubahan Perusahaan",
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -4480,8 +5481,8 @@
         "sort_order": 3
       },
       {
-        "code": "organization_structure",
-        "name": "Struktur Organisasi",
+        "code": "company_deed",
+        "name": "Salinan Akte Notaris Perusahaan",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -4500,8 +5501,8 @@
         "sort_order": 4
       },
       {
-        "code": "application_letter",
-        "name": "Surat Permohonan Sertifikasi",
+        "code": "nib",
+        "name": "NIB Berbasis Risiko",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -4520,10 +5521,10 @@
         "sort_order": 5
       },
       {
-        "code": "application_form_signed",
-        "name": "Form Aplikasi Permohonan yang Ditandatangani",
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -4540,10 +5541,10 @@
         "sort_order": 6
       },
       {
-        "code": "previous_certificate",
-        "name": "Sertifikat Sebelumnya",
-        "requirement": "conditional",
-        "review_group": "administration",
+        "code": "system_manual",
+        "name": "Panduan Mutu / Quality Manual / Daftar Informasi Terdokumentasi (Optional)",
+        "requirement": "optional",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -4557,22 +5558,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
         "sort_order": 7
       },
       {
-        "code": "site_list",
-        "name": "Daftar Site/Lokasi dan Personel",
-        "requirement": "conditional",
-        "review_group": "administration",
+        "code": "master_document_list",
+        "name": "Daftar Induk Dokumen",
+        "requirement": "required",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -4586,17 +5578,12 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "site_type",
-          "operator": "equals",
-          "value": "multi"
-        },
         "sort_order": 8
       },
       {
-        "code": "system_manual",
-        "name": "Panduan Sistem/Daftar Informasi Terdokumentasi",
-        "requirement": "optional",
+        "code": "risk_management_file",
+        "name": "Dokumentasi Manajemen Risiko",
+        "requirement": "required",
         "review_group": "technical",
         "extensions": [
           "pdf",
@@ -4614,8 +5601,8 @@
         "sort_order": 9
       },
       {
-        "code": "master_document_list",
-        "name": "Daftar Induk Dokumen",
+        "code": "process_information",
+        "name": "Proses Produksi / Bisnis yang Dilakukan serta Informasi Terkait",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4635,7 +5622,7 @@
       },
       {
         "code": "internal_audit_evidence",
-        "name": "Program dan Hasil Audit Internal",
+        "name": "Rekaman Internal Audit Sistem Manajemen Anti Penyuapan",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4655,7 +5642,7 @@
       },
       {
         "code": "management_review_evidence",
-        "name": "Bukti Tinjauan Manajemen",
+        "name": "Rekaman Tinjauan Manajemen terhadap Sistem Manajemen Anti Penyuapan",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4674,8 +5661,8 @@
         "sort_order": 12
       },
       {
-        "code": "corrective_action_evidence",
-        "name": "Bukti Penanganan Ketidaksesuaian/Tindakan Korektif",
+        "code": "due_diligence",
+        "name": "Dokumen Uji Kelayakan (Due Diligence) sesuai SNI ISO 37001:2016",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4694,8 +5681,8 @@
         "sort_order": 13
       },
       {
-        "code": "abms_scope_doc",
-        "name": "Ruang Lingkup SMAP",
+        "code": "whistleblowing",
+        "name": "Penerapan Whistle Blowing System (WBS)",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4714,8 +5701,8 @@
         "sort_order": 14
       },
       {
-        "code": "anti_bribery_policy",
-        "name": "Kebijakan Anti Penyuapan",
+        "code": "integrity_pact",
+        "name": "Pakta Integritas Karyawan",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4734,8 +5721,8 @@
         "sort_order": 15
       },
       {
-        "code": "bribery_risk_assessment",
-        "name": "Penilaian Risiko Penyuapan",
+        "code": "anti_bribery_policy",
+        "name": "Sasaran dan Kebijakan Penerapan Anti Suap",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4754,8 +5741,8 @@
         "sort_order": 16
       },
       {
-        "code": "due_diligence",
-        "name": "Prosedur Due Diligence / Uji Kelayakan",
+        "code": "bribery_risk_assessment",
+        "name": "Analisa Risiko / Risk Analysis Penerapan Anti Suap",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -4772,149 +5759,9 @@
         ],
         "max_mb": 20,
         "sort_order": 17
-      },
-      {
-        "code": "gift_hospitality",
-        "name": "Prosedur Hadiah, Hospitality, Donasi, Sponsorship",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 18
-      },
-      {
-        "code": "whistleblowing",
-        "name": "Prosedur Pelaporan/Whistleblowing",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 19
-      },
-      {
-        "code": "investigation",
-        "name": "Prosedur Investigasi",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 20
-      },
-      {
-        "code": "financial_controls",
-        "name": "Kontrol Keuangan dan Non-Keuangan",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 21
-      },
-      {
-        "code": "compliance_function",
-        "name": "Struktur Fungsi Kepatuhan Anti Penyuapan",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 22
-      },
-      {
-        "code": "training_evidence",
-        "name": "Bukti Komunikasi/Pelatihan Anti Penyuapan",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 23
-      },
-      {
-        "code": "feasibility_review",
-        "name": "Form Uji Kelayakan/Feasibility Review",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 24
       }
     ],
-    "sort_order": 5
+    "sort_order": 6
   },
   {
     "code": "ISO37301",
@@ -5964,7 +6811,7 @@
         "sort_order": 22
       }
     ],
-    "sort_order": 6
+    "sort_order": 7
   },
   {
     "code": "ISO22000",
@@ -6907,7 +7754,7 @@
         "sort_order": 16
       }
     ],
-    "sort_order": 7
+    "sort_order": 8
   },
   {
     "code": "HACCP",
@@ -7433,9 +8280,11 @@
     ],
     "documents": [
       {
-        "code": "nib",
-        "name": "Nomor Induk Berusaha (NIB)",
+        "code": "application_letter",
+        "name": "Surat Permohonan Sertifikasi SM (FrM.9100/GIS)",
         "requirement": "required",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -7453,10 +8302,12 @@
         "sort_order": 1
       },
       {
-        "code": "npwp",
-        "name": "NPWP Perusahaan",
+        "code": "application_form_signed",
+        "name": "Form Aplikasi Permohonan Sertifikasi FrM.9104/GIS yang Telah Terisi",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Isi, tanda tangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -7473,10 +8324,12 @@
         "sort_order": 2
       },
       {
-        "code": "company_deed",
-        "name": "Akta Pendirian dan Perubahan Perusahaan",
+        "code": "cooperation_agreement",
+        "name": "Surat Perjanjian Kerjasama Sertifikasi (FrM.9102/GIS)",
         "requirement": "required",
-        "review_group": "administration",
+        "description": "Template disediakan GIS. Wajib bermaterai, ditandatangani, lalu unggah kembali.",
+        "document_group": "gis_form",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -7493,8 +8346,8 @@
         "sort_order": 3
       },
       {
-        "code": "organization_structure",
-        "name": "Struktur Organisasi",
+        "code": "company_deed",
+        "name": "Akte Pendirian Perusahaan",
         "requirement": "required",
         "review_group": "administration",
         "extensions": [
@@ -7513,10 +8366,10 @@
         "sort_order": 4
       },
       {
-        "code": "application_letter",
-        "name": "Surat Permohonan Sertifikasi",
+        "code": "npwp",
+        "name": "NPWP Perusahaan",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -7533,10 +8386,10 @@
         "sort_order": 5
       },
       {
-        "code": "application_form_signed",
-        "name": "Form Aplikasi Permohonan yang Ditandatangani",
+        "code": "director_id",
+        "name": "KTP Direktur",
         "requirement": "required",
-        "review_group": "administration",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -7553,9 +8406,9 @@
         "sort_order": 6
       },
       {
-        "code": "previous_certificate",
-        "name": "Sertifikat Sebelumnya",
-        "requirement": "conditional",
+        "code": "nib",
+        "name": "NIB Berbasis Risiko (Nomor Induk Berusaha Berbasis Risiko)",
+        "requirement": "required",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -7570,22 +8423,13 @@
           "png"
         ],
         "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
         "sort_order": 7
       },
       {
-        "code": "product_description_doc",
-        "name": "Deskripsi Produk",
+        "code": "organization_structure",
+        "name": "Struktur Organisasi Perusahaan",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -7602,10 +8446,10 @@
         "sort_order": 8
       },
       {
-        "code": "process_flow",
-        "name": "Diagram Alir Proses",
-        "requirement": "required",
-        "review_group": "technical",
+        "code": "system_manual",
+        "name": "Panduan Mutu / Quality Manual / Daftar Informasi Terdokumentasi (Optional)",
+        "requirement": "optional",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -7622,10 +8466,10 @@
         "sort_order": 9
       },
       {
-        "code": "flow_verification",
-        "name": "Verifikasi Diagram Alir",
+        "code": "master_document_list",
+        "name": "Daftar Induk Dokumen",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "both",
         "extensions": [
           "pdf",
           "doc",
@@ -7642,8 +8486,8 @@
         "sort_order": 10
       },
       {
-        "code": "hazard_analysis",
-        "name": "Analisis Bahaya",
+        "code": "risk_management_file",
+        "name": "Dokumentasi Manajemen Risiko",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -7662,10 +8506,10 @@
         "sort_order": 11
       },
       {
-        "code": "ccp_determination",
-        "name": "Penentuan CCP",
+        "code": "process_information",
+        "name": "Proses Produksi / Bisnis yang Dilakukan serta Informasi-Informasi Terkait",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -7682,8 +8526,8 @@
         "sort_order": 12
       },
       {
-        "code": "critical_limits",
-        "name": "Critical Limit",
+        "code": "prp_document",
+        "name": "Dokumen Program Prasyarat Dasar",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -7702,10 +8546,10 @@
         "sort_order": 13
       },
       {
-        "code": "ccp_monitoring",
-        "name": "Sistem Monitoring CCP",
+        "code": "ccp_document",
+        "name": "Dokumen Titik Kendali Kritis",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -7722,8 +8566,8 @@
         "sort_order": 14
       },
       {
-        "code": "ccp_correction",
-        "name": "Tindakan Koreksi CCP",
+        "code": "internal_audit_evidence",
+        "name": "Hasil Audit Internal Sistem Manajemen Layanan Teknologi Informasi",
         "requirement": "required",
         "review_group": "technical",
         "extensions": [
@@ -7742,10 +8586,10 @@
         "sort_order": 15
       },
       {
-        "code": "haccp_verification",
-        "name": "Prosedur Verifikasi HACCP",
+        "code": "management_review_evidence",
+        "name": "Hasil Tinjauan Manajemen Puncak terhadap Kinerja Sistem Manajemen Layanan Teknologi Informasi",
         "requirement": "required",
-        "review_group": "technical",
+        "review_group": "none",
         "extensions": [
           "pdf",
           "doc",
@@ -7760,89 +8604,9 @@
         ],
         "max_mb": 20,
         "sort_order": 16
-      },
-      {
-        "code": "haccp_records",
-        "name": "Rekaman HACCP",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 17
-      },
-      {
-        "code": "prp_gmp_ghp",
-        "name": "PRP/GMP/GHP/Sanitasi",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 18
-      },
-      {
-        "code": "internal_audit_evidence",
-        "name": "Bukti Audit Internal",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 19
-      },
-      {
-        "code": "management_review_evidence",
-        "name": "Bukti Management Review",
-        "requirement": "optional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 20
       }
     ],
-    "sort_order": 8
+    "sort_order": 9
   },
   {
     "code": "SNI",
@@ -8926,1494 +9690,1165 @@
         "sort_order": 28
       }
     ],
-    "sort_order": 9
+    "sort_order": 10
   },
   {
-    "code": "ISPO_PEK",
-    "slug": "ispo-pekebun",
-    "name": "ISPO - Pekebun / Koperasi / Gapoktan / Poktan",
-    "short_name": "ISPO Pekebun",
+    "code": "ISPO",
+    "slug": "ispo",
+    "name": "Sertifikasi ISPO Terpadu (Pekebun / Perusahaan Perkebunan / Industri Hilir / Usaha Bioenergi)",
+    "short_name": "ISPO",
     "category": "ispo",
-    "standard": "Sertifikasi Kelapa Sawit Berkelanjutan Indonesia - Pekebun",
+    "standard": "Indonesian Sustainable Palm Oil (ISPO)",
     "prefix": "ISPO-GIS",
     "template": "ispo",
-    "description": "Form FrO.7201 untuk kelompok pekebun, koperasi, gapoktan, atau poktan.",
+    "description": "Permohonan sertifikasi ISPO terpadu mengikuti Form Aplikasi FrO.7201/GIS-2.0. Pemohon memilih ruang lingkup, lalu hanya bagian yang relevan yang perlu diisi. Seluruh isian dan lampiran bersifat opsional.",
     "sections": [
       {
-        "code": "general",
-        "title": "1. Informasi Koperasi/Gapoktan/Poktan",
-        "fields": [
-          {
-            "code": "organization_name",
-            "label": "Nama koperasi/gapoktan/poktan/perusahaan",
-            "type": "text",
-            "required": true,
-            "sort_order": 1
-          },
-          {
-            "code": "organization_address",
-            "label": "Alamat",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 2
-          },
-          {
-            "code": "postal_city",
-            "label": "Kode Pos/Kota",
-            "type": "text",
-            "required": true,
-            "sort_order": 3
-          },
-          {
-            "code": "country",
-            "label": "Negara",
-            "type": "text",
-            "required": true,
-            "placeholder": "Indonesia",
-            "sort_order": 4
-          },
-          {
-            "code": "contact_name",
-            "label": "Kontak/PIC",
-            "type": "text",
-            "required": true,
-            "sort_order": 5
-          },
-          {
-            "code": "contact_position",
-            "label": "Jabatan",
-            "type": "text",
-            "required": true,
-            "sort_order": 6
-          },
-          {
-            "code": "phone",
-            "label": "Telepon",
-            "type": "text",
-            "required": true,
-            "sort_order": 7
-          },
-          {
-            "code": "website",
-            "label": "Website",
-            "type": "url",
-            "required": false,
-            "sort_order": 8
-          },
-          {
-            "code": "fax",
-            "label": "Faksimili",
-            "type": "text",
-            "required": false,
-            "sort_order": 9
-          },
-          {
-            "code": "email",
-            "label": "Email",
-            "type": "email",
-            "required": true,
-            "sort_order": 10
-          },
-          {
-            "code": "business_sector",
-            "label": "Bidang usaha",
-            "type": "text",
-            "required": true,
-            "sort_order": 11
-          }
-        ],
-        "sort_order": 1
-      },
-      {
-        "code": "employees",
-        "title": "2. Jumlah Karyawan",
-        "fields": [
-          {
-            "code": "total_employees",
-            "label": "Jumlah karyawan keseluruhan",
-            "type": "number",
-            "required": true,
-            "sort_order": 1
-          },
-          {
-            "code": "harvesters",
-            "label": "Pemanen",
-            "type": "number",
-            "required": false,
-            "sort_order": 2
-          },
-          {
-            "code": "foremen",
-            "label": "Mandor",
-            "type": "number",
-            "required": false,
-            "sort_order": 3
-          },
-          {
-            "code": "transport_workers",
-            "label": "Pengangkutan",
-            "type": "number",
-            "required": false,
-            "sort_order": 4
-          },
-          {
-            "code": "maintenance_workers",
-            "label": "Pemeliharaan tanaman",
-            "type": "number",
-            "required": false,
-            "sort_order": 5
-          },
-          {
-            "code": "subcontract_workers",
-            "label": "Sub kontrak",
-            "type": "number",
-            "required": false,
-            "sort_order": 6
-          },
-          {
-            "code": "other_workers",
-            "label": "Lain-lain",
-            "type": "number",
-            "required": false,
-            "sort_order": 7
-          },
-          {
-            "code": "ics_personnel",
-            "label": "Jumlah personil Sistem Kendali Internal",
-            "type": "number",
-            "required": true,
-            "sort_order": 8
-          }
-        ],
-        "sort_order": 2
-      },
-      {
         "code": "scope",
-        "title": "3. Ruang Lingkup & Data Kebun",
+        "title": "A. Ruang Lingkup Permohonan",
         "fields": [
           {
-            "code": "previous_management_systems",
-            "label": "Sistem manajemen yang pernah disertifikasi",
+            "code": "applicant_type",
+            "label": "Jenis Pemohon",
             "type": "checkbox_group",
             "required": false,
+            "help": "Menentukan bagian mana pada formulir ini yang perlu Anda isi.",
             "options": [
               {
-                "value": "iso9001",
-                "label": "ISO 9001"
+                "value": "pekebun_perorangan",
+                "label": "Pekebun Perorangan (Hulu)"
               },
               {
-                "value": "iso14001",
-                "label": "ISO 14001"
+                "value": "kelompok_pekebun",
+                "label": "Kelompok Pekebun (Hulu)"
               },
               {
-                "value": "other",
-                "label": "ISO lainnya"
+                "value": "perusahaan_perkebunan",
+                "label": "Perusahaan Perkebunan (Hulu)"
+              },
+              {
+                "value": "industri_hilir",
+                "label": "Industri Hilir"
+              },
+              {
+                "value": "perusahaan_bioenergi",
+                "label": "Perusahaan Bioenergi"
               }
             ],
             "sort_order": 1
           },
           {
-            "code": "certification_type",
-            "label": "Tipe sertifikasi",
-            "type": "select",
-            "required": true,
+            "code": "institution_type",
+            "label": "Kelembagaan Pekebun",
+            "type": "checkbox_group",
+            "required": false,
             "options": [
               {
-                "value": "initial",
+                "value": "koperasi",
+                "label": "Koperasi"
+              },
+              {
+                "value": "gapoktan",
+                "label": "Gapoktan"
+              },
+              {
+                "value": "poktan",
+                "label": "Poktan"
+              },
+              {
+                "value": "lainnya",
+                "label": "Lainnya"
+              }
+            ],
+            "condition": {
+              "any": [
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "pekebun_perorangan"
+                },
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "kelompok_pekebun"
+                }
+              ]
+            },
+            "sort_order": 2
+          },
+          {
+            "code": "institution_type_other",
+            "label": "Kelembagaan Pekebun - lainnya",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "institution_type",
+              "operator": "contains",
+              "value": "lainnya"
+            },
+            "sort_order": 3
+          },
+          {
+            "code": "upstream_scope",
+            "label": "Ruang Lingkup Hulu",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "budi_daya",
+                "label": "Budi Daya"
+              },
+              {
+                "value": "pks",
+                "label": "Pengolahan Hasil/PKS"
+              },
+              {
+                "value": "integrasi",
+                "label": "Integrasi Budi Daya + PKS"
+              }
+            ],
+            "condition": {
+              "any": [
+                {
+                  "any": [
+                    {
+                      "field": "applicant_type",
+                      "operator": "contains",
+                      "value": "pekebun_perorangan"
+                    },
+                    {
+                      "field": "applicant_type",
+                      "operator": "contains",
+                      "value": "kelompok_pekebun"
+                    }
+                  ]
+                },
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "perusahaan_perkebunan"
+                }
+              ]
+            },
+            "sort_order": 4
+          },
+          {
+            "code": "downstream_kbli",
+            "label": "Ruang Lingkup Hilir - Produk/KBLI yang dimohon",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "10431",
+                "label": "KBLI 10431 - Industri Minyak Mentah Kelapa Sawit (Crude Palm Oil)"
+              },
+              {
+                "value": "10432",
+                "label": "KBLI 10432 - Industri Minyak Mentah Inti Kelapa Sawit (Crude Palm Kernel Oil)"
+              },
+              {
+                "value": "10433",
+                "label": "KBLI 10433 - Industri Pemisahan/Fraksinasi Minyak Mentah Kelapa Sawit dan Minyak Mentah Inti Kelapa Sawit"
+              },
+              {
+                "value": "10434",
+                "label": "KBLI 10434 - Industri Pemurnian Minyak Mentah Kelapa Sawit dan Minyak Mentah Inti Kelapa Sawit"
+              },
+              {
+                "value": "10435",
+                "label": "KBLI 10435 - Industri Pemisahan/Fraksinasi Minyak Murni Kelapa Sawit"
+              },
+              {
+                "value": "10436",
+                "label": "KBLI 10436 - Industri Pemisahan/Fraksinasi Minyak Murni Inti Kelapa Sawit"
+              },
+              {
+                "value": "10437",
+                "label": "KBLI 10437 - Industri Minyak Goreng Kelapa Sawit"
+              },
+              {
+                "value": "10412",
+                "label": "KBLI 10412 - Industri Margarine"
+              },
+              {
+                "value": "10490",
+                "label": "KBLI 10490 - Industri Minyak Mentah dan Lemak Nabati dan Hewani Lainnya (khusus berbahan baku kelapa sawit)"
+              },
+              {
+                "value": "10801",
+                "label": "KBLI 10801 - Industri Ransum Makanan Hewan (khusus berbahan baku kelapa sawit)"
+              },
+              {
+                "value": "20115",
+                "label": "KBLI 20115 - Industri Kimia Dasar Organik yang Bersumber dari Hasil Pertanian (khusus berbahan baku kelapa sawit)"
+              }
+            ],
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "industri_hilir"
+            },
+            "sort_order": 5
+          },
+          {
+            "code": "bioenergy_scope",
+            "label": "Ruang Lingkup Bioenergi",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "bbn",
+                "label": "Bahan Bakar Nabati"
+              },
+              {
+                "value": "biomassa",
+                "label": "Biomassa"
+              },
+              {
+                "value": "biogas",
+                "label": "Biogas"
+              }
+            ],
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "perusahaan_bioenergi"
+            },
+            "sort_order": 6
+          },
+          {
+            "code": "business_linkage",
+            "label": "Keterkaitan Usaha",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "hulu_hilir",
+                "label": "Hulu-Hilir"
+              },
+              {
+                "value": "hilir_bioenergi",
+                "label": "Hilir-Bioenergi"
+              },
+              {
+                "value": "hulu_hilir_bioenergi",
+                "label": "Hulu-Hilir-Bioenergi"
+              },
+              {
+                "value": "tidak_terintegrasi",
+                "label": "Tidak terintegrasi"
+              }
+            ],
+            "sort_order": 7
+          },
+          {
+            "code": "application_type",
+            "label": "Jenis Permohonan",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "awal",
                 "label": "Sertifikasi Awal"
               },
               {
-                "value": "surveillance",
-                "label": "Surveillance"
-              },
-              {
-                "value": "recertification",
-                "label": "Re-Sertifikasi"
+                "value": "ulang",
+                "label": "Sertifikasi Ulang"
               },
               {
                 "value": "transfer",
                 "label": "Transfer Sertifikat"
               },
               {
-                "value": "scope_change",
-                "label": "Perluasan/Perubahan Ruang Lingkup"
+                "value": "perubahan_perluasan",
+                "label": "Perubahan/Perluasan Ruang Lingkup"
+              },
+              {
+                "value": "perubahan_sertifikat",
+                "label": "Perubahan Sertifikat"
               }
             ],
-            "sort_order": 2
-          },
-          {
-            "code": "estate_name",
-            "label": "Nama kebun yang diajukan",
-            "type": "text",
-            "required": true,
-            "sort_order": 3
-          },
-          {
-            "code": "estate_village",
-            "label": "Desa kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 4
-          },
-          {
-            "code": "estate_district",
-            "label": "Kecamatan kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 5
-          },
-          {
-            "code": "estate_regency",
-            "label": "Kabupaten kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 6
-          },
-          {
-            "code": "estate_province",
-            "label": "Provinsi kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 7
-          },
-          {
-            "code": "estate_latitude",
-            "label": "Lintang",
-            "type": "text",
-            "required": false,
             "sort_order": 8
-          },
-          {
-            "code": "estate_longitude",
-            "label": "Bujur",
-            "type": "text",
-            "required": false,
-            "sort_order": 9
-          },
-          {
-            "code": "estate_region",
-            "label": "Wilayah kebun",
-            "type": "text",
-            "required": false,
-            "sort_order": 10
-          },
-          {
-            "code": "core_land_area",
-            "label": "Luas lahan inti",
-            "type": "number",
-            "required": true,
-            "unit": "Ha",
-            "sort_order": 11
-          },
-          {
-            "code": "supplier_partnership",
-            "label": "Bermitra dengan petani pemasok?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 12
-          },
-          {
-            "code": "include_suppliers",
-            "label": "Mengikutsertakan pemasok dalam ruang lingkup?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 13
-          },
-          {
-            "code": "partnership_area",
-            "label": "Luas pola kemitraan",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "condition": {
-              "field": "supplier_partnership",
-              "operator": "equals",
-              "value": "yes"
-            },
-            "sort_order": 14
-          },
-          {
-            "code": "partnership_pattern",
-            "label": "Pola kemitraan",
-            "type": "select",
-            "required": false,
-            "options": [
-              {
-                "value": "pir_trans",
-                "label": "PIR-Trans"
-              },
-              {
-                "value": "pir_bun",
-                "label": "PIR-Bun"
-              },
-              {
-                "value": "pir_kkpa",
-                "label": "PIR-KKPA"
-              },
-              {
-                "value": "other",
-                "label": "Lainnya"
-              }
-            ],
-            "condition": {
-              "field": "supplier_partnership",
-              "operator": "equals",
-              "value": "yes"
-            },
-            "sort_order": 15
-          },
-          {
-            "code": "supplier_estate_locations",
-            "label": "Lokasi kebun pemasok (desa, kecamatan, kabupaten, provinsi, koordinat)",
-            "type": "textarea",
-            "required": false,
-            "condition": {
-              "field": "supplier_partnership",
-              "operator": "equals",
-              "value": "yes"
-            },
-            "sort_order": 16
           }
         ],
-        "sort_order": 3
-      },
-      {
-        "code": "legality",
-        "title": "4. Legalitas Pekebun",
-        "fields": [
-          {
-            "code": "legal_entity_available",
-            "label": "Badan hukum koperasi/gapoktan/poktan tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 1
-          },
-          {
-            "code": "stdb_available",
-            "label": "STDB tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 2
-          },
-          {
-            "code": "land_ownership_proof",
-            "label": "Bukti kepemilikan tanah SHM/HGU tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 3
-          },
-          {
-            "code": "itubp_available",
-            "label": "ITUBP tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 4
-          },
-          {
-            "code": "bkpm_license_available",
-            "label": "Izin Usaha Perkebunan dari BKPM tersedia?",
-            "type": "select",
-            "required": false,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 5
-          },
-          {
-            "code": "ics_available",
-            "label": "Internal Control System tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 6
-          }
-        ],
-        "sort_order": 4
-      },
-      {
-        "code": "estate",
-        "title": "5. Informasi Kebun",
-        "fields": [
-          {
-            "code": "estate_locations",
-            "label": "Daftar lokasi kebun: nama, lokasi, latitude, longitude",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 1
-          },
-          {
-            "code": "land_right_private",
-            "label": "Hak milik/perorangan",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 3
-          },
-          {
-            "code": "land_right_state",
-            "label": "Tanah negara/HGU",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 4
-          },
-          {
-            "code": "land_right_customary",
-            "label": "Tanah adat/ulayat",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 5
-          },
-          {
-            "code": "land_total_area",
-            "label": "Total area",
-            "type": "number",
-            "required": true,
-            "unit": "Ha",
-            "sort_order": 6
-          },
-          {
-            "code": "land_planted_area",
-            "label": "Area tertanam",
-            "type": "number",
-            "required": true,
-            "unit": "Ha",
-            "sort_order": 7
-          },
-          {
-            "code": "land_unplanted_area",
-            "label": "Area tidak ditanam",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 8
-          },
-          {
-            "code": "river_buffer_area",
-            "label": "Sempadan sungai",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 9
-          },
-          {
-            "code": "lake_buffer_area",
-            "label": "Sempadan danau",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 10
-          },
-          {
-            "code": "slope_area",
-            "label": "Lereng",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 11
-          },
-          {
-            "code": "reserved_area",
-            "label": "Area dicadangkan",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 12
-          },
-          {
-            "code": "dam_swamp_area",
-            "label": "Dam/rawa",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 13
-          },
-          {
-            "code": "conservation_area",
-            "label": "Konservasi/penghijauan",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 14
-          },
-          {
-            "code": "other_land_use",
-            "label": "Penggunaan lahan lain",
-            "type": "textarea",
-            "required": false,
-            "sort_order": 15
-          },
-          {
-            "code": "raw_material_sources",
-            "label": "Uraian sumber bahan baku",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 16
-          },
-          {
-            "code": "farmer_scheme_sources",
-            "label": "Skema petani/sumber lain: nama kebun, area, produksi TBS, yield, pasokan PKS",
-            "type": "textarea",
-            "required": false,
-            "sort_order": 17
-          },
-          {
-            "code": "planting_year_area",
-            "label": "Waktu tanam dan luas kebun per tahun/pemilik",
-            "type": "textarea",
-            "required": false,
-            "sort_order": 18
-          },
-          {
-            "code": "mature_area",
-            "label": "Tanaman menghasilkan (TM)",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 19
-          },
-          {
-            "code": "immature_area",
-            "label": "Tanaman belum menghasilkan (TBM)",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 20
-          },
-          {
-            "code": "other_crops",
-            "label": "Tanaman selain kelapa sawit dan jenisnya",
-            "type": "textarea",
-            "required": false,
-            "sort_order": 21
-          },
-          {
-            "code": "replanting_area",
-            "label": "Area replanting/penanaman baru",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 22
-          },
-          {
-            "code": "soil_type",
-            "label": "Jenis tanah",
-            "type": "text",
-            "required": false,
-            "sort_order": 23
-          },
-          {
-            "code": "elevation",
-            "label": "Ketinggian dpl",
-            "type": "text",
-            "required": false,
-            "sort_order": 24
-          },
-          {
-            "code": "topography",
-            "label": "Topografi",
-            "type": "text",
-            "required": false,
-            "sort_order": 25
-          },
-          {
-            "code": "soil_texture",
-            "label": "Tekstur tanah",
-            "type": "text",
-            "required": false,
-            "sort_order": 26
-          },
-          {
-            "code": "solum_depth",
-            "label": "Kedalaman solum",
-            "type": "text",
-            "required": false,
-            "sort_order": 27
-          },
-          {
-            "code": "peat_thickness",
-            "label": "Ketebalan gambut",
-            "type": "text",
-            "required": false,
-            "sort_order": 28
-          },
-          {
-            "code": "rainfall",
-            "label": "Curah hujan",
-            "type": "text",
-            "required": false,
-            "sort_order": 29
-          }
-        ],
-        "sort_order": 5
-      },
-      {
-        "code": "other",
-        "title": "6. Informasi Lain & Pernyataan",
-        "fields": [
-          {
-            "code": "other_information",
-            "label": "Informasi lain yang perlu disampaikan",
-            "type": "textarea",
-            "required": false,
-            "sort_order": 1
-          },
-          {
-            "code": "declaration_place",
-            "label": "Tempat penandatanganan",
-            "type": "text",
-            "required": true,
-            "sort_order": 2
-          },
-          {
-            "code": "declaration_date",
-            "label": "Tanggal pernyataan",
-            "type": "date",
-            "required": true,
-            "sort_order": 3
-          },
-          {
-            "code": "declaration_name",
-            "label": "Nama penandatangan",
-            "type": "text",
-            "required": true,
-            "sort_order": 4
-          },
-          {
-            "code": "declaration_title",
-            "label": "Jabatan penandatangan",
-            "type": "text",
-            "required": true,
-            "sort_order": 5
-          },
-          {
-            "code": "declaration_truth",
-            "label": "Saya menyatakan informasi yang diberikan benar",
-            "type": "boolean",
-            "required": true,
-            "sort_order": 6
-          }
-        ],
-        "sort_order": 6
-      }
-    ],
-    "documents": [
-      {
-        "code": "application_letter",
-        "name": "Form Permohonan Sertifikasi",
-        "requirement": "required",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
         "sort_order": 1
       },
       {
-        "code": "ispo_application",
-        "name": "Form Aplikasi ISPO FrO.7201",
-        "requirement": "required",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 2
-      },
-      {
-        "code": "previous_certificate",
-        "name": "Sertifikat yang Berlaku",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
-        "sort_order": 3
-      },
-      {
-        "code": "time_bound_plan",
-        "name": "Time Bound Plan Pemasok",
-        "requirement": "conditional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "include_suppliers",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 4
-      },
-      {
-        "code": "legal_entity_decision",
-        "name": "Surat Keputusan Badan Hukum",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "legal_entity_available",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 5
-      },
-      {
-        "code": "stdb",
-        "name": "Surat Tanda Daftar Pekebun",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "stdb_available",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 6
-      },
-      {
-        "code": "land_ownership",
-        "name": "Bukti Kepemilikan Tanah SHM/HGU",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "land_ownership_proof",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 7
-      },
-      {
-        "code": "itubp",
-        "name": "Izin Tetap Usaha Budidaya Perkebunan",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "itubp_available",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 8
-      },
-      {
-        "code": "bkpm_license",
-        "name": "Izin Usaha Perkebunan BKPM",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "bkpm_license_available",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 9
-      },
-      {
-        "code": "ics",
-        "name": "Dokumen Internal Control System",
-        "requirement": "conditional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "ics_available",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 10
-      },
-      {
-        "code": "estate_map",
-        "name": "Peta Lokasi Kebun",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 11
-      },
-      {
-        "code": "signature_declaration",
-        "name": "Pernyataan dan Tanda Tangan Pemohon",
-        "requirement": "required",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 12
-      }
-    ],
-    "sort_order": 10
-  },
-  {
-    "code": "ISPO_COMP",
-    "slug": "ispo-perusahaan-perkebunan",
-    "name": "ISPO - Perusahaan Perkebunan",
-    "short_name": "ISPO Perusahaan Perkebunan",
-    "category": "ispo",
-    "standard": "Sertifikasi Kelapa Sawit Berkelanjutan Indonesia - Perusahaan Perkebunan",
-    "prefix": "ISPO-GIS",
-    "template": "ispo",
-    "description": "Form FrO.7202 untuk usaha perkebunan dan/atau pengolahan hasil kelapa sawit.",
-    "sections": [
-      {
-        "code": "general",
-        "title": "1. Informasi Perusahaan",
+        "code": "applicant",
+        "title": "B. Informasi Umum Pemohon",
         "fields": [
           {
-            "code": "organization_name",
-            "label": "Nama koperasi/gapoktan/poktan/perusahaan",
+            "code": "official_name",
+            "label": "Nama resmi perusahaan/kelompok",
             "type": "text",
-            "required": true,
+            "required": false,
             "sort_order": 1
           },
           {
-            "code": "organization_address",
-            "label": "Alamat",
-            "type": "textarea",
-            "required": true,
+            "code": "trade_name",
+            "label": "Nama dagang (jika ada)",
+            "type": "text",
+            "required": false,
             "sort_order": 2
           },
           {
-            "code": "postal_city",
-            "label": "Kode Pos/Kota",
+            "code": "legal_form",
+            "label": "Bentuk badan hukum/kelembagaan (PT, CV, atau lainnya)",
             "type": "text",
-            "required": true,
+            "required": false,
             "sort_order": 3
+          },
+          {
+            "code": "deed_number",
+            "label": "Nomor akta pendirian & perubahan terakhir",
+            "type": "text",
+            "required": false,
+            "sort_order": 4
+          },
+          {
+            "code": "nib",
+            "label": "NIB / Nomor perizinan berusaha",
+            "type": "text",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "npwp",
+            "label": "NPWP",
+            "type": "text",
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "office_address",
+            "label": "Alamat kantor",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "village_district",
+            "label": "Desa/Kelurahan - Kecamatan",
+            "type": "text",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "regency_province_postal",
+            "label": "Kabupaten/Kota - Provinsi - Kode Pos",
+            "type": "text",
+            "required": false,
+            "sort_order": 9
           },
           {
             "code": "country",
             "label": "Negara",
             "type": "text",
-            "required": true,
+            "required": false,
             "placeholder": "Indonesia",
-            "sort_order": 4
+            "sort_order": 10
           },
           {
-            "code": "contact_name",
-            "label": "Kontak/PIC",
+            "code": "pic_name",
+            "label": "Nama kontak (PIC)",
             "type": "text",
-            "required": true,
-            "sort_order": 5
+            "required": false,
+            "sort_order": 11
           },
           {
-            "code": "contact_position",
+            "code": "pic_position",
             "label": "Jabatan",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "perwakilan_manajemen",
+                "label": "Perwakilan Manajemen"
+              },
+              {
+                "value": "lainnya",
+                "label": "Lainnya"
+              }
+            ],
+            "sort_order": 12
+          },
+          {
+            "code": "pic_position_other",
+            "label": "Jabatan - lainnya",
             "type": "text",
-            "required": true,
-            "sort_order": 6
+            "required": false,
+            "condition": {
+              "field": "pic_position",
+              "operator": "contains",
+              "value": "lainnya"
+            },
+            "sort_order": 13
           },
           {
             "code": "phone",
             "label": "Telepon",
             "type": "text",
-            "required": true,
-            "sort_order": 7
-          },
-          {
-            "code": "website",
-            "label": "Website",
-            "type": "url",
             "required": false,
-            "sort_order": 8
+            "sort_order": 14
           },
           {
             "code": "fax",
             "label": "Faksimili",
             "type": "text",
             "required": false,
-            "sort_order": 9
-          },
-          {
-            "code": "email",
-            "label": "Email",
-            "type": "email",
-            "required": true,
-            "sort_order": 10
-          },
-          {
-            "code": "business_sector",
-            "label": "Bidang usaha",
-            "type": "text",
-            "required": true,
-            "sort_order": 11
-          }
-        ],
-        "sort_order": 1
-      },
-      {
-        "code": "employees",
-        "title": "2. Karyawan & Operasional",
-        "fields": [
-          {
-            "code": "office_employees",
-            "label": "Karyawan kantor",
-            "type": "number",
-            "required": false,
-            "sort_order": 1
-          },
-          {
-            "code": "estate_foremen",
-            "label": "Mandor kebun",
-            "type": "number",
-            "required": false,
-            "sort_order": 2
-          },
-          {
-            "code": "estate_maintenance",
-            "label": "Pemelihara tanaman",
-            "type": "number",
-            "required": false,
-            "sort_order": 3
-          },
-          {
-            "code": "estate_harvesters",
-            "label": "Pemanen",
-            "type": "number",
-            "required": false,
-            "sort_order": 4
-          },
-          {
-            "code": "estate_transport",
-            "label": "Pengangkutan",
-            "type": "number",
-            "required": false,
-            "sort_order": 5
-          },
-          {
-            "code": "estate_subcontract",
-            "label": "Sub kontrak kebun",
-            "type": "number",
-            "required": false,
-            "sort_order": 6
-          },
-          {
-            "code": "estate_other",
-            "label": "Lain-lain kebun",
-            "type": "number",
-            "required": false,
-            "sort_order": 7
-          },
-          {
-            "code": "mill_production",
-            "label": "Karyawan PKS produksi",
-            "type": "number",
-            "required": false,
-            "sort_order": 8
-          },
-          {
-            "code": "mill_qa_qc",
-            "label": "Karyawan PKS QA/QC",
-            "type": "number",
-            "required": false,
-            "sort_order": 9
-          },
-          {
-            "code": "mill_admin",
-            "label": "Karyawan PKS administrasi",
-            "type": "number",
-            "required": false,
-            "sort_order": 10
-          },
-          {
-            "code": "mill_maintenance",
-            "label": "Karyawan PKS maintenance",
-            "type": "number",
-            "required": false,
-            "sort_order": 11
-          },
-          {
-            "code": "mill_subcontract",
-            "label": "Sub kontrak PKS",
-            "type": "number",
-            "required": false,
-            "sort_order": 12
-          },
-          {
-            "code": "mill_other",
-            "label": "Lain-lain PKS",
-            "type": "number",
-            "required": false,
-            "sort_order": 13
-          },
-          {
-            "code": "total_employees",
-            "label": "Jumlah total karyawan",
-            "type": "number",
-            "required": true,
-            "sort_order": 14
-          },
-          {
-            "code": "number_of_shifts",
-            "label": "Jumlah shift per hari",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "1",
-                "label": "Shift 1"
-              },
-              {
-                "value": "2",
-                "label": "Shift 1 & 2"
-              },
-              {
-                "value": "3",
-                "label": "Shift 1, 2 & 3"
-              }
-            ],
             "sort_order": 15
           },
           {
-            "code": "operational_system",
+            "code": "email",
+            "label": "E-mail",
+            "type": "email",
+            "required": false,
+            "sort_order": 16
+          },
+          {
+            "code": "website",
+            "label": "Situs web",
+            "type": "url",
+            "required": false,
+            "sort_order": 17
+          },
+          {
+            "code": "main_business",
+            "label": "Bidang usaha utama",
+            "type": "text",
+            "required": false,
+            "sort_order": 18
+          },
+          {
+            "code": "siinas_account",
+            "label": "Akun SIINas (khusus Hilir)",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "industri_hilir"
+            },
+            "sort_order": 19
+          }
+        ],
+        "sort_order": 2
+      },
+      {
+        "code": "certificates",
+        "title": "C. Sertifikasi dan Sistem Manajemen yang Dimiliki",
+        "fields": [
+          {
+            "code": "certificates",
+            "label": "Sertifikasi dan sistem manajemen yang dimiliki",
+            "type": "repeatable",
+            "required": false,
+            "help": "Contoh: ISPO, ISO 9001, ISO 14001, ISO 22000, SMK3, atau sertifikasi lain yang relevan.",
+            "columns": [
+              {
+                "code": "jenis",
+                "label": "Jenis Sertifikat",
+                "type": "text"
+              },
+              {
+                "code": "nomor",
+                "label": "Nomor",
+                "type": "text"
+              },
+              {
+                "code": "ruang_lingkup",
+                "label": "Ruang Lingkup",
+                "type": "text"
+              },
+              {
+                "code": "penerbit",
+                "label": "Penerbit",
+                "type": "text"
+              },
+              {
+                "code": "berlaku_sd",
+                "label": "Berlaku s.d.",
+                "type": "date"
+              },
+              {
+                "code": "lampiran",
+                "label": "Lampiran",
+                "type": "text"
+              }
+            ],
+            "sort_order": 1
+          }
+        ],
+        "sort_order": 3
+      },
+      {
+        "code": "personnel",
+        "title": "D. Data Personel dan Operasional",
+        "fields": [
+          {
+            "code": "personnel_table",
+            "label": "Jumlah personel per unit/fungsi",
+            "type": "table",
+            "required": false,
+            "help": "Isi kolom lainnya untuk ISPO Hulu. Khusus Hilir dan Bioenergi, isi bagian yang relevan dengan permohonan yang diajukan. Bagian yang tidak relevan diberi tanda N/A.",
+            "columns": [
+              {
+                "code": "jumlah",
+                "label": "Jumlah Personel",
+                "type": "number"
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "kantor",
+                "label": "Kantor/Administrasi"
+              },
+              {
+                "code": "mandor_kebun",
+                "label": "Mandor Kebun"
+              },
+              {
+                "code": "pemeliharaan",
+                "label": "Pemeliharaan Tanaman"
+              },
+              {
+                "code": "pemanen",
+                "label": "Pemanen"
+              },
+              {
+                "code": "pengangkutan",
+                "label": "Pengangkutan"
+              },
+              {
+                "code": "pks_produksi",
+                "label": "PKS - Produksi"
+              },
+              {
+                "code": "pks_qaqc",
+                "label": "PKS - QA/QC"
+              },
+              {
+                "code": "pks_maintenance",
+                "label": "PKS - Maintenance"
+              },
+              {
+                "code": "hilir_produksi",
+                "label": "Industri Hilir - Produksi"
+              },
+              {
+                "code": "bioenergi_produksi",
+                "label": "Bioenergi - Produksi"
+              },
+              {
+                "code": "subkontrak",
+                "label": "Subkontrak/Alih Daya"
+              },
+              {
+                "code": "lain_lain",
+                "label": "Lain-lain"
+              },
+              {
+                "code": "total",
+                "label": "JUMLAH KESELURUHAN"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "shift_per_day",
+            "label": "Jumlah shift per hari",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "1",
+                "label": "1 shift"
+              },
+              {
+                "value": "2",
+                "label": "2 shift"
+              },
+              {
+                "value": "3",
+                "label": "3 shift"
+              },
+              {
+                "value": "lainnya",
+                "label": "Lainnya"
+              }
+            ],
+            "sort_order": 2
+          },
+          {
+            "code": "shift_per_day_other",
+            "label": "Jumlah shift - lainnya",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "shift_per_day",
+              "operator": "contains",
+              "value": "lainnya"
+            },
+            "sort_order": 3
+          },
+          {
+            "code": "operating_system",
             "label": "Sistem operasional",
-            "type": "select",
-            "required": true,
+            "type": "checkbox_group",
+            "required": false,
             "options": [
               {
                 "value": "batch",
                 "label": "Batch"
               },
               {
-                "value": "semi_continue",
-                "label": "Semi Continue"
+                "value": "semi_continuous",
+                "label": "Semi-continuous"
               },
               {
-                "value": "continue",
-                "label": "Continue"
+                "value": "continuous",
+                "label": "Continuous"
+              },
+              {
+                "value": "lainnya",
+                "label": "Lainnya"
               }
             ],
-            "sort_order": 16
-          }
-        ],
-        "sort_order": 2
-      },
-      {
-        "code": "internal_auditor",
-        "title": "3. Auditor Internal",
-        "fields": [
+            "sort_order": 4
+          },
+          {
+            "code": "operating_system_other",
+            "label": "Sistem operasional - lainnya",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "operating_system",
+              "operator": "contains",
+              "value": "lainnya"
+            },
+            "sort_order": 5
+          },
           {
             "code": "internal_auditor_count",
-            "label": "Jumlah auditor internal",
+            "label": "Jumlah auditor internal ISPO (orang)",
             "type": "number",
-            "required": true,
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "internal_auditor_evidence",
+            "label": "Bukti pelatihan/kompetensi auditor internal",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "ada",
+                "label": "Ada"
+              },
+              {
+                "value": "tidak_ada",
+                "label": "Tidak ada"
+              }
+            ],
+            "sort_order": 7
+          },
+          {
+            "code": "ics_personnel_count",
+            "label": "Personel Sistem Kendali Internal - kelompok Pekebun (orang)",
+            "type": "number",
+            "required": false,
+            "condition": {
+              "any": [
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "pekebun_perorangan"
+                },
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "kelompok_pekebun"
+                }
+              ]
+            },
+            "sort_order": 8
+          },
+          {
+            "code": "ics_personnel_evidence",
+            "label": "Bukti pelatihan/kompetensi personel ICS",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "ada",
+                "label": "Ada"
+              },
+              {
+                "value": "tidak_ada",
+                "label": "Tidak ada"
+              }
+            ],
+            "condition": {
+              "any": [
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "pekebun_perorangan"
+                },
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "kelompok_pekebun"
+                }
+              ]
+            },
+            "sort_order": 9
+          }
+        ],
+        "sort_order": 4
+      },
+      {
+        "code": "locations",
+        "title": "E. Daftar Lokasi dan Unit yang Terkait Permohonan",
+        "fields": [
+          {
+            "code": "locations",
+            "label": "Daftar lokasi dan unit yang terkait permohonan",
+            "type": "repeatable",
+            "required": false,
+            "help": "Jenis unit: kebun, PKS, fasilitas industri hilir, pabrik bioenergi, gudang, kantor, atau unit lain yang terkait.",
+            "columns": [
+              {
+                "code": "jenis_unit",
+                "label": "Jenis Unit",
+                "type": "text"
+              },
+              {
+                "code": "nama_unit",
+                "label": "Nama Unit",
+                "type": "text"
+              },
+              {
+                "code": "alamat",
+                "label": "Alamat/Lokasi",
+                "type": "text"
+              },
+              {
+                "code": "latitude",
+                "label": "Latitude",
+                "type": "text"
+              },
+              {
+                "code": "longitude",
+                "label": "Longitude",
+                "type": "text"
+              },
+              {
+                "code": "luas_kapasitas",
+                "label": "Luas/Kapasitas",
+                "type": "text"
+              },
+              {
+                "code": "dalam_lingkup",
+                "label": "Dimasukkan dalam Ruang Lingkup",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "ya",
+                    "label": "Ya"
+                  },
+                  {
+                    "value": "tidak",
+                    "label": "Tidak"
+                  }
+                ]
+              }
+            ],
+            "sort_order": 1
+          }
+        ],
+        "sort_order": 5
+      },
+      {
+        "code": "documents_checklist",
+        "title": "F. Daftar Dokumen Persyaratan",
+        "fields": [
+          {
+            "code": "docs_pekebun",
+            "label": "Dokumen persyaratan - Pekebun",
+            "type": "table",
+            "required": false,
+            "columns": [
+              {
+                "code": "status",
+                "label": "Status",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "ada",
+                    "label": "Ada"
+                  },
+                  {
+                    "value": "tidak",
+                    "label": "Tidak"
+                  },
+                  {
+                    "value": "na",
+                    "label": "N/A"
+                  }
+                ]
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan/Nomor Dokumen",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "stdb",
+                "label": "Tanda daftar usaha perkebunan (STDB) dan/atau dokumen pendaftaran usaha perkebunan"
+              },
+              {
+                "code": "land_right_smallholder",
+                "label": "Bukti kepemilikan hak atas tanah / surat pernyataan penguasaan fisik bidang tanah / dasar penguasaan atas tanah"
+              },
+              {
+                "code": "sppl",
+                "label": "Persetujuan/izin lingkungan (SPPL) jika dipersyaratkan sesuai kegiatan"
+              }
+            ],
+            "condition": {
+              "any": [
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "pekebun_perorangan"
+                },
+                {
+                  "field": "applicant_type",
+                  "operator": "contains",
+                  "value": "kelompok_pekebun"
+                }
+              ]
+            },
             "sort_order": 1
           },
           {
-            "code": "internal_auditor_competent",
-            "label": "Kompetensi auditor internal tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
+            "code": "docs_kelompok",
+            "label": "Dokumen persyaratan - Kelompok Pekebun",
+            "type": "table",
+            "required": false,
+            "columns": [
               {
-                "value": "yes",
-                "label": "Ya"
+                "code": "status",
+                "label": "Status",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "ada",
+                    "label": "Ada"
+                  },
+                  {
+                    "value": "tidak",
+                    "label": "Tidak"
+                  },
+                  {
+                    "value": "na",
+                    "label": "N/A"
+                  }
+                ]
               },
               {
-                "value": "no",
-                "label": "Tidak"
+                "code": "keterangan",
+                "label": "Keterangan/Nomor Dokumen",
+                "type": "text"
               }
             ],
+            "rows": [
+              {
+                "code": "group_establishment",
+                "label": "Dokumen pembentukan Koperasi/Gapoktan/Poktan atau kelembagaan kelompok"
+              },
+              {
+                "code": "member_list",
+                "label": "Daftar anggota dan daftar kebun anggota"
+              },
+              {
+                "code": "ics_appointment",
+                "label": "Penetapan minimal 1 personel Sistem Kendali Internal (ICS) dan bukti pemahaman/pelatihan ISPO"
+              }
+            ],
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "kelompok_pekebun"
+            },
             "sort_order": 2
           },
           {
-            "code": "internal_auditor_notes",
-            "label": "Keterangan kompetensi",
-            "type": "textarea",
+            "code": "docs_perusahaan",
+            "label": "Dokumen persyaratan - Perusahaan Perkebunan",
+            "type": "table",
             "required": false,
+            "columns": [
+              {
+                "code": "status",
+                "label": "Status",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "ada",
+                    "label": "Ada"
+                  },
+                  {
+                    "value": "tidak",
+                    "label": "Tidak"
+                  },
+                  {
+                    "value": "na",
+                    "label": "N/A"
+                  }
+                ]
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan/Nomor Dokumen",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "plantation_license",
+                "label": "Perizinan berusaha perkebunan"
+              },
+              {
+                "code": "land_right_company",
+                "label": "Bukti hak atas tanah (HP / HGB / HGU / SHM)"
+              },
+              {
+                "code": "environmental_approval",
+                "label": "Persetujuan lingkungan"
+              },
+              {
+                "code": "internal_auditor_list_company",
+                "label": "Daftar minimal 2 auditor internal ISPO per PT (5 auditor untuk grup) dan bukti pelatihan auditor ISPO"
+              },
+              {
+                "code": "estate_map",
+                "label": "Peta lokasi dan peta operasional kebun/PKS"
+              }
+            ],
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "perusahaan_perkebunan"
+            },
             "sort_order": 3
+          },
+          {
+            "code": "docs_hilir",
+            "label": "Dokumen persyaratan - Industri Hilir",
+            "type": "table",
+            "required": false,
+            "columns": [
+              {
+                "code": "status",
+                "label": "Status",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "ada",
+                    "label": "Ada"
+                  },
+                  {
+                    "value": "tidak",
+                    "label": "Tidak"
+                  },
+                  {
+                    "value": "na",
+                    "label": "N/A"
+                  }
+                ]
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan/Nomor Dokumen",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "ispo_supplier_cert",
+                "label": "Sertifikat ISPO kegiatan usaha perkebunan atau sertifikat ISPO pemasok bahan baku"
+              },
+              {
+                "code": "company_deed_downstream",
+                "label": "Salinan akta pendirian perusahaan dan perubahannya"
+              },
+              {
+                "code": "downstream_license",
+                "label": "Perizinan berusaha Industri Hilir berdasarkan KBLI yang sesuai"
+              },
+              {
+                "code": "process_flow_downstream",
+                "label": "Diagram alir proses produksi"
+              },
+              {
+                "code": "facility_list_downstream",
+                "label": "Daftar fasilitas (sarana dan prasarana) produksi yang dimiliki"
+              },
+              {
+                "code": "internal_auditor_list_downstream",
+                "label": "Daftar auditor internal ISPO"
+              },
+              {
+                "code": "org_structure_downstream",
+                "label": "Struktur organisasi dan Profil Perusahaan"
+              },
+              {
+                "code": "iso_statement",
+                "label": "Sertifikat/pernyataan diri penerapan ISO 9001 dan/atau ISO 22000"
+              },
+              {
+                "code": "brand_cert",
+                "label": "Sertifikat merek atau bukti pendaftaran merek, jika memiliki merek"
+              }
+            ],
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "industri_hilir"
+            },
+            "sort_order": 4
+          },
+          {
+            "code": "docs_bioenergi",
+            "label": "Dokumen persyaratan - Bioenergi",
+            "type": "table",
+            "required": false,
+            "columns": [
+              {
+                "code": "status",
+                "label": "Status",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "ada",
+                    "label": "Ada"
+                  },
+                  {
+                    "value": "tidak",
+                    "label": "Tidak"
+                  },
+                  {
+                    "value": "na",
+                    "label": "N/A"
+                  }
+                ]
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan/Nomor Dokumen",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "bioenergy_license",
+                "label": "Perizinan berusaha untuk bahan bakar nabati, biomassa, dan/atau biogas"
+              },
+              {
+                "code": "ispo_estate_cert_bioenergy",
+                "label": "Sertifikat ISPO kegiatan usaha perkebunan kelapa sawit"
+              },
+              {
+                "code": "ispo_downstream_cert_bioenergy",
+                "label": "Sertifikat ISPO kegiatan industri hilir penghasil produk turunan kelapa sawit, apabila tidak memiliki sertifikat ISPO perkebunan"
+              },
+              {
+                "code": "bioenergy_process_pack",
+                "label": "Diagram alir proses, daftar fasilitas produksi, daftar sumber bahan baku, dan sertifikat ISPO pemasok terkait"
+              }
+            ],
+            "condition": {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "perusahaan_bioenergi"
+            },
+            "sort_order": 5
           }
         ],
-        "sort_order": 3
+        "sort_order": 6
       },
       {
-        "code": "scope",
-        "title": "4. Ruang Lingkup & Data Kebun",
+        "code": "smallholder",
+        "title": "G. Data Khusus Pekebun / Kelompok Pekebun",
         "fields": [
           {
-            "code": "previous_management_systems",
-            "label": "Sistem manajemen yang pernah disertifikasi",
+            "code": "group_name",
+            "label": "Nama Koperasi/Gapoktan/Poktan",
+            "type": "text",
+            "required": false,
+            "sort_order": 1
+          },
+          {
+            "code": "group_establishment_number",
+            "label": "Nomor dan tanggal pembentukan kelembagaan",
+            "type": "text",
+            "required": false,
+            "sort_order": 2
+          },
+          {
+            "code": "member_count",
+            "label": "Jumlah anggota yang diajukan (orang)",
+            "type": "number",
+            "required": false,
+            "sort_order": 3
+          },
+          {
+            "code": "plot_count",
+            "label": "Jumlah kebun/bidang tanah (unit/bidang)",
+            "type": "number",
+            "required": false,
+            "sort_order": 4
+          },
+          {
+            "code": "ics_manager_name",
+            "label": "Nama penanggung jawab Sistem Kendali Internal",
+            "type": "text",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "ics_count",
+            "label": "Jumlah personel Sistem Kendali Internal (orang)",
+            "type": "number",
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "target_mill",
+            "label": "Nama PKS tujuan/pembeli TBS",
+            "type": "text",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "partnership",
+            "label": "Hubungan kemitraan",
             "type": "checkbox_group",
             "required": false,
             "options": [
               {
-                "value": "iso9001",
-                "label": "ISO 9001"
+                "value": "tidak_ada",
+                "label": "Tidak ada"
               },
-              {
-                "value": "iso14001",
-                "label": "ISO 14001"
-              },
-              {
-                "value": "other",
-                "label": "ISO lainnya"
-              }
-            ],
-            "sort_order": 1
-          },
-          {
-            "code": "certification_type",
-            "label": "Tipe sertifikasi",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "initial",
-                "label": "Sertifikasi Awal"
-              },
-              {
-                "value": "surveillance",
-                "label": "Surveillance"
-              },
-              {
-                "value": "recertification",
-                "label": "Re-Sertifikasi"
-              },
-              {
-                "value": "transfer",
-                "label": "Transfer Sertifikat"
-              },
-              {
-                "value": "scope_change",
-                "label": "Perluasan/Perubahan Ruang Lingkup"
-              }
-            ],
-            "sort_order": 2
-          },
-          {
-            "code": "estate_name",
-            "label": "Nama kebun yang diajukan",
-            "type": "text",
-            "required": true,
-            "sort_order": 3
-          },
-          {
-            "code": "estate_village",
-            "label": "Desa kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 4
-          },
-          {
-            "code": "estate_district",
-            "label": "Kecamatan kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 5
-          },
-          {
-            "code": "estate_regency",
-            "label": "Kabupaten kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 6
-          },
-          {
-            "code": "estate_province",
-            "label": "Provinsi kebun",
-            "type": "text",
-            "required": true,
-            "sort_order": 7
-          },
-          {
-            "code": "estate_latitude",
-            "label": "Lintang",
-            "type": "text",
-            "required": false,
-            "sort_order": 8
-          },
-          {
-            "code": "estate_longitude",
-            "label": "Bujur",
-            "type": "text",
-            "required": false,
-            "sort_order": 9
-          },
-          {
-            "code": "estate_region",
-            "label": "Wilayah kebun",
-            "type": "text",
-            "required": false,
-            "sort_order": 10
-          },
-          {
-            "code": "core_land_area",
-            "label": "Luas lahan inti",
-            "type": "number",
-            "required": true,
-            "unit": "Ha",
-            "sort_order": 11
-          },
-          {
-            "code": "supplier_partnership",
-            "label": "Bermitra dengan petani pemasok?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 12
-          },
-          {
-            "code": "include_suppliers",
-            "label": "Mengikutsertakan pemasok dalam ruang lingkup?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 13
-          },
-          {
-            "code": "partnership_area",
-            "label": "Luas pola kemitraan",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "condition": {
-              "field": "supplier_partnership",
-              "operator": "equals",
-              "value": "yes"
-            },
-            "sort_order": 14
-          },
-          {
-            "code": "partnership_pattern",
-            "label": "Pola kemitraan",
-            "type": "select",
-            "required": false,
-            "options": [
               {
                 "value": "pir_trans",
                 "label": "PIR-Trans"
@@ -10427,401 +10862,1226 @@
                 "label": "PIR-KKPA"
               },
               {
-                "value": "other",
+                "value": "lainnya",
                 "label": "Lainnya"
               }
             ],
-            "condition": {
-              "field": "supplier_partnership",
-              "operator": "equals",
-              "value": "yes"
-            },
-            "sort_order": 15
+            "sort_order": 8
           },
           {
-            "code": "supplier_estate_locations",
-            "label": "Lokasi kebun pemasok (desa, kecamatan, kabupaten, provinsi, koordinat)",
-            "type": "textarea",
-            "required": false,
-            "condition": {
-              "field": "supplier_partnership",
-              "operator": "equals",
-              "value": "yes"
-            },
-            "sort_order": 16
-          }
-        ],
-        "sort_order": 4
-      },
-      {
-        "code": "legality",
-        "title": "5. Legalitas Perusahaan",
-        "fields": [
-          {
-            "code": "apl_area",
-            "label": "Izin lokasi APL",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 1
-          },
-          {
-            "code": "conversion_forest_area",
-            "label": "Hutan Konversi",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 2
-          },
-          {
-            "code": "hpk_area",
-            "label": "Hutan Produksi Konversi (HPK)",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 3
-          },
-          {
-            "code": "customary_area",
-            "label": "Masyarakat/Ulayat",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 4
-          },
-          {
-            "code": "land_right_proof_available",
-            "label": "Bukti hak atas tanah tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 5
-          },
-          {
-            "code": "plantation_business_license",
-            "label": "Perizinan berusaha perkebunan NIB/RBA tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 6
-          },
-          {
-            "code": "environmental_approval",
-            "label": "Persetujuan lingkungan tersedia?",
-            "type": "select",
-            "required": true,
-            "options": [
-              {
-                "value": "yes",
-                "label": "Ya"
-              },
-              {
-                "value": "no",
-                "label": "Tidak"
-              }
-            ],
-            "sort_order": 7
-          },
-          {
-            "code": "plantation_class",
-            "label": "Kelas perkebunan",
+            "code": "partnership_other",
+            "label": "Hubungan kemitraan - lainnya",
             "type": "text",
             "required": false,
-            "sort_order": 8
-          }
-        ],
-        "sort_order": 5
-      },
-      {
-        "code": "estate_mill",
-        "title": "6. Informasi Kebun & Pabrik",
-        "fields": [
-          {
-            "code": "estate_locations",
-            "label": "Daftar lokasi kebun: nama, lokasi, koordinat",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 1
-          },
-          {
-            "code": "mill_locations",
-            "label": "Daftar lokasi pabrik: nama, lokasi, koordinat",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 2
-          },
-          {
-            "code": "land_right_private",
-            "label": "Hak milik/perorangan",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 3
-          },
-          {
-            "code": "land_right_state",
-            "label": "Tanah negara/HGU",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 4
-          },
-          {
-            "code": "land_right_customary",
-            "label": "Tanah adat/ulayat",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 5
-          },
-          {
-            "code": "land_total_area",
-            "label": "Total area",
-            "type": "number",
-            "required": true,
-            "unit": "Ha",
-            "sort_order": 6
-          },
-          {
-            "code": "land_planted_area",
-            "label": "Area tertanam",
-            "type": "number",
-            "required": true,
-            "unit": "Ha",
-            "sort_order": 7
-          },
-          {
-            "code": "land_unplanted_area",
-            "label": "Area tidak ditanam",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 8
-          },
-          {
-            "code": "river_buffer_area",
-            "label": "Sempadan sungai",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
+            "condition": {
+              "field": "partnership",
+              "operator": "contains",
+              "value": "lainnya"
+            },
             "sort_order": 9
           },
           {
-            "code": "lake_buffer_area",
-            "label": "Sempadan danau",
-            "type": "number",
+            "code": "g1_plots",
+            "label": "G.1 Daftar Kebun/Anggota",
+            "type": "repeatable",
             "required": false,
-            "unit": "Ha",
+            "columns": [
+              {
+                "code": "nama_pekebun",
+                "label": "Nama Pekebun",
+                "type": "text"
+              },
+              {
+                "code": "nama_kebun",
+                "label": "Nama Kebun",
+                "type": "text"
+              },
+              {
+                "code": "desa_kec_kab",
+                "label": "Desa/Kec./Kab.",
+                "type": "text"
+              },
+              {
+                "code": "latitude",
+                "label": "Latitude",
+                "type": "text"
+              },
+              {
+                "code": "longitude",
+                "label": "Longitude",
+                "type": "text"
+              },
+              {
+                "code": "bukti_tanah",
+                "label": "Bukti Penguasaan Tanah",
+                "type": "text"
+              },
+              {
+                "code": "luas_total",
+                "label": "Luas Total (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "luas_tertanam",
+                "label": "Luas Tertanam (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "produksi_tbs",
+                "label": "Produksi TBS (Ton/Thn)",
+                "type": "number"
+              }
+            ],
             "sort_order": 10
           },
           {
-            "code": "slope_area",
-            "label": "Lereng",
-            "type": "number",
+            "code": "g2_land_use",
+            "label": "G.2 Ringkasan Penggunaan Lahan",
+            "type": "table",
             "required": false,
-            "unit": "Ha",
+            "columns": [
+              {
+                "code": "luas",
+                "label": "Luas (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "total_area",
+                "label": "Total area"
+              },
+              {
+                "code": "planted",
+                "label": "Area tertanam"
+              },
+              {
+                "code": "tm",
+                "label": "Tanaman menghasilkan (TM)"
+              },
+              {
+                "code": "tbm",
+                "label": "Tanaman belum menghasilkan (TBM)"
+              },
+              {
+                "code": "replanting",
+                "label": "Area replanting/penanaman baru"
+              },
+              {
+                "code": "riparian",
+                "label": "Sempadan sungai/danau"
+              },
+              {
+                "code": "lereng",
+                "label": "Lereng"
+              },
+              {
+                "code": "dam_rawa",
+                "label": "Dam/rawa"
+              },
+              {
+                "code": "konservasi",
+                "label": "Area konservasi/penghijauan"
+              },
+              {
+                "code": "tidak_ditanam",
+                "label": "Area tidak ditanam/lain-lain"
+              }
+            ],
             "sort_order": 11
           },
           {
-            "code": "reserved_area",
-            "label": "Area dicadangkan",
-            "type": "number",
+            "code": "g3_crop_data",
+            "label": "G.3 Data Tanaman, Produksi, dan Kondisi Kebun",
+            "type": "repeatable",
             "required": false,
-            "unit": "Ha",
+            "columns": [
+              {
+                "code": "tahun_tanam",
+                "label": "Tahun Tanam",
+                "type": "text"
+              },
+              {
+                "code": "nama_kebun",
+                "label": "Nama Kebun/Anggota",
+                "type": "text"
+              },
+              {
+                "code": "luas",
+                "label": "Luas (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "produksi_tbs",
+                "label": "Produksi TBS (Ton/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "yield",
+                "label": "Yield (Ton/Ha/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "pasokan_pks",
+                "label": "Pasokan ke PKS (%)",
+                "type": "number"
+              }
+            ],
             "sort_order": 12
           },
           {
-            "code": "dam_swamp_area",
-            "label": "Dam/rawa",
-            "type": "number",
+            "code": "other_crops",
+            "label": "G.3 Tanaman selain kelapa sawit",
+            "type": "select",
             "required": false,
-            "unit": "Ha",
+            "options": [
+              {
+                "value": "tidak_ada",
+                "label": "Tidak ada"
+              },
+              {
+                "value": "ada",
+                "label": "Ada"
+              }
+            ],
             "sort_order": 13
           },
           {
-            "code": "conservation_area",
-            "label": "Konservasi/penghijauan",
-            "type": "number",
+            "code": "other_crops_detail",
+            "label": "G.3 Tanaman selain kelapa sawit - jenis",
+            "type": "text",
             "required": false,
-            "unit": "Ha",
+            "condition": {
+              "field": "other_crops",
+              "operator": "equals",
+              "value": "ada"
+            },
             "sort_order": 14
           },
           {
-            "code": "other_land_use",
-            "label": "Penggunaan lahan lain",
-            "type": "textarea",
+            "code": "soil_type",
+            "label": "G.3 Jenis tanah",
+            "type": "text",
             "required": false,
             "sort_order": 15
           },
           {
-            "code": "raw_material_sources",
-            "label": "Uraian sumber bahan baku",
-            "type": "textarea",
-            "required": true,
+            "code": "altitude",
+            "label": "G.3 Ketinggian dpl",
+            "type": "text",
+            "required": false,
             "sort_order": 16
           },
           {
-            "code": "farmer_scheme_sources",
-            "label": "Skema petani/sumber lain: nama kebun, area, produksi TBS, yield, pasokan PKS",
+            "code": "topography",
+            "label": "G.3 Topografi",
+            "type": "text",
+            "required": false,
+            "sort_order": 17
+          },
+          {
+            "code": "soil_texture",
+            "label": "G.3 Tekstur tanah",
+            "type": "text",
+            "required": false,
+            "sort_order": 18
+          },
+          {
+            "code": "solum_depth",
+            "label": "G.3 Kedalaman solum",
+            "type": "text",
+            "required": false,
+            "sort_order": 19
+          },
+          {
+            "code": "peat_depth",
+            "label": "G.3 Ketebalan gambut",
+            "type": "text",
+            "required": false,
+            "sort_order": 20
+          },
+          {
+            "code": "rainfall",
+            "label": "G.3 Curah hujan",
+            "type": "text",
+            "required": false,
+            "sort_order": 21
+          },
+          {
+            "code": "other_supply_note",
+            "label": "G.3 Uraian sumber bahan baku/pasokan lain",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 22
+          }
+        ],
+        "condition": {
+          "any": [
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "pekebun_perorangan"
+            },
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "kelompok_pekebun"
+            }
+          ]
+        },
+        "sort_order": 7
+      },
+      {
+        "code": "plantation",
+        "title": "H. Data Khusus Perusahaan Perkebunan",
+        "fields": [
+          {
+            "code": "company_scope",
+            "label": "Ruang lingkup perusahaan",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "budi_daya",
+                "label": "Budi Daya"
+              },
+              {
+                "value": "pks",
+                "label": "Pengolahan Hasil/PKS"
+              },
+              {
+                "value": "integrasi",
+                "label": "Integrasi Budi Daya + PKS"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "estate_count",
+            "label": "Jumlah kebun yang diajukan (kebun)",
+            "type": "number",
+            "required": false,
+            "sort_order": 2
+          },
+          {
+            "code": "mill_count",
+            "label": "Jumlah PKS yang diajukan (pabrik)",
+            "type": "number",
+            "required": false,
+            "sort_order": 3
+          },
+          {
+            "code": "total_area_submitted",
+            "label": "Luas total yang diajukan (Ha)",
+            "type": "number",
+            "required": false,
+            "sort_order": 4
+          },
+          {
+            "code": "company_internal_auditor_count",
+            "label": "Jumlah auditor internal ISPO (orang)",
+            "type": "number",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "has_supplier_partnership",
+            "label": "Apakah bermitra dengan Pekebun/pemasok TBS?",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "tidak",
+                "label": "Tidak"
+              },
+              {
+                "value": "ya",
+                "label": "Ya"
+              }
+            ],
+            "sort_order": 6
+          },
+          {
+            "code": "supplier_partnership_count",
+            "label": "Jumlah pemasok/kelompok",
+            "type": "number",
+            "required": false,
+            "condition": {
+              "field": "has_supplier_partnership",
+              "operator": "equals",
+              "value": "ya"
+            },
+            "sort_order": 7
+          },
+          {
+            "code": "supplier_in_scope",
+            "label": "Apakah pemasok masuk ruang lingkup?",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "tidak",
+                "label": "Tidak"
+              },
+              {
+                "value": "ya",
+                "label": "Ya"
+              }
+            ],
+            "sort_order": 8
+          },
+          {
+            "code": "h1_legality",
+            "label": "H.1 Legalitas dan Status Lahan",
+            "type": "table",
+            "required": false,
+            "columns": [
+              {
+                "code": "nomor",
+                "label": "Nomor Dokumen",
+                "type": "text"
+              },
+              {
+                "code": "luas",
+                "label": "Luas (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "keterangan",
+                "label": "Keterangan",
+                "type": "text"
+              }
+            ],
+            "rows": [
+              {
+                "code": "apl",
+                "label": "APL"
+              },
+              {
+                "code": "hpk",
+                "label": "Hutan Konversi/HPK"
+              },
+              {
+                "code": "hgu_hp",
+                "label": "HGU/HP"
+              },
+              {
+                "code": "hak_milik",
+                "label": "Hak Milik"
+              },
+              {
+                "code": "adat",
+                "label": "Tanah Adat/Ulayat"
+              },
+              {
+                "code": "lainnya",
+                "label": "Lainnya"
+              }
+            ],
+            "sort_order": 9
+          },
+          {
+            "code": "h2_core_estate",
+            "label": "H.2 Data Kebun Inti dan Sumber TBS",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "nama_kebun",
+                "label": "Nama Kebun/Sumber",
+                "type": "text"
+              },
+              {
+                "code": "total_area",
+                "label": "Total Area (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "areal_tertanam",
+                "label": "Areal Tertanam (Ha)",
+                "type": "number"
+              },
+              {
+                "code": "produksi_tbs",
+                "label": "Produksi TBS (Ton/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "yield",
+                "label": "Yield",
+                "type": "number"
+              },
+              {
+                "code": "pasokan_pks",
+                "label": "Pasokan ke PKS (Ton/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "persen",
+                "label": "%",
+                "type": "number"
+              }
+            ],
+            "sort_order": 10
+          },
+          {
+            "code": "h3_mill",
+            "label": "H.3 Data PKS",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "nama_pks",
+                "label": "Nama PKS",
+                "type": "text"
+              },
+              {
+                "code": "kapasitas_olah",
+                "label": "Kapasitas Olah (Ton/Jam)",
+                "type": "number"
+              },
+              {
+                "code": "tbs_olah",
+                "label": "TBS Olah (Ton/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "cpo_output",
+                "label": "CPO Output (Ton)",
+                "type": "number"
+              },
+              {
+                "code": "cpo_ekstraksi",
+                "label": "CPO Ekstraksi (%)",
+                "type": "number"
+              },
+              {
+                "code": "kernel_output",
+                "label": "Kernel Output (Ton)",
+                "type": "number"
+              },
+              {
+                "code": "kernel_ekstraksi",
+                "label": "Kernel Ekstraksi (%)",
+                "type": "number"
+              },
+              {
+                "code": "pko_output",
+                "label": "PKO Output (Ton)",
+                "type": "number"
+              },
+              {
+                "code": "pko_ekstraksi",
+                "label": "PKO Ekstraksi (%)",
+                "type": "number"
+              },
+              {
+                "code": "jumlah_shift",
+                "label": "Jumlah Shift",
+                "type": "number"
+              }
+            ],
+            "sort_order": 11
+          },
+          {
+            "code": "cpo_process_summary",
+            "label": "H.3 Uraian singkat proses produksi CPO",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 12
+          },
+          {
+            "code": "cpo_flow_chart",
+            "label": "H.3 Bagan alir proses produksi CPO",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              },
+              {
+                "value": "tidak_relevan",
+                "label": "Tidak relevan"
+              }
+            ],
+            "sort_order": 13
+          },
+          {
+            "code": "location_operational_map",
+            "label": "H.3 Peta lokasi dan operasional",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              },
+              {
+                "value": "tidak_relevan",
+                "label": "Tidak relevan"
+              }
+            ],
+            "sort_order": 14
+          },
+          {
+            "code": "plantation_additional_info",
+            "label": "H.3 Informasi tambahan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 15
+          }
+        ],
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_perkebunan"
+        },
+        "sort_order": 8
+      },
+      {
+        "code": "downstream",
+        "title": "I. Data Khusus Industri Hilir Kelapa Sawit",
+        "fields": [
+          {
+            "code": "site_name",
+            "label": "Nama lokasi produksi",
+            "type": "text",
+            "required": false,
+            "sort_order": 1
+          },
+          {
+            "code": "site_address",
+            "label": "Alamat lokasi produksi",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 2
+          },
+          {
+            "code": "site_latitude",
+            "label": "Latitude",
+            "type": "text",
+            "required": false,
+            "sort_order": 3
+          },
+          {
+            "code": "site_longitude",
+            "label": "Longitude",
+            "type": "text",
+            "required": false,
+            "sort_order": 4
+          },
+          {
+            "code": "kbli_description",
+            "label": "KBLI dan uraian kegiatan",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "installed_capacity",
+            "label": "Kapasitas produksi terpasang (ton/tahun)",
+            "type": "number",
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "actual_capacity",
+            "label": "Kapasitas produksi aktual (ton/tahun)",
+            "type": "number",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "shift_operating_days",
+            "label": "Jumlah shift / hari operasi per tahun",
+            "type": "text",
+            "required": false,
+            "sort_order": 8
+          },
+          {
+            "code": "supply_chain_model",
+            "label": "Model rantai pasok yang dimohon",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "segregasi",
+                "label": "Segregasi"
+              },
+              {
+                "value": "mass_balance",
+                "label": "Mass Balance"
+              },
+              {
+                "value": "lainnya",
+                "label": "Lainnya sesuai skema"
+              }
+            ],
+            "sort_order": 9
+          },
+          {
+            "code": "supply_chain_model_other",
+            "label": "Model rantai pasok - lainnya",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "supply_chain_model",
+              "operator": "contains",
+              "value": "lainnya"
+            },
+            "sort_order": 10
+          },
+          {
+            "code": "brand_status",
+            "label": "Merek produk",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "tidak_memiliki",
+                "label": "Tidak memiliki merek"
+              },
+              {
+                "value": "memiliki",
+                "label": "Memiliki"
+              }
+            ],
+            "sort_order": 11
+          },
+          {
+            "code": "brand_name",
+            "label": "Nama merek",
+            "type": "text",
+            "required": false,
+            "condition": {
+              "field": "brand_status",
+              "operator": "equals",
+              "value": "memiliki"
+            },
+            "sort_order": 12
+          },
+          {
+            "code": "brand_cert_status",
+            "label": "Status sertifikat merek",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "sertifikat",
+                "label": "Sertifikat merek dilampirkan"
+              },
+              {
+                "value": "pendaftaran",
+                "label": "Bukti pendaftaran merek dilampirkan"
+              },
+              {
+                "value": "na",
+                "label": "N/A"
+              }
+            ],
+            "sort_order": 13
+          },
+          {
+            "code": "i1_products",
+            "label": "I.1 Produk dan Kapasitas",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "nama_produk",
+                "label": "Nama Produk",
+                "type": "text"
+              },
+              {
+                "code": "merek",
+                "label": "Merek",
+                "type": "text"
+              },
+              {
+                "code": "kbli",
+                "label": "KBLI",
+                "type": "text"
+              },
+              {
+                "code": "kapasitas",
+                "label": "Kapasitas (Ton/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "produksi_aktual",
+                "label": "Produksi Aktual (Ton/Thn)",
+                "type": "number"
+              },
+              {
+                "code": "kemasan",
+                "label": "Kemasan/Curah",
+                "type": "text"
+              }
+            ],
+            "sort_order": 14
+          },
+          {
+            "code": "i2_materials",
+            "label": "I.2 Bahan Baku dan Pemasok",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "bahan_baku",
+                "label": "Bahan Baku",
+                "type": "text"
+              },
+              {
+                "code": "pemasok",
+                "label": "Nama Pemasok",
+                "type": "text"
+              },
+              {
+                "code": "nomor_ispo",
+                "label": "Nomor Sertifikat ISPO",
+                "type": "text"
+              },
+              {
+                "code": "berlaku_sd",
+                "label": "Berlaku s.d.",
+                "type": "date"
+              },
+              {
+                "code": "volume",
+                "label": "Volume/Tahun",
+                "type": "number"
+              },
+              {
+                "code": "persen_sertifikat",
+                "label": "Status Bersertifikat (%)",
+                "type": "number"
+              },
+              {
+                "code": "lokasi_asal",
+                "label": "Lokasi Asal",
+                "type": "text"
+              }
+            ],
+            "sort_order": 15
+          },
+          {
+            "code": "i3_facilities",
+            "label": "I.3 Proses, Fasilitas, dan Alih Daya",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "fasilitas",
+                "label": "Fasilitas/Proses",
+                "type": "text"
+              },
+              {
+                "code": "kapasitas",
+                "label": "Kapasitas/Jumlah",
+                "type": "text"
+              },
+              {
+                "code": "kepemilikan",
+                "label": "Milik Sendiri/Alih Daya",
+                "type": "select",
+                "options": [
+                  {
+                    "value": "milik_sendiri",
+                    "label": "Milik Sendiri"
+                  },
+                  {
+                    "value": "alih_daya",
+                    "label": "Alih Daya"
+                  }
+                ]
+              },
+              {
+                "code": "penerima_alih_daya",
+                "label": "Nama & Lokasi Penerima Alih Daya",
+                "type": "text"
+              }
+            ],
+            "sort_order": 16
+          },
+          {
+            "code": "downstream_process_flow",
+            "label": "I.3 Diagram alir proses produksi",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              }
+            ],
+            "sort_order": 17
+          },
+          {
+            "code": "downstream_facility_list",
+            "label": "I.3 Daftar fasilitas produksi",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              }
+            ],
+            "sort_order": 18
+          },
+          {
+            "code": "downstream_org_structure",
+            "label": "I.3 Struktur organisasi",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              }
+            ],
+            "sort_order": 19
+          },
+          {
+            "code": "downstream_business_process",
+            "label": "I.3 Deskripsi proses bisnis",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              }
+            ],
+            "sort_order": 20
+          },
+          {
+            "code": "iso9001_status",
+            "label": "I.3 ISO 9001",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "sertifikat",
+                "label": "Sertifikat"
+              },
+              {
+                "value": "pernyataan_diri",
+                "label": "Pernyataan diri"
+              },
+              {
+                "value": "tidak",
+                "label": "Tidak diterapkan"
+              }
+            ],
+            "sort_order": 21
+          },
+          {
+            "code": "iso22000_status",
+            "label": "I.3 ISO 22000",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "sertifikat",
+                "label": "Sertifikat"
+              },
+              {
+                "value": "pernyataan_diri",
+                "label": "Pernyataan diri"
+              },
+              {
+                "value": "tidak",
+                "label": "Tidak diterapkan"
+              }
+            ],
+            "sort_order": 22
+          }
+        ],
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 9
+      },
+      {
+        "code": "bioenergy",
+        "title": "J. Data Khusus Usaha Bioenergi Kelapa Sawit",
+        "fields": [
+          {
+            "code": "business_type",
+            "label": "Jenis usaha bioenergi",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "bbn",
+                "label": "Bahan Bakar Nabati"
+              },
+              {
+                "value": "biomassa",
+                "label": "Biomassa"
+              },
+              {
+                "value": "biogas",
+                "label": "Biogas"
+              }
+            ],
+            "sort_order": 1
+          },
+          {
+            "code": "plant_name",
+            "label": "Nama pabrik/fasilitas",
+            "type": "text",
+            "required": false,
+            "sort_order": 2
+          },
+          {
+            "code": "plant_address",
+            "label": "Alamat lokasi pabrik",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 3
+          },
+          {
+            "code": "plant_latitude",
+            "label": "Latitude",
+            "type": "text",
+            "required": false,
+            "sort_order": 4
+          },
+          {
+            "code": "plant_longitude",
+            "label": "Longitude",
+            "type": "text",
+            "required": false,
+            "sort_order": 5
+          },
+          {
+            "code": "license_scope",
+            "label": "Nomor dan ruang lingkup perizinan berusaha",
+            "type": "textarea",
+            "required": false,
+            "sort_order": 6
+          },
+          {
+            "code": "plant_capacity",
+            "label": "Kapasitas pabrik (ton/kL/Nm3 per tahun)",
+            "type": "text",
+            "required": false,
+            "sort_order": 7
+          },
+          {
+            "code": "traceability_model",
+            "label": "Model ketertelusuran rantai pasok",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "segregasi",
+                "label": "Segregasi"
+              },
+              {
+                "value": "mass_balance",
+                "label": "Mass Balance"
+              }
+            ],
+            "sort_order": 8
+          },
+          {
+            "code": "primary_ispo_source",
+            "label": "Sertifikat ISPO sumber utama",
+            "type": "checkbox_group",
+            "required": false,
+            "options": [
+              {
+                "value": "perkebunan",
+                "label": "Perkebunan"
+              },
+              {
+                "value": "industri_hilir",
+                "label": "Industri Hilir penghasil produk turunan"
+              }
+            ],
+            "sort_order": 9
+          },
+          {
+            "code": "primary_ispo_number",
+            "label": "Nomor sertifikat ISPO sumber utama",
+            "type": "text",
+            "required": false,
+            "sort_order": 10
+          },
+          {
+            "code": "bioenergy_shift",
+            "label": "Jumlah shift / hari operasi per tahun",
+            "type": "text",
+            "required": false,
+            "sort_order": 11
+          },
+          {
+            "code": "j1_products",
+            "label": "J.1 Produk dan Kapasitas",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "jenis_produk",
+                "label": "Jenis Produk",
+                "type": "text"
+              },
+              {
+                "code": "spesifikasi",
+                "label": "Spesifikasi",
+                "type": "text"
+              },
+              {
+                "code": "kapasitas_terpasang",
+                "label": "Kapasitas Terpasang",
+                "type": "number"
+              },
+              {
+                "code": "produksi_aktual",
+                "label": "Produksi Aktual/Tahun",
+                "type": "number"
+              },
+              {
+                "code": "satuan",
+                "label": "Satuan",
+                "type": "text"
+              },
+              {
+                "code": "tujuan",
+                "label": "Tujuan Penggunaan/Pasar",
+                "type": "text"
+              }
+            ],
+            "sort_order": 12
+          },
+          {
+            "code": "j2_materials",
+            "label": "J.2 Bahan Baku dan Ketertelusuran",
+            "type": "repeatable",
+            "required": false,
+            "columns": [
+              {
+                "code": "jenis_bahan",
+                "label": "Jenis Bahan Baku",
+                "type": "text"
+              },
+              {
+                "code": "pemasok",
+                "label": "Pemasok",
+                "type": "text"
+              },
+              {
+                "code": "nomor_ispo",
+                "label": "Nomor Sertifikat ISPO",
+                "type": "text"
+              },
+              {
+                "code": "berlaku_sd",
+                "label": "Berlaku s.d.",
+                "type": "date"
+              },
+              {
+                "code": "volume",
+                "label": "Volume/Tahun",
+                "type": "number"
+              },
+              {
+                "code": "persen_sertifikat",
+                "label": "% Bersertifikat",
+                "type": "number"
+              },
+              {
+                "code": "lokasi_asal",
+                "label": "Lokasi Asal",
+                "type": "text"
+              },
+              {
+                "code": "model_penyimpanan",
+                "label": "Model Penyimpanan",
+                "type": "text"
+              }
+            ],
+            "sort_order": 13
+          },
+          {
+            "code": "bioenergy_process_flow",
+            "label": "J.2 Diagram alir proses produksi",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              }
+            ],
+            "sort_order": 14
+          },
+          {
+            "code": "bioenergy_facility_list",
+            "label": "J.2 Daftar fasilitas produksi/penyimpanan",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              }
+            ],
+            "sort_order": 15
+          },
+          {
+            "code": "material_balance",
+            "label": "J.2 Neraca bahan baku dan produk 12 bulan terakhir",
+            "type": "select",
+            "required": false,
+            "options": [
+              {
+                "value": "dilampirkan",
+                "label": "Dilampirkan"
+              },
+              {
+                "value": "belum_tersedia",
+                "label": "Belum tersedia (sertifikasi awal)"
+              }
+            ],
+            "sort_order": 16
+          },
+          {
+            "code": "segregation_note",
+            "label": "J.2 Uraian pemisahan/rekonsiliasi bahan bersertifikat",
             "type": "textarea",
             "required": false,
             "sort_order": 17
           },
           {
-            "code": "planting_year_area",
-            "label": "Waktu tanam dan luas kebun per tahun/pemilik",
+            "code": "bioenergy_additional_info",
+            "label": "J.2 Informasi tambahan",
             "type": "textarea",
             "required": false,
             "sort_order": 18
-          },
-          {
-            "code": "mature_area",
-            "label": "Tanaman menghasilkan (TM)",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 19
-          },
-          {
-            "code": "immature_area",
-            "label": "Tanaman belum menghasilkan (TBM)",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 20
-          },
-          {
-            "code": "other_crops",
-            "label": "Tanaman selain kelapa sawit dan jenisnya",
-            "type": "textarea",
-            "required": false,
-            "sort_order": 21
-          },
-          {
-            "code": "replanting_area",
-            "label": "Area replanting/penanaman baru",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 22
-          },
-          {
-            "code": "soil_type",
-            "label": "Jenis tanah",
-            "type": "text",
-            "required": false,
-            "sort_order": 23
-          },
-          {
-            "code": "elevation",
-            "label": "Ketinggian dpl",
-            "type": "text",
-            "required": false,
-            "sort_order": 24
-          },
-          {
-            "code": "topography",
-            "label": "Topografi",
-            "type": "text",
-            "required": false,
-            "sort_order": 25
-          },
-          {
-            "code": "soil_texture",
-            "label": "Tekstur tanah",
-            "type": "text",
-            "required": false,
-            "sort_order": 26
-          },
-          {
-            "code": "solum_depth",
-            "label": "Kedalaman solum",
-            "type": "text",
-            "required": false,
-            "sort_order": 27
-          },
-          {
-            "code": "peat_thickness",
-            "label": "Ketebalan gambut",
-            "type": "text",
-            "required": false,
-            "sort_order": 28
-          },
-          {
-            "code": "rainfall",
-            "label": "Curah hujan",
-            "type": "text",
-            "required": false,
-            "sort_order": 29
-          },
-          {
-            "code": "building_road_housing_area",
-            "label": "Pabrik/bangunan/jalan/perumahan/emplasment",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 30
-          },
-          {
-            "code": "afdeling_housing_area",
-            "label": "Perumahan afdeling",
-            "type": "number",
-            "required": false,
-            "unit": "Ha",
-            "sort_order": 31
-          },
-          {
-            "code": "core_estates",
-            "label": "Kebun inti: area, produksi, yield, pasokan PKS",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 32
-          },
-          {
-            "code": "mills_information",
-            "label": "Pabrik: kapasitas olah, TBS, CPO, palm kernel, PKO dan ekstraksi",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 33
-          },
-          {
-            "code": "mill_production_capacity",
-            "label": "Kapasitas produksi PKS",
-            "type": "text",
-            "required": true,
-            "sort_order": 34
-          },
-          {
-            "code": "cpo_process_description",
-            "label": "Uraian proses produksi CPO",
-            "type": "textarea",
-            "required": true,
-            "sort_order": 35
           }
         ],
-        "sort_order": 6
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_bioenergi"
+        },
+        "sort_order": 10
       },
       {
-        "code": "other",
-        "title": "7. Informasi Lain & Pernyataan",
+        "code": "declaration",
+        "title": "K. Informasi Lain dan Pernyataan Pemohon",
         "fields": [
           {
             "code": "other_information",
@@ -10831,167 +12091,76 @@
             "sort_order": 1
           },
           {
-            "code": "declaration_place",
-            "label": "Tempat penandatanganan",
-            "type": "text",
-            "required": true,
+            "code": "declaration_truth",
+            "label": "Seluruh informasi dan dokumen yang disampaikan dalam formulir ini benar, lengkap, dan dapat dipertanggungjawabkan.",
+            "type": "boolean",
+            "required": false,
             "sort_order": 2
           },
           {
-            "code": "declaration_date",
-            "label": "Tanggal pernyataan",
-            "type": "date",
-            "required": true,
+            "code": "declaration_access",
+            "label": "Pemohon memberi akses kepada LS ISPO untuk melakukan verifikasi terhadap data, lokasi, personel, pemasok, dan pihak alih daya yang termasuk dalam proses sertifikasi sesuai ketentuan yang berlaku.",
+            "type": "boolean",
+            "required": false,
             "sort_order": 3
           },
           {
-            "code": "declaration_name",
-            "label": "Nama penandatangan",
-            "type": "text",
-            "required": true,
+            "code": "declaration_change_notice",
+            "label": "Pemohon akan memberitahukan perubahan signifikan atas ruang lingkup, lokasi, kepemilikan, kapasitas, proses, produk, pemasok, atau status perizinan/sertifikasi selama proses sertifikasi dan masa berlaku sertifikat.",
+            "type": "boolean",
+            "required": false,
             "sort_order": 4
           },
           {
-            "code": "declaration_title",
-            "label": "Jabatan penandatangan",
-            "type": "text",
-            "required": true,
+            "code": "declaration_combined_form",
+            "label": "Pemohon memahami bahwa pengisian formulir gabungan ini tidak mengubah ketentuan pemrosesan permohonan per sektor dan per lokasi yang ditetapkan oleh peraturan ISPO.",
+            "type": "boolean",
+            "required": false,
             "sort_order": 5
           },
           {
-            "code": "declaration_truth",
-            "label": "Saya menyatakan informasi yang diberikan benar",
-            "type": "boolean",
-            "required": true,
+            "code": "signatories",
+            "label": "Tanda tangan pemohon (maksimal 3 penanda tangan)",
+            "type": "signature_list",
+            "required": false,
+            "help": "Unggah tanda tangan beserta stempel. Formulir FrO.7201 menyediakan tiga baris penanda tangan.",
+            "columns": [
+              {
+                "code": "tempat",
+                "label": "Tempat",
+                "type": "text"
+              },
+              {
+                "code": "tanggal",
+                "label": "Tanggal",
+                "type": "date"
+              },
+              {
+                "code": "nama",
+                "label": "Nama",
+                "type": "text"
+              },
+              {
+                "code": "jabatan",
+                "label": "Jabatan",
+                "type": "text"
+              },
+              {
+                "code": "tanda_tangan",
+                "label": "Tanda Tangan dan Stempel",
+                "type": "image"
+              }
+            ],
             "sort_order": 6
           }
         ],
-        "sort_order": 7
+        "sort_order": 11
       }
     ],
     "documents": [
       {
-        "code": "application_letter",
-        "name": "Form Permohonan Sertifikasi",
-        "requirement": "required",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 1
-      },
-      {
-        "code": "ispo_application",
-        "name": "Form Aplikasi ISPO FrO.7202",
-        "requirement": "required",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 2
-      },
-      {
-        "code": "previous_certificate",
-        "name": "Sertifikat yang Berlaku",
-        "requirement": "conditional",
-        "review_group": "administration",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "certification_type",
-          "operator": "in",
-          "value": [
-            "transfer",
-            "recertification",
-            "scope_change"
-          ]
-        },
-        "sort_order": 3
-      },
-      {
-        "code": "time_bound_plan",
-        "name": "Time Bound Plan Pemasok",
-        "requirement": "conditional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "include_suppliers",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 4
-      },
-      {
-        "code": "internal_auditor_certificate",
-        "name": "Sertifikat Kompetensi Auditor Internal",
-        "requirement": "conditional",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "condition": {
-          "field": "internal_auditor_competent",
-          "operator": "equals",
-          "value": "yes"
-        },
-        "sort_order": 5
-      },
-      {
-        "code": "location_decisions",
-        "name": "Keputusan Izin Lokasi dari Instansi Terkait",
+        "code": "doc_stdb",
+        "name": "[Pekebun] Tanda daftar usaha perkebunan (STDB) dan/atau dokumen pendaftaran usaha perkebunan",
         "requirement": "optional",
         "review_group": "administration",
         "extensions": [
@@ -11007,12 +12176,26 @@
           "png"
         ],
         "max_mb": 20,
-        "sort_order": 6
+        "condition": {
+          "any": [
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "pekebun_perorangan"
+            },
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "kelompok_pekebun"
+            }
+          ]
+        },
+        "sort_order": 1
       },
       {
-        "code": "land_right_proof",
-        "name": "Bukti Hak Atas Tanah",
-        "requirement": "conditional",
+        "code": "doc_land_right_smallholder",
+        "name": "[Pekebun] Bukti kepemilikan hak atas tanah / surat pernyataan penguasaan fisik bidang tanah / dasar penguasaan atas tanah",
+        "requirement": "optional",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -11028,16 +12211,159 @@
         ],
         "max_mb": 20,
         "condition": {
-          "field": "land_right_proof_available",
-          "operator": "equals",
-          "value": "yes"
+          "any": [
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "pekebun_perorangan"
+            },
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "kelompok_pekebun"
+            }
+          ]
+        },
+        "sort_order": 2
+      },
+      {
+        "code": "doc_sppl",
+        "name": "[Pekebun] Persetujuan/izin lingkungan (SPPL) jika dipersyaratkan sesuai kegiatan",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "any": [
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "pekebun_perorangan"
+            },
+            {
+              "field": "applicant_type",
+              "operator": "contains",
+              "value": "kelompok_pekebun"
+            }
+          ]
+        },
+        "sort_order": 3
+      },
+      {
+        "code": "doc_group_establishment",
+        "name": "[Kelompok Pekebun] Dokumen pembentukan Koperasi/Gapoktan/Poktan atau kelembagaan kelompok",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "kelompok_pekebun"
+        },
+        "sort_order": 4
+      },
+      {
+        "code": "doc_member_list",
+        "name": "[Kelompok Pekebun] Daftar anggota dan daftar kebun anggota",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "kelompok_pekebun"
+        },
+        "sort_order": 5
+      },
+      {
+        "code": "doc_ics_appointment",
+        "name": "[Kelompok Pekebun] Penetapan minimal 1 personel Sistem Kendali Internal (ICS) dan bukti pemahaman/pelatihan ISPO",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "kelompok_pekebun"
+        },
+        "sort_order": 6
+      },
+      {
+        "code": "doc_plantation_license",
+        "name": "[Perusahaan Perkebunan] Perizinan berusaha perkebunan",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_perkebunan"
         },
         "sort_order": 7
       },
       {
-        "code": "plantation_license",
-        "name": "Perizinan Berusaha Perkebunan NIB/RBA",
-        "requirement": "conditional",
+        "code": "doc_land_right_company",
+        "name": "[Perusahaan Perkebunan] Bukti hak atas tanah (HP / HGB / HGU / SHM)",
+        "requirement": "optional",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -11053,16 +12379,16 @@
         ],
         "max_mb": 20,
         "condition": {
-          "field": "plantation_business_license",
-          "operator": "equals",
-          "value": "yes"
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_perkebunan"
         },
         "sort_order": 8
       },
       {
-        "code": "environmental_approval",
-        "name": "Persetujuan Lingkungan",
-        "requirement": "conditional",
+        "code": "doc_environmental_approval",
+        "name": "[Perusahaan Perkebunan] Persetujuan lingkungan",
+        "requirement": "optional",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -11078,56 +12404,16 @@
         ],
         "max_mb": 20,
         "condition": {
-          "field": "environmental_approval",
-          "operator": "equals",
-          "value": "yes"
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_perkebunan"
         },
         "sort_order": 9
       },
       {
-        "code": "location_operational_map",
-        "name": "Peta Lokasi dan Operasional",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 10
-      },
-      {
-        "code": "cpo_process_flow",
-        "name": "Bagan Alir Proses Produksi CPO",
-        "requirement": "required",
-        "review_group": "technical",
-        "extensions": [
-          "pdf",
-          "doc",
-          "docx",
-          "xls",
-          "xlsx",
-          "zip",
-          "rar",
-          "jpg",
-          "jpeg",
-          "png"
-        ],
-        "max_mb": 20,
-        "sort_order": 11
-      },
-      {
-        "code": "signature_declaration",
-        "name": "Pernyataan dan Tanda Tangan Pemohon",
-        "requirement": "required",
+        "code": "doc_internal_auditor_list_company",
+        "name": "[Perusahaan Perkebunan] Daftar minimal 2 auditor internal ISPO per PT (5 auditor untuk grup) dan bukti pelatihan auditor ISPO",
+        "requirement": "optional",
         "review_group": "administration",
         "extensions": [
           "pdf",
@@ -11142,7 +12428,362 @@
           "png"
         ],
         "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_perkebunan"
+        },
+        "sort_order": 10
+      },
+      {
+        "code": "doc_estate_map",
+        "name": "[Perusahaan Perkebunan] Peta lokasi dan peta operasional kebun/PKS",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_perkebunan"
+        },
+        "sort_order": 11
+      },
+      {
+        "code": "doc_ispo_supplier_cert",
+        "name": "[Industri Hilir] Sertifikat ISPO kegiatan usaha perkebunan atau sertifikat ISPO pemasok bahan baku",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
         "sort_order": 12
+      },
+      {
+        "code": "doc_company_deed_downstream",
+        "name": "[Industri Hilir] Salinan akta pendirian perusahaan dan perubahannya",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 13
+      },
+      {
+        "code": "doc_downstream_license",
+        "name": "[Industri Hilir] Perizinan berusaha Industri Hilir berdasarkan KBLI yang sesuai",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 14
+      },
+      {
+        "code": "doc_process_flow_downstream",
+        "name": "[Industri Hilir] Diagram alir proses produksi",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 15
+      },
+      {
+        "code": "doc_facility_list_downstream",
+        "name": "[Industri Hilir] Daftar fasilitas (sarana dan prasarana) produksi yang dimiliki",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 16
+      },
+      {
+        "code": "doc_internal_auditor_list_downstream",
+        "name": "[Industri Hilir] Daftar auditor internal ISPO",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 17
+      },
+      {
+        "code": "doc_org_structure_downstream",
+        "name": "[Industri Hilir] Struktur organisasi dan Profil Perusahaan",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 18
+      },
+      {
+        "code": "doc_iso_statement",
+        "name": "[Industri Hilir] Sertifikat/pernyataan diri penerapan ISO 9001 dan/atau ISO 22000",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 19
+      },
+      {
+        "code": "doc_brand_cert",
+        "name": "[Industri Hilir] Sertifikat merek atau bukti pendaftaran merek, jika memiliki merek",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "industri_hilir"
+        },
+        "sort_order": 20
+      },
+      {
+        "code": "doc_bioenergy_license",
+        "name": "[Bioenergi] Perizinan berusaha untuk bahan bakar nabati, biomassa, dan/atau biogas",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_bioenergi"
+        },
+        "sort_order": 21
+      },
+      {
+        "code": "doc_ispo_estate_cert_bioenergy",
+        "name": "[Bioenergi] Sertifikat ISPO kegiatan usaha perkebunan kelapa sawit",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_bioenergi"
+        },
+        "sort_order": 22
+      },
+      {
+        "code": "doc_ispo_downstream_cert_bioenergy",
+        "name": "[Bioenergi] Sertifikat ISPO kegiatan industri hilir penghasil produk turunan kelapa sawit, apabila tidak memiliki sertifikat ISPO perkebunan",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_bioenergi"
+        },
+        "sort_order": 23
+      },
+      {
+        "code": "doc_bioenergy_process_pack",
+        "name": "[Bioenergi] Diagram alir proses, daftar fasilitas produksi, daftar sumber bahan baku, dan sertifikat ISPO pemasok terkait",
+        "requirement": "optional",
+        "review_group": "administration",
+        "extensions": [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "zip",
+          "rar",
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "max_mb": 20,
+        "condition": {
+          "field": "applicant_type",
+          "operator": "contains",
+          "value": "perusahaan_bioenergi"
+        },
+        "sort_order": 24
       }
     ],
     "sort_order": 11

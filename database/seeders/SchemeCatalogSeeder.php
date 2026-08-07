@@ -47,6 +47,7 @@ class SchemeCatalogSeeder extends Seeder
                         [
                             'title' => $sectionData['title'],
                             'description' => $sectionData['description'] ?? null,
+                            'conditional_rules' => $sectionData['condition'] ?? null,
                             'sort_order' => $sectionData['sort_order'],
                         ]
                     );
@@ -64,6 +65,8 @@ class SchemeCatalogSeeder extends Seeder
                                 'is_repeatable' => $fieldData['repeatable'] ?? false,
                                 'validation_rules' => $fieldData['validation'] ?? null,
                                 'conditional_rules' => $fieldData['condition'] ?? null,
+                                'column_definitions' => $fieldData['columns'] ?? null,
+                                'row_definitions' => $fieldData['rows'] ?? null,
                                 'sort_order' => $fieldData['sort_order'],
                                 'version' => 1,
                                 'is_active' => true,

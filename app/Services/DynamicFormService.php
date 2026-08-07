@@ -82,11 +82,31 @@ class DynamicFormService
         ])->all();
     }
 
-    public function visibleFields(CertificationScheme $scheme, array $values): Collection
+    /**
+     * Bagian form yang berlaku untuk isian saat ini.
+     *
+     * Form Aplikasi ISPO memuat bagian yang hanya relevan bagi ruang lingkup
+     * tertentu (G Pekebun, H Perusahaan Perkebunan, I Industri Hilir,
+     * J Bioenergi); bagian yang tidak dipilih tidak ditampilkan sama sekali,
+     * bukan sekadar dikosongkan isinya.
+     *
+     * @return Collection<int, SchemeSection>
+     */
+    public function visibleSections(CertificationScheme $scheme, array $values): Collection
     {
         $scheme->loadMissing('sections.fields.options');
 
-        return $scheme->sections->flatMap->fields
+        return $scheme->sections
+            ->filter(fn (SchemeSection $section) => $this->conditions->passes($section->conditional_rules, $values))
+            ->values();
+    }
+
+    public function visibleFields(CertificationScheme $scheme, array $values): Collection
+    {
+        // Field pada bagian yang tersembunyi ikut tersembunyi, sehingga tidak
+        // divalidasi maupun diminta pada tahap submit.
+        return $this->visibleSections($scheme, $values)
+            ->flatMap->fields
             ->filter(fn (SchemeField $field) => $field->is_active
                 && $this->conditions->passes($field->conditional_rules, $values));
     }
@@ -243,6 +263,7 @@ class DynamicFormService
                 'title' => $section->title,
                 'description' => $section->description,
                 'icon' => $section->icon,
+                'conditional_rules' => $section->conditional_rules,
                 'sort_order' => $section->sort_order,
                 'fields' => $section->fields->map(fn ($f) => [
                     'id' => $f->id,
@@ -256,6 +277,8 @@ class DynamicFormService
                     'is_repeatable' => $f->is_repeatable,
                     'validation_rules' => $f->validation_rules,
                     'conditional_rules' => $f->conditional_rules,
+                    'column_definitions' => $f->column_definitions,
+                    'row_definitions' => $f->row_definitions,
                     'sort_order' => $f->sort_order,
                     'is_active' => $f->is_active,
                     'options' => $f->options->map->only(['id', 'value', 'label', 'sort_order', 'is_active'])->all(),

@@ -247,6 +247,15 @@ class ReviewAdminTest extends TestCase
         $schemes = CertificationScheme::with('requiredDocuments')->orderBy('sort_order')->get();
         $this->assertGreaterThanOrEqual(10, $schemes->count(), 'Katalog skema tidak ter-seed penuh.');
 
+        /*
+         * Sebagian formulir (mis. FrM.9108/GIS untuk SMAP) sengaja memakai daftar
+         * baris yang sama persis pada kedua tahap, sehingga tidak punya dokumen
+         * khusus teknis untuk diuji. Penghitung ini memastikan pengecualian itu
+         * tidak diam-diam berlaku untuk semua skema — kalau sampai begitu,
+         * pemisahannya sudah tidak teruji sama sekali.
+         */
+        $schemesWithTechnicalOnly = 0;
+
         foreach ($schemes as $scheme) {
             $app = CertificationApplication::create([
                 'uuid' => (string) Str::uuid(),
@@ -263,6 +272,17 @@ class ReviewAdminTest extends TestCase
             ]);
 
             /*
+             * ISPO memakai formulir tinjauan FrO.7204 yang tidak dibangun dari
+             * checklist dokumen skema: barisnya punya kode sendiri per ruang
+             * lingkup dan dirender oleh partial terpisah. Pemisahan admin/teknis
+             * di sana ditentukan bagian formulir (1-3 vs 4-8), bukan
+             * review_group dokumen, jadi pemeriksaan di bawah tidak berlaku.
+             */
+            if ($scheme->review_template === 'ispo') {
+                continue;
+            }
+
+            /*
              * Acuannya baris formulir tinjauan, bukan seluruh checklist klien:
              * FrM.9107 dan FrM.9101 hanya mengkaji sebagian dokumen.
              */
@@ -271,7 +291,6 @@ class ReviewAdminTest extends TestCase
             $technicalCodes = $reviews->formRows($app, 'technical')->pluck('code')->diff($adminCodes);
 
             $this->assertTrue($adminCodes->isNotEmpty(), $scheme->code.': tidak punya dokumen administrasi.');
-            $this->assertTrue($technicalCodes->isNotEmpty(), $scheme->code.': tidak punya dokumen teknis.');
 
             // 1. Form admin hanya memuat dokumen administrasi.
             $html = $this->actingAs($admin)
@@ -283,6 +302,17 @@ class ReviewAdminTest extends TestCase
             foreach ($adminCodes as $code) {
                 $this->assertStringContainsString('value="'.$code.'"', $sectionKajian, $scheme->code.': '.$code.' hilang dari form admin.');
             }
+
+            /*
+             * Formulir yang kedua tahapnya memakai daftar identik tidak punya
+             * dokumen khusus teknis, jadi tidak ada yang perlu ditolak di sini.
+             */
+            if ($technicalCodes->isEmpty()) {
+                continue;
+            }
+
+            $schemesWithTechnicalOnly++;
+
             foreach ($technicalCodes as $code) {
                 $this->assertStringNotContainsString('value="'.$code.'"', $sectionKajian, $scheme->code.': dokumen teknis '.$code.' masih di form admin.');
             }
@@ -301,6 +331,12 @@ class ReviewAdminTest extends TestCase
 
             $this->assertDatabaseMissing('review_form_items', ['item_code' => $technicalCodes->first()]);
         }
+
+        $this->assertGreaterThanOrEqual(
+            5,
+            $schemesWithTechnicalOnly,
+            'Hampir tidak ada skema yang punya dokumen khusus teknis; pemisahan admin/teknis praktis tidak teruji lagi.'
+        );
     }
 
     public function test_admin_tidak_dapat_menyimpan_kajian_dokumen_teknis(): void

@@ -121,6 +121,9 @@ Route::middleware([
         ->name('secure-files.application-document');
     Route::get('/secure-files/application-field-file/{application}/{code}', [SecureFileController::class, 'fieldFile'])
         ->name('secure-files.application-field-file');
+    Route::get('/secure-files/application-signature/{application}/{index}', [SecureFileController::class, 'applicationSignature'])
+        ->whereNumber('index')
+        ->name('secure-files.application-signature');
     Route::get('/secure-files/invoice/{invoice}', [SecureFileController::class, 'invoice'])
         ->name('secure-files.invoice');
     Route::get('/secure-files/audit/{file}', [SecureFileController::class, 'auditReport'])
@@ -155,6 +158,7 @@ Route::middleware([
             Route::get('/applications/{application}/edit', [ClientApplicationController::class, 'edit'])->name('applications.edit');
             Route::put('/applications/{application}', [ClientApplicationController::class, 'update'])->name('applications.update');
             Route::post('/applications/{application}/upload-field-file', [ClientApplicationController::class, 'uploadFieldFile'])->name('applications.upload-field-file');
+            Route::post('/applications/{application}/upload-signature', [ClientApplicationController::class, 'uploadSignature'])->name('applications.upload-signature');
             Route::post('/applications/{application}/submit', [ClientApplicationController::class, 'submit'])->name('applications.submit');
             Route::delete('/applications/{application}', [ClientApplicationController::class, 'destroy'])->name('applications.destroy');
             Route::post('/applications/{application}/documents', [ClientDocumentController::class, 'store'])->name('documents.store');

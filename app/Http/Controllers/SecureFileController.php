@@ -98,4 +98,31 @@ class SecureFileController extends Controller
 
         return $files->response($path, $name);
     }
+
+    /**
+     * Gambar tanda tangan pemohon pada bagian K Form Aplikasi ISPO.
+     *
+     * Path-nya tersimpan di dalam larik penanda tangan, bukan sebagai nilai
+     * field tersendiri, sehingga dicari berdasarkan urutan penanda tangan.
+     */
+    public function applicationSignature(Request $request, CertificationApplication $application, int $index, FileStorageService $files, AuditLogger $audit)
+    {
+        $allowed = $application->client_id === $request->user()->id
+            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical']);
+        if ($request->user()->hasRole('auditor')) {
+            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
+        }
+        abort_unless($allowed, 403);
+
+        $signatories = $application->values()
+            ->where('field_code', 'signatories')
+            ->value('value_json') ?? [];
+
+        $path = $signatories[$index]['tanda_tangan'] ?? null;
+        abort_unless($path, 404);
+
+        $audit->log('file.application_signature_viewed', $application, [], ['index' => $index]);
+
+        return $files->response($path, 'tanda-tangan-'.($index + 1).'.'.pathinfo($path, PATHINFO_EXTENSION));
+    }
 }

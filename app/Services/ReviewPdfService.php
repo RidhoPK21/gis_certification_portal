@@ -16,7 +16,7 @@ class ReviewPdfService
      * Identitas formulir tinjauan (judul kop, kode, nama lembaga) untuk sebuah
      * skema. Tata letaknya sama, hanya teksnya yang berbeda antar skema.
      *
-     * @return array{title: string, code: string, body: string, mandays_text: string}
+     * @return array{title: string, code: string, body: string, mandays_text: string, extra_identity?: array<int, array{label: string, field: string}>}
      */
     private function formMeta(array $snapshot): array
     {
@@ -66,7 +66,9 @@ class ReviewPdfService
         $snapshot = $this->snapshot($application);
         $pdf = new SimplePdf(34);
         if ($application->scheme->review_template === 'ispo') {
-            $this->renderIspo($pdf, $snapshot);
+            // FrO.7204 tata letaknya jauh berbeda dari formulir LSSM (kolom
+            // bercentang, bukan pilihan bercoret), jadi dirender terpisah.
+            app(IspoReviewPdfService::class)->render($pdf, $application, $snapshot);
         } elseif ($application->scheme->review_template === 'sni') {
             $this->renderSni($pdf, $snapshot);
         } elseif ($application->scheme->review_template === 'lsml') {
@@ -603,14 +605,25 @@ class ReviewPdfService
 
         $this->frmOrderRow($pdf, $a);
 
-        $this->infoRows($pdf, [
+        $rows = [
             ['Nama Perusahaan', $a['company_name']],
             ['Alamat Perusahaan', $v['company_address'] ?? $v['head_office_address'] ?? '-'],
             ['Lingkup Industri', $v['industry_scope'] ?? $v['business_sector'] ?? '-'],
             ['IAF Code', $v['iaf_code'] ?? '-'],
             ['Lingkup Sertifikasi dan batasan : (Produk/Jasa/Proses pada perusahaan)', $v['certification_scope'] ?? '-'],
-            ['Standar Audit', $s['scheme']['standard'] ?? '-'],
-        ], false);
+        ];
+
+        /*
+         * Baris identitas tambahan milik formulir tertentu — FrM.9111 (SMK3)
+         * menyisipkan Tingkat Resiko dan Bahasa sebelum Standar Audit.
+         */
+        foreach ($this->formMeta($s)['extra_identity'] ?? [] as $extra) {
+            $rows[] = [$extra['label'], $this->identityValue($v, $extra['field'])];
+        }
+
+        $rows[] = ['Standar Audit', $s['scheme']['standard'] ?? '-'];
+
+        $this->infoRows($pdf, $rows, false);
 
         $choices = config('review.identity_choices');
         $siteCount = $s['administration_review']['site_count'] ?? null;
@@ -846,30 +859,6 @@ class ReviewPdfService
         ]);
     }
 
-    private function renderIspo(SimplePdf $pdf, array $s): void
-    {
-        $this->renderHeader($pdf, 'TINJAUAN PERMOHONAN SERTIFIKASI ISPO', 'FrO.7201/GIS-1.1');
-        $v = $s['values']; $a = $s['application'];
-        $this->infoRows($pdf, [
-            ['Hari/tanggal', $a['review_date'].'   |   No Order: '.$a['order_number'].'   |   Tanggal Order: '.$a['order_date']],
-            ['Nama Perusahaan', $a['company_name']],
-            ['Alamat Perusahaan/Alamat Kebun dan Pabrik', $v['company_address'] ?? $v['organization_address'] ?? '-'],
-            ['Jenis Sertifikasi', $v['certification_scope_type'] ?? $v['certification_type'] ?? '-'],
-            ['Kelas Perkebunan', $v['plantation_class'] ?? '-'], ['Luas Kebun', ($v['core_land_area'] ?? $v['total_area'] ?? '-').' Ha'],
-            ['Jenis Audit', $v['audit_type'] ?? $v['certification_type'] ?? '-'],
-        ]);
-        $this->reviewTable($pdf, 'Dokumen', $s['documents']);
-        $this->decisionBox($pdf, 'Hasil tinjauan permohonan bagian administrasi', $s['administration_review']);
-        $pdf->addPage();
-        $this->renderHeader($pdf, 'TINJAUAN PERMOHONAN SERTIFIKASI ISPO', 'FrO.7201/GIS-1.1');
-        $this->infoRows($pdf, [
-            ['Mandays Audit', $v['audit_mandays'] ?? 'Ditentukan berdasarkan jenis usaha dan kompleksitas ruang lingkup'],
-            ['Tim Auditor yang ditugaskan (LA, A, TA)', $this->numberedList($s['assigned_auditors'] ?? [])],
-            ['Panelis yang ditugaskan', $this->numberedList($s['assigned_panelists'] ?? [])],
-        ]);
-        $this->decisionBox($pdf, 'Hasil tinjauan permohonan bagian teknis', $s['technical_review']);
-    }
-
     private function renderSni(SimplePdf $pdf, array $s): void
     {
         $this->renderHeader($pdf, 'TINJAUAN PERMOHONAN SERTIFIKASI PRODUK (LSPro)', 'Fr.7201/GIS-4');
@@ -890,6 +879,27 @@ class ReviewPdfService
             ['Pihak LSPro - Peninjau', $v['reviewer_name'] ?? '-'],
             ['Pihak Klien', $v['client_signatory_name'] ?? $a['company_name']],
         ]);
+    }
+
+    /**
+     * Nilai baris identitas tambahan.
+     *
+     * Isian klien tersimpan sebagai kode pilihan (mis. "tinggi"), sedangkan
+     * formulir mencetak labelnya, jadi kodenya dimanusiakan di sini.
+     */
+    private function identityValue(array $values, string $field): string
+    {
+        $value = $values[$field] ?? null;
+
+        if (! filled($value)) {
+            return '-';
+        }
+
+        if (is_array($value)) {
+            return implode(', ', array_map('strval', $value));
+        }
+
+        return ucfirst(str_replace('_', ' ', (string) $value));
     }
 
     private function statusText(string $status): string

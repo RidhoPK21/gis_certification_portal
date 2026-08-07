@@ -101,6 +101,21 @@ class ReviewService
                 $attributes['panelist_ids'] = $panelists ?: null;
             }
 
+            /*
+             * Isian khusus FrO.7204 (mandays, tanggal kelengkapan, keputusan).
+             * Digabung dengan yang sudah tersimpan, bukan ditimpa, supaya
+             * menyimpan satu bagian tidak menghapus bagian lain pada formulir
+             * yang sama.
+             */
+            if (array_key_exists('ispo', $data)) {
+                $existing = ApplicationReview::where('application_id', $application->id)
+                    ->where('review_type', $type)
+                    ->where('round', $round)
+                    ->value('ispo_data') ?? [];
+
+                $attributes['ispo_data'] = array_replace_recursive($existing, (array) $data['ispo']);
+            }
+
             if (array_key_exists('auditor_competence_codes', $data)) {
                 $codes = array_values(array_intersect(
                     array_keys(config('review.environmental_competences')),

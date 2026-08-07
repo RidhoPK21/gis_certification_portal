@@ -28,6 +28,82 @@
     border-bottom: 2px solid var(--border-color, #e5e7eb);
     scrollbar-width: thin;
 }
+/* Bagian bersyarat yang tidak berlaku bagi ruang lingkup yang dipilih.
+   Dipakai pada section maupun tombol langkahnya, jadi !important agar menang
+   atas .form-section-step.active-step yang memaksa display:block. */
+.section-hidden {
+    display: none !important;
+}
+
+/* ---- Tabel isian (bagian C/D/E/F/G/H/I/J Form Aplikasi ISPO) ---- */
+.table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+}
+.form-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.form-matrix th,
+.form-matrix td {
+    border: 1px solid var(--border-color, #e5e7eb);
+    padding: 6px 8px;
+    vertical-align: middle;
+    text-align: left;
+}
+.form-matrix thead th {
+    background: var(--surface-muted, #f3f4f6);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.form-matrix .matrix-row-label {
+    font-weight: 500;
+    white-space: normal;
+    min-width: 200px;
+}
+.form-matrix td .form-control,
+.form-matrix td .form-select {
+    min-width: 120px;
+    padding: 5px 8px;
+    font-size: 13px;
+}
+.form-matrix .row-number {
+    text-align: center;
+    color: var(--text-muted, #6b7280);
+}
+.repeatable-empty {
+    padding: 10px;
+    color: var(--text-muted, #6b7280);
+    font-size: 13px;
+}
+
+/* ---- Blok tanda tangan pemohon (bagian K) ---- */
+.signature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+}
+.signature-card {
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    padding: 12px;
+}
+.signature-card-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.signature-card .form-label {
+    margin-top: 8px;
+}
+.signature-preview img {
+    max-width: 100%;
+    max-height: 110px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 6px;
+    background: #fff;
+    margin-bottom: 6px;
+}
 .wizard-step-btn {
     display: flex;
     align-items: center;
@@ -145,7 +221,12 @@
     @endphp
     <div class="wizard-horizontal-nav mt-3">
         @foreach ($application->scheme->sections as $i => $section)
-            <button type="button" class="wizard-step-btn {{ $i === 0 ? 'active' : '' }}" data-step="{{ $i }}">
+            {{-- Bagian bersyarat (mis. G/H/I/J pada Form Aplikasi ISPO) ikut
+                 disembunyikan beserta tombol langkahnya. --}}
+            <button type="button" class="wizard-step-btn {{ $i === 0 ? 'active' : '' }} {{ $section->conditional_rules ? 'conditional-step' : '' }}"
+                    data-step="{{ $i }}"
+                    data-section-code="{{ $section->code }}"
+                    @if ($section->conditional_rules) data-condition='@json($section->conditional_rules)' @endif>
                 <span class="step-num">{{ $i + 1 }}</span>
                 <span class="step-label">{{ $section->title }}</span>
             </button>
@@ -165,7 +246,12 @@
             @csrf
             @method('PUT')
             @foreach ($application->scheme->sections as $section)
-                <section class="card form-section mt-0 form-section-step {{ $loop->index === 0 ? 'active-step' : '' }}" id="section-{{ $section->code }}" data-step-index="{{ $loop->index }}" style="margin-bottom:16px;">
+                <section class="card form-section mt-0 form-section-step {{ $loop->index === 0 ? 'active-step' : '' }} {{ $section->conditional_rules ? 'conditional-section' : '' }}"
+                         id="section-{{ $section->code }}"
+                         data-step-index="{{ $loop->index }}"
+                         data-section-code="{{ $section->code }}"
+                         @if ($section->conditional_rules) data-condition='@json($section->conditional_rules)' @endif
+                         style="margin-bottom:16px;">
                     <h2>{{ $section->title }}</h2>
                     @if ($section->description)<p class="muted">{{ $section->description }}</p>@endif
                     <div class="field-grid">
@@ -174,7 +260,7 @@
                                 $value = old('fields.' . $field->code, $values[$field->code] ?? null);
                             @endphp
                             <div id="field-{{ $field->code }}"
-                                 class="form-group {{ in_array($field->type, ['textarea', 'checkbox_group', 'repeatable', 'file'], true) ? 'field-full' : '' }} dynamic-field"
+                                 class="form-group {{ in_array($field->type, ['textarea', 'checkbox_group', 'table', 'repeatable', 'signature_list', 'file'], true) ? 'field-full' : '' }} dynamic-field"
                                  data-condition='@json($field->conditional_rules)'>
                                 <label class="form-label" for="input-{{ $field->code }}">
                                     {{ $field->label }}
@@ -224,6 +310,16 @@
                                         <option value="yes" @selected($value === 'yes')>Ya</option>
                                         <option value="no" @selected($value === 'no')>Tidak</option>
                                     </select>
+                                @elseif ($field->type === 'table')
+                                    {{-- Tabel baris tetap (mis. H.1 Legalitas): pemohon hanya mengisi selnya. --}}
+                                    @include('client.applications.partials.field-table', ['field' => $field, 'value' => $value])
+                                @elseif ($field->type === 'repeatable')
+                                    {{-- Tabel yang barisnya ditambah sendiri pemohon (mis. G.1 Daftar Kebun). --}}
+                                    @include('client.applications.partials.field-repeatable', ['field' => $field, 'value' => $value])
+                                @elseif ($field->type === 'signature_list')
+                                    @include('client.applications.partials.field-signatures', [
+                                        'field' => $field, 'value' => $value, 'application' => $application,
+                                    ])
                                 @elseif ($field->type === 'file')
                                     @php
                                         $fileData = is_array($value) ? $value : (is_string($value) && str_starts_with($value, '{') ? json_decode($value, true) : null);
@@ -462,7 +558,12 @@ window.updateCompletion = function(serverPct) {
 };
 </script>
 <script>
-(function(){const form=document.getElementById('application-form'),status=document.getElementById('autosave-status');if(!form)return;let timer;const values=()=>{const out={};new FormData(form).forEach((v,k)=>{const m=k.match(/^fields\[([^\]]+)\](?:\[\])?$/);if(!m)return;if(k.endsWith('[]')){out[m[1]]=out[m[1]]||[];out[m[1]].push(v)}else out[m[1]]=v});return out};const passes=(r,v)=>{if(!r||Object.keys(r).length===0)return true;if(r.all)return r.all.every(x=>passes(x,v));if(r.any)return r.any.some(x=>passes(x,v));const a=v[r.field],e=r.value;switch(r.operator||'equals'){case'equals':return String(a??'')===String(e??'');case'not_equals':return String(a??'')!==String(e??'');case'in':return (e||[]).includes(a);case'truthy':return !!a;case'falsy':return !a;case'contains':return Array.isArray(a)?a.includes(e):String(a||'').includes(String(e));default:return true}};const refresh=()=>{const v=values();document.querySelectorAll('.dynamic-field').forEach(el=>{let r={};try{r=JSON.parse(el.dataset.condition||'{}')}catch(e){}el.classList.toggle('hidden',!passes(r,v))});if(typeof window.updateCompletion==='function')window.updateCompletion();};const doSave=async(manual)=>{status.textContent='Menyimpan draft...';const fd=new FormData(form);fd.set('_method','PUT');try{const res=await fetch(form.action,{method:'POST',body:fd,headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}});if(!res.ok)throw new Error();const data=await res.json().catch(()=>({}));if(data.completion!==undefined&&typeof window.updateCompletion==='function')window.updateCompletion(data.completion);else if(typeof window.updateCompletion==='function')window.updateCompletion();const t=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});status.textContent=(manual?'Draft tersimpan ':'Draft tersimpan otomatis ')+t;if(manual&&window.Swal)window.Swal.fire({toast:true,position:'top-end',icon:'success',title:'Draft tersimpan',showConfirmButton:false,timer:2200,timerProgressBar:true})}catch(e){status.textContent=manual?'Gagal menyimpan draft. Coba lagi.':'Autosave gagal. Gunakan tombol Simpan Draft.';if(manual&&window.Swal)window.Swal.fire({icon:'error',title:'Gagal menyimpan draft',confirmButtonColor:'#b42318'})}};const autosave=()=>{clearTimeout(timer);status.textContent='Perubahan belum disimpan...';timer=setTimeout(()=>doSave(false),1300)};form.addEventListener('submit',e=>{e.preventDefault();clearTimeout(timer);const b=e.submitter;if(b){const o=b.innerHTML;b.disabled=true;b.innerHTML='Menyimpan...';doSave(true).finally(()=>{b.disabled=false;b.innerHTML=o})}else{doSave(true)}});form.addEventListener('input',()=>{refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();autosave()});form.addEventListener('change',()=>{refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();autosave()});refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();})();
+(function(){const form=document.getElementById('application-form'),status=document.getElementById('autosave-status');if(!form)return;let timer;const values=()=>{const out={};new FormData(form).forEach((v,k)=>{const m=k.match(/^fields\[([^\]]+)\](?:\[\])?$/);if(!m)return;if(k.endsWith('[]')){out[m[1]]=out[m[1]]||[];out[m[1]].push(v)}else out[m[1]]=v});return out};const passes=(r,v)=>{if(!r||Object.keys(r).length===0)return true;if(r.all)return r.all.every(x=>passes(x,v));if(r.any)return r.any.some(x=>passes(x,v));const a=v[r.field],e=r.value;switch(r.operator||'equals'){case'equals':return String(a??'')===String(e??'');case'not_equals':return String(a??'')!==String(e??'');case'in':return (e||[]).includes(a);case'truthy':return !!a;case'falsy':return !a;case'contains':return Array.isArray(a)?a.includes(e):String(a||'').includes(String(e));default:return true}};const refresh=()=>{const v=values();document.querySelectorAll('.dynamic-field').forEach(el=>{let r={};try{r=JSON.parse(el.dataset.condition||'{}')}catch(e){}el.classList.toggle('hidden',!passes(r,v))});
+/* Bagian bersyarat: section dan tombol langkahnya disembunyikan bersama supaya
+   wizard tidak pernah membuka langkah yang tidak berlaku. */
+document.querySelectorAll('.conditional-section').forEach(sec=>{let r={};try{r=JSON.parse(sec.dataset.condition||'{}')}catch(e){}const ok=passes(r,v);sec.classList.toggle('section-hidden',!ok);const btn=document.querySelector('.wizard-step-btn[data-section-code="'+sec.dataset.sectionCode+'"]');if(btn)btn.classList.toggle('section-hidden',!ok)});
+if(typeof window.sectionsChanged==='function')window.sectionsChanged();
+if(typeof window.updateCompletion==='function')window.updateCompletion();};const doSave=async(manual)=>{status.textContent='Menyimpan draft...';const fd=new FormData(form);fd.set('_method','PUT');try{const res=await fetch(form.action,{method:'POST',body:fd,headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}});if(!res.ok)throw new Error();const data=await res.json().catch(()=>({}));if(data.completion!==undefined&&typeof window.updateCompletion==='function')window.updateCompletion(data.completion);else if(typeof window.updateCompletion==='function')window.updateCompletion();const t=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});status.textContent=(manual?'Draft tersimpan ':'Draft tersimpan otomatis ')+t;if(manual&&window.Swal)window.Swal.fire({toast:true,position:'top-end',icon:'success',title:'Draft tersimpan',showConfirmButton:false,timer:2200,timerProgressBar:true})}catch(e){status.textContent=manual?'Gagal menyimpan draft. Coba lagi.':'Autosave gagal. Gunakan tombol Simpan Draft.';if(manual&&window.Swal)window.Swal.fire({icon:'error',title:'Gagal menyimpan draft',confirmButtonColor:'#b42318'})}};const autosave=()=>{clearTimeout(timer);status.textContent='Perubahan belum disimpan...';timer=setTimeout(()=>doSave(false),1300)};form.addEventListener('submit',e=>{e.preventDefault();clearTimeout(timer);const b=e.submitter;if(b){const o=b.innerHTML;b.disabled=true;b.innerHTML='Menyimpan...';doSave(true).finally(()=>{b.disabled=false;b.innerHTML=o})}else{doSave(true)}});form.addEventListener('input',()=>{refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();autosave()});form.addEventListener('change',()=>{refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();autosave()});refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();})();
 
 /*
  * Live upload dokumen: pilih file langsung terunggah lewat AJAX,
@@ -658,6 +759,87 @@ window.updateCompletion = function(serverPct) {
     document.addEventListener('change', clearError);
 })();
 
+/* Tabel berulang: tambah/hapus baris.
+   Atribut name ditulis ulang setiap kali struktur berubah supaya indeksnya
+   tetap berurutan — kalau tidak, menghapus baris tengah menyisakan lubang dan
+   PHP menerimanya sebagai objek, bukan larik. */
+(function () {
+    function reindex(wrapper) {
+        const code = wrapper.dataset.fieldCode;
+        wrapper.querySelectorAll('.repeatable-row').forEach((tr, i) => {
+            const num = tr.querySelector('.row-number');
+            if (num) num.textContent = i + 1;
+            tr.querySelectorAll('[data-col]').forEach(input => {
+                input.name = 'fields[' + code + '][' + i + '][' + input.dataset.col + ']';
+            });
+        });
+    }
+
+    document.addEventListener('click', function (e) {
+        const addBtn = e.target.closest('.repeatable-add');
+        if (addBtn) {
+            const wrapper = addBtn.closest('.repeatable-field');
+            const tpl = wrapper.querySelector('.repeatable-template');
+            wrapper.querySelector('.repeatable-body').appendChild(tpl.content.cloneNode(true));
+            reindex(wrapper);
+            return;
+        }
+
+        const removeBtn = e.target.closest('.repeatable-remove');
+        if (removeBtn) {
+            const wrapper = removeBtn.closest('.repeatable-field');
+            removeBtn.closest('.repeatable-row').remove();
+            reindex(wrapper);
+            wrapper.closest('form')?.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+})();
+
+/* Unggah gambar tanda tangan pemohon (bagian K).
+   Diunggah langsung seperti berkas field lain; yang disimpan pada form hanya
+   path hasil unggahan, sehingga autosave tidak perlu mengirim ulang gambarnya. */
+(function () {
+    document.addEventListener('change', async function (e) {
+        const input = e.target.closest('.signature-file-input');
+        if (!input || !input.files || input.files.length === 0) return;
+
+        const index = input.dataset.index;
+        const status = document.getElementById('sig-status-' + index);
+        const preview = document.getElementById('sig-preview-' + index);
+        const pathInput = document.getElementById('sig-path-' + index);
+
+        const fd = new FormData();
+        fd.append('signature', input.files[0]);
+        fd.append('field_code', input.dataset.fieldCode);
+        fd.append('index', index);
+
+        status.style.display = '';
+        status.textContent = 'Mengunggah tanda tangan...';
+
+        try {
+            const res = await fetch(input.dataset.uploadUrl, {
+                method: 'POST',
+                body: fd,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Gagal mengunggah.');
+
+            pathInput.value = data.path;
+            preview.innerHTML = '<img src="' + data.url + '" alt="Tanda tangan">';
+            preview.style.display = '';
+            status.textContent = 'Tanda tangan tersimpan.';
+            input.closest('form')?.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (err) {
+            status.textContent = err.message || 'Gagal mengunggah tanda tangan.';
+        }
+    });
+})();
+
 /* Multi-step Wizard Controller & Validation */
 (function(){
     const steps = Array.from(document.querySelectorAll('.form-section-step'));
@@ -666,8 +848,53 @@ window.updateCompletion = function(serverPct) {
 
     let currentStep = 0;
 
+    /*
+     * Langkah bersyarat (bagian G/H/I/J Form Aplikasi ISPO) disembunyikan lewat
+     * kelas .section-hidden oleh evaluator kondisi. Navigasi harus melompatinya,
+     * bukan berhenti pada langkah kosong.
+     */
+    function isHidden(index) {
+        const step = steps[index];
+        return !!step && step.classList.contains('section-hidden');
+    }
+
+    function nextVisible(index, direction) {
+        let i = index;
+        while (i >= 0 && i < steps.length && isHidden(i)) {
+            i += direction;
+        }
+        return (i >= 0 && i < steps.length) ? i : null;
+    }
+
+    /* Nomor langkah mengikuti urutan yang benar-benar terlihat, bukan indeks
+       aslinya — tanpa ini penomorannya melompat setiap ada bagian bersyarat
+       yang disembunyikan (mis. 1,2,3,4,6,9). */
+    function renumberSteps() {
+        let n = 0;
+        navButtons.forEach(btn => {
+            if (btn.classList.contains('section-hidden')) return;
+            n += 1;
+            const num = btn.querySelector('.step-num');
+            if (num) num.textContent = n;
+        });
+    }
+
+    /* Dipanggil ulang setiap kondisi berubah: kalau langkah yang sedang dibuka
+       jadi tidak berlaku, pindahkan ke langkah terdekat yang masih berlaku. */
+    window.sectionsChanged = function () {
+        renumberSteps();
+        if (!isHidden(currentStep)) return;
+        const target = nextVisible(currentStep, 1) ?? nextVisible(currentStep, -1);
+        if (target !== null) showStep(target);
+    };
+
     function showStep(index) {
         if (index < 0 || index >= steps.length) return;
+        if (isHidden(index)) {
+            const target = nextVisible(index, index >= currentStep ? 1 : -1);
+            if (target === null) return;
+            index = target;
+        }
         currentStep = index;
         steps.forEach((step, i) => {
             step.classList.toggle('active-step', i === currentStep);
@@ -791,13 +1018,15 @@ window.updateCompletion = function(serverPct) {
     document.querySelectorAll('.wizard-next-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (!validateStep(currentStep)) return;
-            showStep(currentStep + 1);
+            const target = nextVisible(currentStep + 1, 1);
+            if (target !== null) showStep(target);
         });
     });
 
     document.querySelectorAll('.wizard-prev-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            showStep(currentStep - 1);
+            const target = nextVisible(currentStep - 1, -1);
+            if (target !== null) showStep(target);
         });
     });
 
@@ -839,6 +1068,7 @@ window.updateCompletion = function(serverPct) {
 
     window.addEventListener('hashchange', handleHash);
     setTimeout(handleHash, 50);
+    renumberSteps();
     if (typeof window.updateCompletion === 'function') {
         window.updateCompletion();
     }

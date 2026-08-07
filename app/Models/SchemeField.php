@@ -18,7 +18,20 @@ class SchemeField extends Model
             'is_active' => 'boolean',
             'validation_rules' => 'array',
             'conditional_rules' => 'array',
+            'column_definitions' => 'array',
+            'row_definitions' => 'array',
         ];
+    }
+
+    /**
+     * Field yang isinya berupa tabel, bukan satu nilai tunggal.
+     *
+     * 'table'      = baris tetap (row_definitions), pemohon hanya mengisi sel.
+     * 'repeatable' = baris ditambah sendiri oleh pemohon.
+     */
+    public function isTabular(): bool
+    {
+        return in_array($this->type, ['table', 'repeatable'], true);
     }
 
     public function section(): BelongsTo

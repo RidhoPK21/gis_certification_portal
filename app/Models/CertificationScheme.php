@@ -39,6 +39,7 @@ class CertificationScheme extends Model
         return match (strtoupper((string) $this->code)) {
             'ISO9001' => 'blue',
             'ISO14001' => 'green',
+            'ISO45001' => 'orange',
             'ISO27001' => 'indigo',
             'ISO20000' => 'teal',
             'ISO37001' => 'rose',
@@ -46,8 +47,7 @@ class CertificationScheme extends Model
             'ISO22000' => 'green',
             'HACCP' => 'orange',
             'SNI', 'SNI/LSPRO', 'LSPRO' => 'slate',
-            'ISPO_PEK' => 'emerald',
-            'ISPO_COMP' => 'forest',
+            'ISPO' => 'emerald',
             default => 'blue',
         };
     }
@@ -62,6 +62,7 @@ class CertificationScheme extends Model
         return match (strtoupper((string) $this->code)) {
             'ISO9001' => '#0284c7',
             'ISO14001' => '#15803d',
+            'ISO45001' => '#c2410c',
             'ISO27001' => '#4f46e5',
             'ISO20000' => '#0d9488',
             'ISO37001' => '#e11d48',
@@ -69,8 +70,7 @@ class CertificationScheme extends Model
             'ISO22000' => '#16a34a',
             'HACCP' => '#ea580c',
             'SNI', 'SNI/LSPRO', 'LSPRO' => '#475569',
-            'ISPO_PEK' => '#059669',
-            'ISPO_COMP' => '#15803d',
+            'ISPO' => '#059669',
             default => '#0284c7',
         };
     }

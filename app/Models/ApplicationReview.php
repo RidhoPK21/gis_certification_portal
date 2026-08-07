@@ -16,6 +16,7 @@ class ApplicationReview extends Model
             'completed_at' => 'datetime',
             'panelist_ids' => 'array',
             'auditor_competence_codes' => 'array',
+            'ispo_data' => 'array',
         ];
     }
 

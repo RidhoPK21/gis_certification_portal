@@ -10,6 +10,11 @@ class SchemeSection extends Model
 {
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return ['conditional_rules' => 'array'];
+    }
+
     public function scheme(): BelongsTo
     {
         return $this->belongsTo(CertificationScheme::class, 'certification_scheme_id');

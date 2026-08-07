@@ -13,6 +13,7 @@ use App\Services\AuditLogger;
 use App\Services\CertificateLinkService;
 use App\Services\DynamicFormService;
 use App\Services\FileStorageService;
+use App\Services\IspoReviewService;
 use App\Services\PortalNotificationService;
 use App\Services\QrCodeService;
 use App\Services\ReviewService;
@@ -89,12 +90,19 @@ class TechnicalController extends Controller
         $application->setRelation('scheme', $forms->schemeForApplication($application));
         $review = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first();
 
+        // ISPO memakai FrO.7204: Tim Teknis mengisi bagian 4 s.d. 8.
+        $ispo = app(IspoReviewService::class);
+        $isIspo = $ispo->isIspo($application);
+
         return view('internal.technical.review-show', [
             'application' => $application,
             'technicalFields' => config('review.technical_fields'),
             // Baris tabel mengikuti formulir tinjauan, bukan seluruh checklist klien.
             'technicalDocuments' => $reviews->formRows($application, 'technical'),
             'review' => $review,
+            'isIspo' => $isIspo,
+            'ispoGroups' => $isIspo ? $ispo->groupedRows($application, 'technical') : [],
+            'ispoSaved' => $isIspo ? $ispo->savedItems($application, 'technical') : [],
             'panelistCandidates' => User::where('is_active', true)
                 ->whereHas('roles', fn ($query) => $query->whereIn('code', config('review.panelist_roles')))
                 ->orderBy('name')
@@ -122,6 +130,18 @@ class TechnicalController extends Controller
             'items.*.remark_option' => ['nullable', Rule::in(ReviewService::REMARK_OPTIONS)],
             'items.*.remark_date' => ['nullable', 'date', 'required_if:items.*.remark_option,tgl_berlaku'],
             'items.*.notes' => ['nullable', 'string'],
+            // Isian bagian 6 dan 8 FrO.7204 (khusus ISPO).
+            'ispo' => ['nullable', 'array'],
+            'ispo.decision' => ['nullable', Rule::in(array_keys(config('review.ispo.decision_options')))],
+            'ispo.reverification' => ['nullable', Rule::in(array_keys(config('review.ispo.reverification_options')))],
+            'ispo.completion_requested_at' => ['nullable', 'date'],
+            'ispo.completion_due_at' => ['nullable', 'date'],
+            'ispo.documents_returned_at' => ['nullable', 'date'],
+            'ispo.follow_up' => ['nullable', 'string'],
+            'ispo.mandays' => ['nullable', 'array'],
+            'ispo.mandays.*.stage_1' => ['nullable', 'numeric', 'min:0'],
+            'ispo.mandays.*.stage_2' => ['nullable', 'numeric', 'min:0'],
+            'ispo.mandays.*.note' => ['nullable', 'string'],
         ], [
             'items.*.remark_date.required_if' => 'Tanggal berlaku wajib diisi bila keterangan memilih "Tgl Berlaku".',
         ]);
@@ -139,7 +159,13 @@ class TechnicalController extends Controller
 
             abort_if(count($valid) !== count(array_unique($data['panelist_ids'])), 422, 'Panelis yang dipilih tidak valid.');
         }
-        $review = $reviews->save($application, 'technical', $data, $request->user()->id, 'technical');
+        /*
+         * Baris FrO.7204 memakai kode formulir tinjauan ISPO sendiri, bukan kode
+         * dokumen checklist skema, jadi pagar kode dokumen tidak berlaku.
+         */
+        $documentGroup = app(IspoReviewService::class)->isIspo($application) ? null : 'technical';
+
+        $review = $reviews->save($application, 'technical', $data, $request->user()->id, $documentGroup);
         $reviews->storeTechnicalAspects($application, $data['aspects'] ?? [], $request->user()->id);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => 'technical']);
 

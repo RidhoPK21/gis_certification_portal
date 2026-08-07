@@ -10,6 +10,7 @@ use App\Services\ApplicationSubmissionService;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
 use App\Services\GisFormService;
+use App\Services\IspoApplicationPdfService;
 use App\Services\QrCodeService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
@@ -191,6 +192,63 @@ class ApplicationController extends Controller
         return back()->with('success', 'File berhasil diunggah.');
     }
 
+    /**
+     * Unggah gambar tanda tangan pemohon pada bagian K Form Aplikasi ISPO.
+     *
+     * Path-nya langsung disimpan ke larik penanda tangan, bukan menunggu
+     * autosave: rute penyaji gambar mencari berkasnya lewat application_values,
+     * jadi tanpa ini pratinjau setelah unggah akan gagal dimuat. Kolom teks
+     * baris tersebut sengaja digabung, bukan ditimpa, supaya Nama/Jabatan yang
+     * sudah diketik tidak hilang.
+     */
+    public function uploadSignature(
+        Request $request,
+        CertificationApplication $application,
+        ApplicationSubmissionService $service,
+        AuditLogger $audit
+    ) {
+        $this->own($request, $application);
+        abort_unless($application->canBeEditedByClient(), 403);
+
+        $request->validate([
+            'field_code' => ['required', 'string'],
+            'index' => ['required', 'integer', 'min:0', 'max:2'],
+            'signature' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+        ]);
+
+        $index = (int) $request->input('index');
+        $code = (string) $request->input('field_code');
+
+        $path = $request->file('signature')->storeAs(
+            "applications/{$application->id}/signatures",
+            $code.'_'.$index.'_'.time().'.'.$request->file('signature')->getClientOriginalExtension(),
+            'private'
+        );
+
+        $signatories = $application->values()->where('field_code', $code)->value('value_json') ?? [];
+        for ($i = 0; $i <= $index; $i++) {
+            $signatories[$i] = (array) ($signatories[$i] ?? []);
+        }
+        $signatories[$index]['tanda_tangan'] = $path;
+        ksort($signatories);
+
+        $service->saveValues($application, [$code => array_values($signatories)], $request->user()->id);
+
+        $audit->log('application.signature_uploaded', $application, [], [
+            'field_code' => $code,
+            'index' => $index,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'path' => $path,
+            'url' => route('secure-files.application-signature', [
+                'application' => $application,
+                'index' => $index,
+            ]).'?v='.time(),
+        ]);
+    }
+
     private function processUploadedFieldFiles(Request $request, CertificationApplication $application, array &$input): void
     {
         $files = (array) $request->file('fields', []);
@@ -220,11 +278,24 @@ class ApplicationController extends Controller
         }
     }
 
-    public function submit(Request $request, CertificationApplication $application, ApplicationSubmissionService $service)
-    {
+    public function submit(
+        Request $request,
+        CertificationApplication $application,
+        ApplicationSubmissionService $service,
+        IspoApplicationPdfService $ispoPdf
+    ) {
         $this->own($request, $application);
         abort_unless($application->canBeEditedByClient(), 403);
         $service->submit($application, $request->user()->id);
+
+        /*
+         * ISPO tidak membagikan template untuk diisi manual: Form Aplikasi
+         * FrO.7201 dicetak sistem dari isian klien begitu permohonan dikirim,
+         * lalu ikut dikaji Admin bersama dokumen lampirannya.
+         */
+        if ($application->scheme->review_template === 'ispo') {
+            $ispoPdf->generate($application, $request->user()->id);
+        }
 
         return redirect()->route('client.applications.show', $application)
             ->with('success', 'Permohonan berhasil dikirim ke tim GIS.');

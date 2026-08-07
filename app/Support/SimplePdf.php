@@ -71,12 +71,34 @@ class SimplePdf
         }
     }
 
-    public function text(float $x, float $y, string $text, float $size = 10, bool $bold = false): void
+    public function text(float $x, float $y, string $text, float $size = 10, bool $bold = false, ?string $hexColor = null): void
     {
         $font = $bold ? 'F2' : 'F1';
         $safe = $this->escape($this->normalize($text));
         $pdfY = self::HEIGHT - $y;
-        $this->command("BT /{$font} {$size} Tf 1 0 0 1 {$x} {$pdfY} Tm ({$safe}) Tj ET");
+
+        // Warna teks dikembalikan ke hitam setelah dipakai supaya blok teks
+        // berikutnya tidak ikut terwarnai.
+        $color = $hexColor ? self::rgbCommand($hexColor, false).' ' : '';
+        $reset = $hexColor ? ' 0 g' : '';
+
+        $this->command("{$color}BT /{$font} {$size} Tf 1 0 0 1 {$x} {$pdfY} Tm ({$safe}) Tj ET{$reset}");
+    }
+
+    /**
+     * Warna heksadesimal ("00B050") menjadi operator warna PDF.
+     *
+     * Formulir ISPO memakai warna tegas — hijau pada FrO.7204 dan biru pada
+     * FrO.7201 — yang tidak bisa diwakili operator abu-abu.
+     */
+    private static function rgbCommand(string $hex, bool $fill = true): string
+    {
+        $hex = ltrim($hex, '#');
+        $r = round(hexdec(substr($hex, 0, 2)) / 255, 4);
+        $g = round(hexdec(substr($hex, 2, 2)) / 255, 4);
+        $b = round(hexdec(substr($hex, 4, 2)) / 255, 4);
+
+        return "{$r} {$g} {$b} ".($fill ? 'rg' : 'rg');
     }
 
     /**
@@ -154,6 +176,54 @@ class SimplePdf
     {
         $py = self::HEIGHT - $y - $h;
         $this->command("{$gray} g {$x} {$py} {$w} {$h} re f 0 g");
+    }
+
+    /**
+     * Kotak berwarna, dipakai untuk header bagian formulir ISPO.
+     */
+    public function fillRectColor(float $x, float $y, float $w, float $h, string $hexColor): void
+    {
+        $py = self::HEIGHT - $y - $h;
+        $color = self::rgbCommand($hexColor);
+        $this->command("{$color} {$x} {$py} {$w} {$h} re f 0 g");
+    }
+
+    /**
+     * Sel bergaris dengan latar berwarna dan teks berwarna.
+     *
+     * Dipakai untuk baris judul bagian: FrO.7204 memakai latar hijau dengan
+     * teks putih, FrO.7201 latar biru dengan teks hitam.
+     */
+    public function colorCell(
+        float $x,
+        float $y,
+        float $w,
+        float $h,
+        string $text,
+        string $backgroundHex,
+        string $textHex = '000000',
+        float $fontSize = 9,
+        bool $bold = true,
+        string $align = 'left',
+        float $padding = 5
+    ): void {
+        $this->fillRectColor($x, $y, $w, $h, $backgroundHex);
+        $this->rect($x, $y, $w, $h);
+
+        $lines = $this->wrappedLines($text, $w - ($padding * 2), $fontSize);
+        $lineHeight = $fontSize * 1.25;
+        $total = count($lines) * $lineHeight;
+        $startY = $y + max($padding + $fontSize, (($h - $total) / 2) + $fontSize);
+
+        foreach ($lines as $i => $line) {
+            $lineWidth = $this->textWidth($line, $fontSize);
+            $tx = match ($align) {
+                'center' => $x + max($padding, ($w - $lineWidth) / 2),
+                'right' => $x + $w - $padding - $lineWidth,
+                default => $x + $padding,
+            };
+            $this->text($tx, $startY + ($i * $lineHeight), $line, $fontSize, $bold, $textHex);
+        }
     }
 
     public function wrappedLines(string $text, float $width, float $fontSize = 9): array

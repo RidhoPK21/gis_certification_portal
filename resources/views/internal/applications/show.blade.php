@@ -158,7 +158,7 @@
                                                 <span class="text-muted">-</span>
                                             @endif
                                         @else
-                                            {{ is_array($val) ? implode(', ', $val) : $val }} @if ($field->unit){{ $field->unit }}@endif
+                                            @include('internal.partials.value-display', ['field' => $field, 'val' => $val])
                                         @endif
                                     </td>
                                 </tr>
@@ -170,6 +170,9 @@
         @endforeach
     </section>
 
+    @if ($isIspo ?? false)
+        @include('internal.partials.ispo-admin-review')
+    @else
     <section class="card mt-2" id="dokumen">
         <h2>Kajian Dokumen Administrasi</h2>
         {{-- Sengaja bentuk blok, bukan inline: berkas ini memakai bentuk blok di
@@ -289,8 +292,9 @@
         </script>
         @endpush
     </section>
+    @endif
 
-    @if ($technicalDocuments->isNotEmpty())
+    @if (! ($isIspo ?? false) && $technicalDocuments->isNotEmpty())
         <section class="card mt-2" id="dokumen-teknis">
             <h2>Dokumen Teknis</h2>
             <p class="muted small">Hanya tampilan. Penilaian dilakukan Tim Teknis, tetapi berkas dan hasilnya dapat Anda periksa sebelum menyetujui atau meminta revisi.</p>
