@@ -101,6 +101,15 @@ class ApplicationController extends Controller
         return view('client.applications.edit', [
             'application' => $application,
             'values' => $forms->values($application),
+            /*
+             * Dua daftar yang berbeda peran, sengaja tidak digabung:
+             * allDocuments dicetak seluruhnya ke HTML supaya slot bersyarat bisa
+             * muncul seketika saat isian diubah, sedangkan applicableDocuments
+             * menentukan mana yang terlihat pada pemuatan pertama. Yang menentukan
+             * kelengkapan saat submit tetap perhitungan di server
+             * (ApplicationSubmissionService), bukan keadaan tampilan ini.
+             */
+            'allDocuments' => $application->scheme->requiredDocuments->where('is_active', true),
             'applicableDocuments' => $forms->applicableDocuments($application->scheme, $forms->values($application)),
             'completion' => $forms->completion($application),
             'productGroups' => $productGroups,

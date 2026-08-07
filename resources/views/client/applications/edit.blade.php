@@ -377,9 +377,11 @@
                  * Formulir terbitan LS dipisah dari dokumen milik perusahaan dan
                  * diberi penomoran sendiri, mengikuti checklist resmi GIS.
                  */
-                $grouped = $applicableDocuments->groupBy(
+                $grouped = $allDocuments->groupBy(
                     fn ($doc) => ($doc->document_group ?? 'company') === 'gis_form' ? 'gis_form' : 'company'
                 );
+                // Kode dokumen yang syaratnya sudah terpenuhi saat halaman dibuka.
+                $visibleDocumentCodes = $applicableDocuments->pluck('code')->flip();
                 $gisFormDocuments = $grouped->get('gis_form', collect());
                 $companyDocuments = $grouped->get('company', collect());
             @endphp
@@ -462,6 +464,7 @@
                                 'document' => $application->documents->firstWhere('document_code', $required->code),
                                 'number' => $loop->iteration,
                                 'locked' => ! $gisFormUnlocked,
+                                'visible' => $visibleDocumentCodes->has($required->code),
                             ])
                         @endforeach
                     </div>
@@ -469,10 +472,34 @@
             @endif
 
             @if ($companyDocuments->isNotEmpty())
+                <div class="doc-block">
                 @if ($usesGisForms && $gisFormDocuments->isNotEmpty())
                     <h3 style="margin-top:22px">Dokumen Wajib Perusahaan</h3>
                     <p class="muted small">Dokumen milik perusahaan yang wajib dilampirkan.</p>
                 @endif
+                {{--
+                    Muncul bila seluruh slot pada blok ini masih bersyarat dan belum
+                    ada yang terpenuhi — misalnya ISPO sebelum Ruang Lingkup dipilih.
+                    Tanpa ini daftarnya tampak kosong tanpa penjelasan.
+                --}}
+                @php
+                    $conditionalSourceLabels = $companyDocuments
+                        ->pluck('conditional_rules')
+                        ->filter()
+                        ->map(fn ($r) => data_get($r, 'field') ?? data_get($r, 'any.0.field') ?? data_get($r, 'all.0.field'))
+                        ->filter()
+                        ->unique();
+                    $sourceSection = $conditionalSourceLabels->isNotEmpty()
+                        ? optional($application->scheme->sections
+                            ->first(fn ($sec) => $sec->fields->contains('code', $conditionalSourceLabels->first())))->title
+                        : null;
+                @endphp
+                <div class="alert alert-info doc-empty-hint{{ $visibleDocumentCodes->isEmpty() ? '' : ' hidden' }}">
+                    Belum ada dokumen yang perlu diunggah. Daftar unggahan menyesuaikan isian Anda —
+                    lengkapi dulu
+                    <strong>{{ $sourceSection ?: 'langkah sebelumnya' }}</strong>,
+                    lalu slot unggahannya muncul di sini.
+                </div>
                 <div class="doc-list">
                     @foreach ($companyDocuments as $required)
                         @include('client.applications.partials.document-item', [
@@ -480,8 +507,10 @@
                             'document' => $application->documents->firstWhere('document_code', $required->code),
                             'number' => $loop->iteration,
                             'locked' => false,
+                            'visible' => $visibleDocumentCodes->has($required->code),
                         ])
                     @endforeach
+                </div>
                 </div>
             @endif
             <div class="flex justify-between items-center gap-2 mt-3 pt-2 border-t wrap">
@@ -562,6 +591,10 @@ window.updateCompletion = function(serverPct) {
 /* Bagian bersyarat: section dan tombol langkahnya disembunyikan bersama supaya
    wizard tidak pernah membuka langkah yang tidak berlaku. */
 document.querySelectorAll('.conditional-section').forEach(sec=>{let r={};try{r=JSON.parse(sec.dataset.condition||'{}')}catch(e){}const ok=passes(r,v);sec.classList.toggle('section-hidden',!ok);const btn=document.querySelector('.wizard-step-btn[data-section-code="'+sec.dataset.sectionCode+'"]');if(btn)btn.classList.toggle('section-hidden',!ok)});
+/* Slot unggahan bersyarat. Semua slot sudah tercetak di HTML lalu disembunyikan,
+   jadi daftarnya ikut berubah begitu isian penentunya diubah — tanpa reload.
+   Nomor urut dihitung ulang supaya yang tampil selalu berurutan dari 1. */
+document.querySelectorAll('.doc-list').forEach(list=>{let n=0;list.querySelectorAll('.doc-item').forEach(item=>{if(item.classList.contains('conditional-document')){let r={};try{r=JSON.parse(item.dataset.condition||'{}')}catch(e){}item.classList.toggle('hidden',!passes(r,v))}if(!item.classList.contains('hidden')){n++;const num=item.querySelector('.doc-number');if(num)num.textContent=n}});const block=list.closest('.doc-block')||list.parentElement;const empty=block?block.querySelector('.doc-empty-hint'):null;if(empty)empty.classList.toggle('hidden',n>0)});
 if(typeof window.sectionsChanged==='function')window.sectionsChanged();
 if(typeof window.updateCompletion==='function')window.updateCompletion();};const doSave=async(manual)=>{status.textContent='Menyimpan draft...';const fd=new FormData(form);fd.set('_method','PUT');try{const res=await fetch(form.action,{method:'POST',body:fd,headers:{'Accept':'application/json','X-Requested-With':'XMLHttpRequest'}});if(!res.ok)throw new Error();const data=await res.json().catch(()=>({}));if(data.completion!==undefined&&typeof window.updateCompletion==='function')window.updateCompletion(data.completion);else if(typeof window.updateCompletion==='function')window.updateCompletion();const t=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});status.textContent=(manual?'Draft tersimpan ':'Draft tersimpan otomatis ')+t;if(manual&&window.Swal)window.Swal.fire({toast:true,position:'top-end',icon:'success',title:'Draft tersimpan',showConfirmButton:false,timer:2200,timerProgressBar:true})}catch(e){status.textContent=manual?'Gagal menyimpan draft. Coba lagi.':'Autosave gagal. Gunakan tombol Simpan Draft.';if(manual&&window.Swal)window.Swal.fire({icon:'error',title:'Gagal menyimpan draft',confirmButtonColor:'#b42318'})}};const autosave=()=>{clearTimeout(timer);status.textContent='Perubahan belum disimpan...';timer=setTimeout(()=>doSave(false),1300)};form.addEventListener('submit',e=>{e.preventDefault();clearTimeout(timer);const b=e.submitter;if(b){const o=b.innerHTML;b.disabled=true;b.innerHTML='Menyimpan...';doSave(true).finally(()=>{b.disabled=false;b.innerHTML=o})}else{doSave(true)}});form.addEventListener('input',()=>{refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();autosave()});form.addEventListener('change',()=>{refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();autosave()});refresh();if(typeof window.updateCompletion==='function')window.updateCompletion();})();
 
