@@ -979,6 +979,27 @@ class ReviewPdfService
         $pdf->moveY($h + 10);
     }
 
+    /**
+     * Nilai baris identitas tambahan.
+     *
+     * Isian klien tersimpan sebagai kode pilihan (mis. "tinggi"), sedangkan
+     * formulir mencetak labelnya, jadi kodenya dimanusiakan di sini.
+     */
+    private function identityValue(array $values, string $field): string
+    {
+        $value = $values[$field] ?? null;
+
+        if (! filled($value)) {
+            return '-';
+        }
+
+        if (is_array($value)) {
+            return implode(', ', array_map('strval', $value));
+        }
+
+        return ucfirst(str_replace('_', ' ', (string) $value));
+    }
+
     private function statusText(string $status): string
     {
         return match ($status) {
