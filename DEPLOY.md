@@ -407,7 +407,7 @@ Batas kirim ulang OTP (1×/menit, 5×/jam) dan batas percobaan login (5×/menit)
 4. Uji registrasi klien di `/register` → kode OTP → verifikasi → login.
 5. Buka **Pengaturan Sistem** → unggah logo & favicon perusahaan, isi teks footer dan kontak. Bila halaman ini error, berarti migrasi belum dijalankan (`php artisan migrate --force`).
 6. Buka **User & Role → Kelola** pada satu akun → coba **Kirim Kode Reset** dan pastikan emailnya masuk.
-7. Pastikan dropdown **Produk & Kategori SNI** terisi (12 grup, 139 kategori). Bila kosong:
+7. Pastikan dropdown **Produk & Kategori SNI** terisi (12 grup, 127 kategori). Bila kosong:
    ```bash
    php artisan db:seed --class=SniProductTaxonomySeeder --force
    ```
