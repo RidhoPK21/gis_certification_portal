@@ -267,7 +267,34 @@
                                     @if ($field->is_required)<span class="required">*</span>@endif
                                     @if ($field->unit)<span class="muted">({{ $field->unit }})</span>@endif
                                 </label>
-                                @if (($productGroups ?? null) && $field->code === 'product_name')
+                                @if (($iafCodes ?? null) && $field->code === 'iaf_code')
+                                    {{-- Ruang lingkup akreditasi KAN: pilih IAF dulu, daftar NACE menyesuaikan. --}}
+                                    <select class="form-select js-iaf-code" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]" data-pair="lingkup">
+                                        <option value="">Pilih kode IAF...</option>
+                                        @foreach ($iafCodes as $iaf)
+                                            <option value="{{ $iaf->code }}" data-name-id="{{ $iaf->name_id }}"
+                                                    @selected((string) $value === (string) $iaf->code)>{{ $iaf->code }} — {{ $iaf->name_id }}</option>
+                                        @endforeach
+                                    </select>
+                                @elseif (($iafCodes ?? null) && $field->code === 'nace_code')
+                                    <select class="form-select js-nace-code" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]"
+                                            data-pair="lingkup" data-selected="{{ $value }}">
+                                        <option value="">Pilih kode IAF terlebih dahulu...</option>
+                                        @foreach ($iafCodes as $iaf)
+                                            @foreach ($iaf->activeNaceCodes as $nace)
+                                                <option value="{{ $nace->code }}" data-iaf="{{ $iaf->code }}" data-name-id="{{ $nace->name_id }}"
+                                                        @selected((string) $value === (string) $nace->code)>{{ $nace->code }} — {{ $nace->name_id }}</option>
+                                            @endforeach
+                                        @endforeach
+                                    </select>
+                                    <p class="small muted js-nace-keterangan" data-pair="lingkup" style="margin-top:6px"></p>
+                                @elseif (($iafCodes ?? null) && in_array($field->code, ['iaf_description', 'nace_description'], true))
+                                    {{-- Keterangan ikut disimpan agar permohonan lama tetap memperlihatkan
+                                         pilihan aslinya meski KAN merevisi lampirannya. Diisi otomatis, bukan diketik. --}}
+                                    <input type="hidden" class="js-{{ str_replace('_', '-', $field->code) }}" data-pair="lingkup"
+                                           name="fields[{{ $field->code }}]" value="{{ $value }}">
+                                    <p class="small muted" style="margin:0">{{ $value ?: '—' }}</p>
+                                @elseif (($productGroups ?? null) && $field->code === 'product_name')
                                     <select class="form-select sni-product-group" id="input-{{ $field->code }}" name="fields[{{ $field->code }}]">
                                         <option value="">Pilih tipe/kategori...</option>
                                         @foreach ($productGroups as $group)
@@ -779,6 +806,76 @@ if(typeof window.updateCompletion==='function')window.updateCompletion();};const
     groupSel.addEventListener('change',()=>refilter(false));
 })();
 
+/*
+ * Ruang lingkup akreditasi KAN: pilih IAF -> daftar NACE menyempit ke kode di
+ * bawahnya, lalu keterangannya muncul di sebelah dropdown.
+ *
+ * Keterangan IAF dan NACE ikut dikirim lewat input tersembunyi supaya tersimpan
+ * bersama permohonan, bukan dicari ulang saat ditampilkan — daftar acuan KAN
+ * bisa direvisi, sedangkan permohonan lama harus tetap memperlihatkan pilihan
+ * aslinya.
+ *
+ * Ditelusuri per data-pair, bukan querySelector tunggal, supaya tidak menjadi
+ * jebakan bila kelak ada lebih dari satu pasangan dalam satu halaman.
+ */
+document.querySelectorAll('.js-iaf-code').forEach(function(iafSel){
+    const pair=iafSel.getAttribute('data-pair');
+    const cari=sel=>document.querySelector(sel+'[data-pair="'+pair+'"]');
+
+    const naceSel=cari('.js-nace-code');
+    if(!naceSel)return;
+
+    const keterangan=cari('.js-nace-keterangan');
+    const iafHidden=cari('.js-iaf-description');
+    const naceHidden=cari('.js-nace-description');
+    const opsi=Array.from(naceSel.querySelectorAll('option[data-iaf]'));
+    const tersimpan=naceSel.getAttribute('data-selected')||'';
+
+    /* Keterangan sudah tampil di sebelah dropdown NACE, jadi baris field-nya
+       sendiri tidak perlu ikut memenuhi form. */
+    ['iaf_description','nace_description'].forEach(function(kode){
+        const baris=document.getElementById('field-'+kode);
+        if(baris)baris.style.display='none';
+    });
+
+    function terpilih(sel){
+        return sel.selectedIndex>=0?sel.options[sel.selectedIndex]:null;
+    }
+
+    function segarkanKeterangan(){
+        const optIaf=terpilih(iafSel);
+        const optNace=terpilih(naceSel);
+        const namaIaf=optIaf&&optIaf.value?(optIaf.getAttribute('data-name-id')||''):'';
+        const namaNace=optNace&&optNace.value?(optNace.getAttribute('data-name-id')||''):'';
+
+        if(iafHidden)iafHidden.value=namaIaf;
+        if(naceHidden)naceHidden.value=namaNace;
+        if(keterangan)keterangan.textContent=namaNace;
+    }
+
+    function saring(pertahankan){
+        const iaf=iafSel.value;
+        const sekarang=pertahankan?naceSel.value:'';
+        let masihAda=false;
+
+        opsi.forEach(function(opt){
+            const cocok=opt.getAttribute('data-iaf')===iaf;
+            opt.hidden=!cocok;
+            opt.disabled=!cocok;
+            if(cocok&&opt.value===sekarang)masihAda=true;
+        });
+
+        if(!masihAda)naceSel.value='';
+        segarkanKeterangan();
+    }
+
+    if(tersimpan){naceSel.value=tersimpan;saring(true);}
+    else saring(false);
+
+    iafSel.addEventListener('change',function(){saring(false);});
+    naceSel.addEventListener('change',segarkanKeterangan);
+});
+
 /* Hapus pesan error di bawah field ketika pengguna mulai mengisi/memilih. */
 (function(){
     function clearError(e){
@@ -921,7 +1018,12 @@ if(typeof window.updateCompletion==='function')window.updateCompletion();};const
         if (target !== null) showStep(target);
     };
 
-    function showStep(index) {
+    /*
+     * scroll:false dipakai saat langkah dipulihkan setelah halaman dimuat ulang.
+     * Tanpa itu pemaksaan gulir ke atas di sini membatalkan pemulihan posisi
+     * baca milik layout, sehingga klien terlempar ke puncak halaman.
+     */
+    function showStep(index, options) {
         if (index < 0 || index >= steps.length) return;
         if (isHidden(index)) {
             const target = nextVisible(index, index >= currentStep ? 1 : -1);
@@ -939,7 +1041,9 @@ if(typeof window.updateCompletion==='function')window.updateCompletion();};const
         if (typeof window.updateCompletion === 'function') {
             window.updateCompletion();
         }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!options || options.scroll !== false) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
 
     function validateStep(index) {
@@ -1099,7 +1203,49 @@ if(typeof window.updateCompletion==='function')window.updateCompletion();};const
         }
     });
 
+    /*
+     * Langkah wizard yang sedang dibuka bertahan melewati muat ulang halaman.
+     *
+     * Sejumlah tombol di halaman ini memakai pola POST-redirect-GET — mis.
+     * "Minta Template Formulir GIS" dan unggah dokumen — sehingga halaman
+     * dimuat ulang penuh. Tanpa penyimpanan ini wizard selalu kembali ke
+     * langkah pertama dan klien kehilangan tempatnya, padahal bagian yang
+     * sedang dikerjakan berada jauh di langkah berikutnya.
+     *
+     * Kuncinya per permohonan agar dua permohonan yang dibuka bergantian tidak
+     * saling menimpa langkahnya.
+     */
+    const STEP_KEY = 'gis:wizard-step:{{ $application->id }}';
+
+    document.addEventListener('submit', function () {
+        try {
+            sessionStorage.setItem(STEP_KEY, String(currentStep));
+        } catch (e) { /* penyimpanan penuh atau diblokir: abaikan */ }
+    }, true);
+
+    function restoreStep() {
+        // Fragment dari server (mis. #documents) lebih spesifik daripada
+        // langkah terakhir, jadi handleHash yang menentukan.
+        if (window.location.hash) return false;
+
+        let saved = null;
+        try {
+            saved = sessionStorage.getItem(STEP_KEY);
+            sessionStorage.removeItem(STEP_KEY);
+        } catch (e) { return false; }
+
+        if (saved === null) return false;
+
+        const index = parseInt(saved, 10);
+        if (Number.isNaN(index) || index <= 0 || index >= steps.length) return false;
+
+        showStep(index, { scroll: false });
+
+        return true;
+    }
+
     window.addEventListener('hashchange', handleHash);
+    restoreStep();
     setTimeout(handleHash, 50);
     renumberSteps();
     if (typeof window.updateCompletion === 'function') {

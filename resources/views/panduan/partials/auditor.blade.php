@@ -15,6 +15,14 @@
             Tab dan tindakan yang tersedia mengikuti Lingkup Penugasan Auditor Anda. Jika suatu tab tidak tersedia, berarti bagian tersebut tidak termasuk dalam penugasan Anda.
         </p>
     </div>
+    <div class="info-notice-box mt-2">
+        <strong style="color: #60a5fa; display: block; margin-bottom: 4px;">Surat Tugas Wajib Terbit Lebih Dahulu</strong>
+        <p style="margin: 0; line-height: 1.6;">
+            Ditugaskan saja belum cukup. Formulir sebuah tahap audit baru terbuka setelah Tim Teknis menerbitkan
+            Surat Tugas untuk tahap tersebut. Selama belum terbit, halaman order tetap dapat dibuka namun
+            formulirnya terkunci disertai keterangan “Menunggu Surat Tugas”.
+        </p>
+    </div>
 </div>
 
 <div class="guide-section">

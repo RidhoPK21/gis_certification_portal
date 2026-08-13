@@ -90,7 +90,7 @@ class TechnicalReviewTest extends TestCase
         $this->assertSame('admin_review', $app->refresh()->status);
     }
 
-    public function test_tim_teknis_mengisi_dan_menyelesaikan_tinjauan(): void
+    public function test_tim_teknis_mengisi_dan_mengembalikan_tinjauan_ke_admin(): void
     {
         $this->seedAll();
         $admin = $this->user('admin_application');
@@ -107,7 +107,7 @@ class TechnicalReviewTest extends TestCase
             ],
         ])->assertRedirect();
 
-        $this->actingAs($tech)->post(route('technical.reviews.complete', $app))->assertRedirect();
+        $this->actingAs($tech)->post(route('technical.reviews.return-admin', $app))->assertRedirect();
 
         $app->refresh();
         $this->assertSame('admin_review', $app->status);
@@ -121,19 +121,18 @@ class TechnicalReviewTest extends TestCase
         $this->assertDatabaseHas('notifications', ['user_id' => $admin->id, 'type' => 'technical_review_completed']);
     }
 
-    public function test_approve_terblokir_sebelum_tinjauan_teknis_selesai(): void
+    public function test_mengembalikan_ke_admin_terblokir_sebelum_tinjauan_disimpan(): void
     {
-        Storage::fake('private');
         $this->seedAll();
         $admin = $this->user('admin_application');
+        $tech = $this->user('technical');
         $app = $this->applicationInReview($this->user('client'));
         $this->saveAdminReview($app, $admin);
+        $this->actingAs($admin)->post(route('internal.applications.forward-technical', $app))->assertRedirect();
 
-        $this->actingAs($admin)->post(route('internal.applications.approve', $app), [
-            'action_date' => now()->format('Y-m-d'),
-        ])->assertStatus(422);
+        $this->actingAs($tech)->post(route('technical.reviews.return-admin', $app))->assertStatus(422);
 
-        $this->assertSame('admin_review', $app->refresh()->status);
+        $this->assertSame('technical_review', $app->refresh()->status);
     }
 
     public function test_admin_tidak_bisa_mengisi_review_teknis_lewat_rute_admin(): void
@@ -180,9 +179,28 @@ class TechnicalReviewTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('Kajian Dokumen Teknis', $html);
-        $this->assertStringContainsString('value="system_manual"', $html);
-        $this->assertStringNotContainsString('value="nib"', $html);
+        $form = $this->technicalReviewForm($html);
+
+        $this->assertStringContainsString('Kajian Dokumen Teknis', $form);
+        $this->assertStringContainsString('value="system_manual"', $form);
+        $this->assertStringNotContainsString('value="nib"', $form);
+    }
+
+    /**
+     * Potongan HTML formulir tinjauan teknis saja.
+     *
+     * Halaman ini juga memuat seluruh data dan dokumen yang diisi klien agar
+     * Tim Teknis punya konteks penuh, sehingga memeriksa kebocoran dokumen
+     * administrasi harus dibatasi pada formulir penilaiannya — bukan seluruh
+     * halaman, yang memang sengaja menampilkan semuanya.
+     */
+    private function technicalReviewForm(string $html): string
+    {
+        $section = Str::betweenFirst($html, 'id="tinjauan-teknis"', '</section>');
+
+        $this->assertNotSame('', $section, 'Bagian id="tinjauan-teknis" tidak ditemukan di halaman.');
+
+        return $section;
     }
 
     /**
@@ -235,16 +253,18 @@ class TechnicalReviewTest extends TestCase
             $technicalCodes = $reviews->formRows($app, 'technical')->pluck('code');
             $adminOnlyCodes = $reviews->formRows($app, 'administration')->pluck('code')->diff($technicalCodes);
 
-            $html = $this->actingAs($tech)
-                ->get(route('technical.reviews.show', $app))
-                ->assertOk()
-                ->getContent();
+            $form = $this->technicalReviewForm(
+                $this->actingAs($tech)
+                    ->get(route('technical.reviews.show', $app))
+                    ->assertOk()
+                    ->getContent()
+            );
 
             foreach ($technicalCodes as $code) {
-                $this->assertStringContainsString('value="'.$code.'"', $html, $scheme->code.': dokumen teknis '.$code.' tidak ada di form Tim Teknis.');
+                $this->assertStringContainsString('value="'.$code.'"', $form, $scheme->code.': dokumen teknis '.$code.' tidak ada di form Tim Teknis.');
             }
             foreach ($adminOnlyCodes as $code) {
-                $this->assertStringNotContainsString('value="'.$code.'"', $html, $scheme->code.': dokumen administrasi '.$code.' bocor ke form Tim Teknis.');
+                $this->assertStringNotContainsString('value="'.$code.'"', $form, $scheme->code.': dokumen administrasi '.$code.' bocor ke form Tim Teknis.');
             }
         }
     }
@@ -346,9 +366,18 @@ class TechnicalReviewTest extends TestCase
             'signed_name' => 'Peninjau Teknis',
             'aspects' => ['audit_mandays' => '5'],
         ])->assertRedirect();
-        $this->actingAs($tech)->post(route('technical.reviews.complete', $app))->assertRedirect();
 
-        $this->actingAs($admin)->post(route('internal.applications.approve', $app), [
+        // Persetujuan mensyaratkan tim auditor dengan Lead Auditor.
+        \App\Models\AuditAssignment::create([
+            'application_id' => $app->id,
+            'auditor_id' => $this->user('auditor')->id,
+            'assignment_role' => 'LA',
+            'stage_code' => 'all',
+            'assigned_date' => now(),
+            'status' => 'assigned',
+        ]);
+
+        $this->actingAs($tech)->post(route('technical.reviews.approve', $app), [
             'action_date' => now()->format('Y-m-d'),
         ])->assertRedirect();
 

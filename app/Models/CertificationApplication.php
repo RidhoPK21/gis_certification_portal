@@ -91,6 +91,32 @@ class CertificationApplication extends Model
         return $this->hasMany(AuditStage::class, 'application_id');
     }
 
+    public function assignmentLetters(): HasMany
+    {
+        return $this->hasMany(AssignmentLetter::class, 'application_id');
+    }
+
+    /**
+     * Apakah Surat Tugas untuk tahap ini sudah diterbitkan Tim Teknis.
+     *
+     * "Terbit" berarti PDF-nya sudah dibuat, bukan sekadar barisnya ada:
+     * draft yang belum digenerate tidak boleh membuka gerbang kerja auditor.
+     */
+    public function hasAssignmentLetter(string $stageCode): bool
+    {
+        if ($this->relationLoaded('assignmentLetters')) {
+            return $this->assignmentLetters
+                ->where('stage_code', $stageCode)
+                ->whereNotNull('generated_pdf_id')
+                ->isNotEmpty();
+        }
+
+        return $this->assignmentLetters()
+            ->where('stage_code', $stageCode)
+            ->whereNotNull('generated_pdf_id')
+            ->exists();
+    }
+
     /**
      * Batasi permohonan hanya pada yang benar-benar ditugaskan kepada
      * auditor tersebut, sesuai cakupan tahap (stage_code) penugasannya.

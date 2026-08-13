@@ -9,6 +9,7 @@ use App\Models\SchemeFieldOption;
 use App\Models\SchemeRequiredDocument;
 use App\Models\SchemeSection;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 
 class DynamicFormService
 {
@@ -138,6 +139,22 @@ class DynamicFormService
             }
             if (in_array($field->type, ['checkbox_group', 'multiselect'], true)) {
                 $base[] = 'array';
+            }
+
+            /*
+             * Kode ruang lingkup akreditasi harus benar-benar ada pada acuan KAN
+             * dan masih aktif. Diperiksa di sini, bukan di controller, supaya
+             * jalur simpan draft maupun jalur submit sama-sama terlindungi.
+             *
+             * Kesesuaian pasangan IAF <-> NACE tidak bisa diperiksa di sini
+             * karena kode NACE tidak unik lintas IAF; pemeriksaannya ada di
+             * ApplicationSubmissionService::pastikanLingkupSelaras().
+             */
+            if ($field->code === 'iaf_code') {
+                $base[] = Rule::exists('iaf_codes', 'code')->where('is_active', true);
+            }
+            if ($field->code === 'nace_code') {
+                $base[] = Rule::exists('nace_codes', 'code')->where('is_active', true);
             }
             if ($field->type === 'file' && $forSubmit && $field->is_required) {
                 $base[] = function (string $attribute, mixed $value, \Closure $fail) {

@@ -105,8 +105,8 @@ class ReviewFlowEdgeCasesTest extends TestCase
     }
 
     /**
-     * Diteruskan ulang untuk koreksi: tinjauan teknis dibuka kembali, dan admin
-     * belum boleh menyetujui sebelum Tim Teknis menutupnya lagi.
+     * Dikembalikan ke Admin lalu diteruskan ulang: penanda selesai pada tinjauan
+     * teknis dibuka kembali sehingga Tim Teknis wajib meninjau ulang.
      */
     public function test_diteruskan_ulang_membuka_kembali_tinjauan_teknis(): void
     {
@@ -115,7 +115,7 @@ class ReviewFlowEdgeCasesTest extends TestCase
         $this->actingAs($this->technical)->post(route('technical.reviews.save', $application), [
             'action_date' => now()->format('Y-m-d'),
         ])->assertRedirect();
-        $this->actingAs($this->technical)->post(route('technical.reviews.complete', $application))->assertRedirect();
+        $this->actingAs($this->technical)->post(route('technical.reviews.return-admin', $application))->assertRedirect();
 
         $this->actingAs($this->admin)
             ->post(route('internal.applications.forward-technical', $application->refresh()))
@@ -127,15 +127,15 @@ class ReviewFlowEdgeCasesTest extends TestCase
                 ->value('completed_at'),
             'Tinjauan teknis lama masih dianggap selesai setelah diteruskan ulang.'
         );
+    }
 
-        // Permohonan kembali ke meja Admin tanpa tinjauan teknis yang tertutup.
-        $application->refresh()->update(['status' => 'admin_review']);
-
-        $this->actingAs($this->admin)
-            ->post(route('internal.applications.approve', $application), [
-                'action_date' => now()->format('Y-m-d'),
-            ])
-            ->assertStatus(422);
+    /**
+     * Keputusan sekarang milik Tim Teknis: Admin tidak lagi punya jalurnya.
+     */
+    public function test_admin_tidak_punya_rute_keputusan(): void
+    {
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('internal.applications.approve'));
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('internal.applications.reject'));
     }
 
     private function applicationInTechnicalReview(string $schemeCode): CertificationApplication

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssignmentLetter;
 use App\Models\AuditStageFile;
 use App\Models\CertificationApplication;
 use App\Models\CorrectiveActionFile;
@@ -14,6 +15,23 @@ use Illuminate\Http\Request;
 
 class SecureFileController extends Controller
 {
+    /**
+     * Apakah pengguna adalah auditor yang ditugaskan pada permohonan ini.
+     *
+     * Sengaja dipisah dan selalu di-OR-kan dengan hak akses peran lain: bentuk
+     * lama menimpa hasil pemeriksaan sebelumnya, sehingga akun yang memegang
+     * peran technical sekaligus auditor justru kehilangan akses pada order yang
+     * tidak ditugaskan kepadanya.
+     */
+    private function isAssignedAuditor(Request $request, CertificationApplication $application): bool
+    {
+        return $request->user()->hasRole('auditor')
+            && $application->auditAssignments()
+                ->where('auditor_id', $request->user()->id)
+                ->where('status', 'assigned')
+                ->exists();
+    }
+
     public function invoice(Request $request, Invoice $invoice, FileStorageService $files, AuditLogger $audit)
     {
         $invoice->load('application');
@@ -29,10 +47,8 @@ class SecureFileController extends Controller
     {
         $file->load('auditStage.application');
         $application = $file->auditStage->application;
-        $allowed = $request->user()->hasRole(['admin_application', 'superadmin']);
-        if ($request->user()->hasRole('auditor')) {
-            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
-        }
+        $allowed = $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
         $audit->log('file.audit_report_downloaded', $file, [], ['application_id' => $application->id]);
 
@@ -44,10 +60,8 @@ class SecureFileController extends Controller
         $file->load('correctiveAction.finding.application');
         $application = $file->correctiveAction->finding->application;
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin']);
-        if ($request->user()->hasRole('auditor')) {
-            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
-        }
+            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
         $audit->log('file.corrective_action_downloaded', $file, [], ['application_id' => $application->id]);
 
@@ -77,13 +91,34 @@ class SecureFileController extends Controller
         return $files->response($template->file_path, $template->original_name);
     }
 
+    /**
+     * Pratinjau tanda tangan berstempel yang menempel pada satu Surat Tugas.
+     *
+     * Berbeda dari tanda tangan profil: berkas ini milik surat, bukan milik
+     * akun, sehingga hanya internal yang menyiapkan surat yang boleh melihatnya.
+     */
+    public function assignmentLetterSignature(Request $request, AssignmentLetter $letter, FileStorageService $files, AuditLogger $audit)
+    {
+        abort_unless($request->user()->hasRole(['technical', 'admin_application', 'superadmin']), 403);
+        abort_unless(filled($letter->signature_path), 404);
+
+        $audit->log('file.assignment_letter_signature_viewed', $letter, [], [
+            'application_id' => $letter->application_id,
+            'stage' => $letter->stage_code,
+        ]);
+
+        return $files->response(
+            $letter->signature_path,
+            'tanda-tangan-'.$letter->stage_code.'.'.pathinfo($letter->signature_path, PATHINFO_EXTENSION),
+            'inline'
+        );
+    }
+
     public function fieldFile(Request $request, CertificationApplication $application, string $code, FileStorageService $files, AuditLogger $audit)
     {
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical']);
-        if ($request->user()->hasRole('auditor')) {
-            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
-        }
+            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
 
         $value = $application->values()->where('field_code', $code)->first();
@@ -108,10 +143,8 @@ class SecureFileController extends Controller
     public function applicationSignature(Request $request, CertificationApplication $application, int $index, FileStorageService $files, AuditLogger $audit)
     {
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical']);
-        if ($request->user()->hasRole('auditor')) {
-            $allowed = $application->auditAssignments()->where('auditor_id', $request->user()->id)->where('status', 'assigned')->exists();
-        }
+            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
 
         $signatories = $application->values()

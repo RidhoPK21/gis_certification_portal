@@ -40,9 +40,21 @@ class InstallApplication extends Command
         }
 
         if (! $this->option('demo')) {
-            // Taksonomi SNI ikut di sini karena isinya data master (pilihan
-            // dropdown Produk -> Kategori pada form SNI/LSPro), bukan data demo.
-            foreach (['RolePermissionSeeder', 'SchemeCatalogSeeder', 'WorkflowSeeder', 'SniProductTaxonomySeeder'] as $seeder) {
+            /*
+             * Taksonomi SNI dan acuan IAF/NACE ikut di sini karena isinya data
+             * master, bukan data demo: keduanya mengisi dropdown pada form
+             * permohonan. Tanpa IafNaceTaxonomySeeder, pilihan ruang lingkup
+             * akreditasi kosong di seluruh skema.
+             */
+            $seeders = [
+                'RolePermissionSeeder',
+                'SchemeCatalogSeeder',
+                'WorkflowSeeder',
+                'IafNaceTaxonomySeeder',
+                'SniProductTaxonomySeeder',
+            ];
+
+            foreach ($seeders as $seeder) {
                 Artisan::call('db:seed', ['--class' => $seeder, '--force' => true]);
                 $this->output->write(Artisan::output());
             }

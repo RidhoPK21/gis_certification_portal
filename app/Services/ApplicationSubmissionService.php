@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ApplicationValue;
 use App\Models\CertificationApplication;
 use App\Models\CertificationScheme;
+use App\Models\NaceCode;
 use App\Models\SchemeField;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -79,6 +80,36 @@ class ApplicationSubmissionService
         $this->audit->log('application.draft_saved', $application, [], ['fields' => array_keys($values)]);
     }
 
+    /**
+     * Kode NACE yang dipilih harus benar-benar berada di bawah kode IAF yang
+     * dipilih.
+     *
+     * Tidak bisa ditangani aturan `exists` biasa: satu kode NACE sah dimiliki
+     * lebih dari satu IAF pada Lampiran 1 KAN (NACE 17 milik IAF 7a maupun 7b),
+     * sehingga keberadaan kodenya saja tidak membuktikan pasangannya benar.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function pastikanLingkupSelaras(array $values): void
+    {
+        $iaf = $values['iaf_code'] ?? null;
+        $nace = $values['nace_code'] ?? null;
+
+        if (blank($iaf) || blank($nace)) {
+            return;
+        }
+
+        $selaras = NaceCode::where('code', $nace)
+            ->whereHas('iafCode', fn ($query) => $query->where('code', $iaf))
+            ->exists();
+
+        if (! $selaras) {
+            throw ValidationException::withMessages([
+                'fields.nace_code' => 'Kode NACE '.$nace.' tidak berada di bawah IAF '.$iaf.'. Pilih ulang mengikuti daftar yang tersedia.',
+            ]);
+        }
+    }
+
     public function submit(CertificationApplication $application, int $userId): CertificationApplication
     {
         $application->load(['scheme.sections.fields.options', 'scheme.requiredDocuments', 'documents.currentVersion', 'values', 'client']);
@@ -94,6 +125,8 @@ class ApplicationSubmissionService
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
+
+        $this->pastikanLingkupSelaras($values);
 
         /*
          * Diperiksa sebelum daftar dokumen kurang, supaya klien membaca akar

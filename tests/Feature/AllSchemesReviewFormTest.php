@@ -211,13 +211,9 @@ class AllSchemesReviewFormTest extends TestCase
             ->assertRedirect()
             ->assertSessionHasNoErrors();
 
+        // --- Keputusan Tim Teknis: PDF tinjauan dibuat di sini ---------------
         $this->actingAs($technical)
-            ->post(route('technical.reviews.complete', $application))
-            ->assertRedirect();
-
-        // --- Keputusan Admin: PDF tinjauan dibuat di sini -------------------
-        $this->actingAs($admin)
-            ->post(route('internal.applications.approve', $application->refresh()), [
+            ->post(route('technical.reviews.approve', $application->refresh()), [
                 'action_date' => now()->format('Y-m-d'),
                 'notes' => 'Permohonan disetujui setelah tinjauan administrasi dan teknis.',
             ])

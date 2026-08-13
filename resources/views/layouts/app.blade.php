@@ -617,6 +617,25 @@
             cursor: pointer;
         }
 
+        /* Tombol dan isian yang dimatikan harus terlihat mati. Beberapa tahap
+           proses sengaja mengunci form — mis. keputusan permohonan yang belum
+           memenuhi syarat, atau tahap audit yang Surat Tugasnya belum terbit —
+           dan tanpa gaya ini tombolnya tampak masih bisa ditekan. */
+        .btn:disabled,
+        .btn[disabled],
+        fieldset:disabled .btn {
+            opacity: 0.45;
+            cursor: not-allowed;
+            filter: grayscale(0.4);
+        }
+
+        fieldset:disabled .form-control,
+        fieldset:disabled .form-select,
+        fieldset:disabled .form-textarea {
+            background: var(--bg-alt);
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: var(--blue);
             color: #ffffff;

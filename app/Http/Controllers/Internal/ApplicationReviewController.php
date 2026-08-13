@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Internal;
 
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationRevisionItem;
-use App\Models\AuditAssignment;
 use App\Models\CertificationApplication;
-use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\DynamicFormService;
 use App\Services\IspoReviewService;
 use App\Services\PortalNotificationService;
 use App\Services\ReviewPdfService;
 use App\Services\ReviewService;
+use App\Services\RevisionRequestService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -48,10 +47,6 @@ class ApplicationReviewController extends Controller
             'statusHistory', 'generatedPdfs', 'auditAssignments.auditor',
         ]);
         $application->setRelation('scheme', $forms->schemeForApplication($application));
-        $auditors = User::where('is_active', true)
-            ->whereHas('roles', fn ($query) => $query->where('code', 'auditor'))
-            ->orderBy('name')
-            ->get();
 
         /*
          * Admin hanya mengkaji dokumen administrasi; dokumen ber-review_group
@@ -69,7 +64,6 @@ class ApplicationReviewController extends Controller
 
         return view('internal.applications.show', [
             'application' => $application,
-            'auditors' => $auditors,
             // Baris tabel mengikuti formulir tinjauan, bukan seluruh checklist klien.
             'adminDocuments' => $reviews->formRows($application, 'administration'),
             'technicalDocuments' => $reviews->formRows($application, 'technical'),
@@ -103,26 +97,6 @@ class ApplicationReviewController extends Controller
         );
 
         return $scopes ? implode(', ', $scopes) : 'belum dipilih pemohon — seluruh kelompok ditampilkan';
-    }
-
-    public function assignAuditor(Request $request, CertificationApplication $application, AuditLogger $audit, PortalNotificationService $notifications)
-    {
-        $data = $request->validate([
-            'auditor_id' => ['required', 'integer', 'exists:users,id'],
-            'assignment_role' => ['required', Rule::in(['LA', 'A', 'TA'])],
-            'stage_code' => ['required', Rule::in(['all', 'stage_1', 'stage_2', 'qms', 'corrective_action'])],
-            'assigned_date' => ['required', 'date'],
-        ]);
-        $auditor = User::whereKey($data['auditor_id'])->where('is_active', true)
-            ->whereHas('roles', fn ($query) => $query->where('code', 'auditor'))->firstOrFail();
-        $assignment = AuditAssignment::updateOrCreate(
-            ['application_id' => $application->id, 'auditor_id' => $auditor->id, 'stage_code' => $data['stage_code']],
-            ['assignment_role' => $data['assignment_role'], 'assigned_date' => $data['assigned_date'], 'status' => 'assigned', 'assigned_by' => $request->user()->id]
-        );
-        $audit->log('audit.assignment_saved', $assignment, [], ['auditor' => $auditor->email]);
-        $notifications->send($auditor, 'auditor_assigned', 'Tugas Audit Baru', 'Anda ditugaskan sebagai ' . $data['assignment_role'] . ' untuk order ' . $application->order_number . '.', route('audit.show', $application));
-
-        return back()->with('success', 'Auditor berhasil ditugaskan ke order ini.');
     }
 
     public function saveReview(Request $request, CertificationApplication $application, AuditLogger $audit, ReviewService $reviews)
@@ -179,88 +153,32 @@ class ApplicationReviewController extends Controller
         return back()->with('success', 'Permohonan diteruskan ke Tim Teknis untuk tinjauan teknis.');
     }
 
-    public function requestRevision(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
+    public function requestRevision(Request $request, CertificationApplication $application, RevisionRequestService $revisions)
     {
         abort_unless($application->status === 'admin_review', 422, 'Revisi hanya dapat diminta saat review admin.');
-        $data = $request->validate([
-            'targets' => ['required', 'array', 'min:1'],
-            'targets.*.type' => ['required', Rule::in(['field', 'document'])],
-            'targets.*.code' => ['required', 'string'],
-            'targets.*.label' => ['required', 'string'],
-            'targets.*.note' => ['required', 'string'],
-            'due_date' => ['nullable', 'date', 'after_or_equal:today'],
-        ], [
-            'targets.required' => 'Pilih minimal satu item (kolom atau dokumen) yang perlu direvisi dengan mencentang kotak revisi.',
-            'targets.min' => 'Pilih minimal satu item (kolom atau dokumen) yang perlu direvisi dengan mencentang kotak revisi.',
-            'targets.*.note.required' => 'Catatan revisi wajib diisi untuk setiap item yang dipilih.',
-        ]);
-        $round = ((int) $application->revisions()->max('revision_round')) + 1;
-        foreach ($data['targets'] as $target) {
-            ApplicationRevisionItem::create(['application_id' => $application->id, 'revision_round' => $round, 'target_type' => $target['type'], 'target_code' => $target['code'], 'target_label' => $target['label'], 'revision_note' => $target['note'], 'due_date' => $data['due_date'] ?? null, 'requested_by' => $request->user()->id]);
-        }
-        $workflow->transition($application, 'revision_requested', 'admin_request_revision', 'Admin meminta revisi spesifik pada '.count($data['targets']).' item.', $request->user()->id, null, ['round' => $round]);
-        $notifications->send($application->client_id, 'revision_requested', 'Perbaikan permohonan diperlukan', 'Tim GIS meminta perbaikan pada '.count($data['targets']).' item untuk order '.$application->order_number.'.', route('client.applications.edit', $application), ['round' => $round]);
-        $audit->log('application.revision_requested', $application, [], ['round' => $round, 'targets' => $data['targets']]);
+        $data = $request->validate(RevisionRequestService::rules(), RevisionRequestService::messages());
+
+        $revisions->request(
+            $application,
+            $data['targets'],
+            $data['due_date'] ?? null,
+            $request->user(),
+            'admin_request_revision',
+            'Admin'
+        );
 
         return back()->with('success', 'Permintaan revisi telah dikirim ke klien.');
     }
 
-    public function resolveRevision(Request $request, CertificationApplication $application, ApplicationRevisionItem $revision, AuditLogger $audit)
+    public function resolveRevision(Request $request, CertificationApplication $application, ApplicationRevisionItem $revision, RevisionRequestService $revisions)
     {
         abort_unless($revision->application_id === $application->id, 404);
         abort_if($revision->status === 'resolved', 422, 'Item revisi sudah ditutup.');
         $data = $request->validate(['resolution_note' => ['required', 'string', 'max:2000']]);
-        $old = $revision->toArray();
-        $revision->update([
-            'status' => 'resolved',
-            'resolved_by' => $request->user()->id,
-            'resolved_at' => now(),
-        ]);
-        $audit->log('application.revision_resolved', $revision, $old, $revision->fresh()->toArray(), ['resolution_note' => $data['resolution_note']]);
+
+        $revisions->resolve($revision, $data['resolution_note'], $request->user());
 
         return back()->with('success', 'Item revisi ditandai selesai.');
-    }
-
-    public function approve(Request $request, CertificationApplication $application, WorkflowService $workflow, ReviewPdfService $pdfs, PortalNotificationService $notifications)
-    {
-        abort_unless($application->status === 'admin_review', 422);
-        $data = $request->validate(['notes' => ['nullable', 'string'], 'action_date' => ['required', 'date']]);
-        $open = $application->revisions()->whereIn('status', ['open', 'submitted'])->count();
-        abort_if($open > 0, 422, 'Masih ada item revisi terbuka. Tutup item sebelum menyetujui.');
-        $technicalDone = $application->reviews()->where('review_type', 'technical')->whereNotNull('completed_at')->exists();
-        abort_unless($technicalDone, 422, 'Tinjauan teknis belum selesai oleh Tim Teknis. Teruskan ke Tim Teknis lebih dahulu.');
-        // Menyetujui permohonan = kedua bagian kajian (administrasi & teknis) diterima.
-        foreach (['administration', 'technical'] as $type) {
-            $review = $application->reviews()->where('review_type', $type)->latest()->first();
-            if ($review) {
-                $review->update(['status' => 'approved', 'completed_at' => now(), 'action_date' => $data['action_date'], 'notes' => $data['notes'] ?? $review->notes]);
-            }
-        }
-        $application = $workflow->transition($application, 'application_approved', 'admin_approve', $data['notes'] ?? 'Permohonan disetujui.', $request->user()->id, new \DateTime($data['action_date']));
-        $application->update(['approved_at' => now()]);
-        $pdfs->generate($application, $request->user()->id);
-        $application = $workflow->transition($application->refresh(), 'invoice_process', 'open_finance', 'Permohonan diteruskan ke Finance.', $request->user()->id);
-        $notifications->send($application->client_id, 'application_approved', 'Permohonan disetujui', 'Permohonan '.$application->order_number.' disetujui dan masuk proses invoice.', route('client.applications.show', $application));
-        $notifications->sendToRole('finance', 'invoice_process', 'Order Baru untuk Invoice', 'Permohonan '.$application->order_number.' telah disetujui dan diteruskan untuk pembuatan invoice.', route('finance.show', $application));
-
-        return back()->with('success', 'Permohonan disetujui, PDF tinjauan dibuat, dan order diteruskan ke Finance.');
-    }
-
-    public function reject(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications)
-    {
-        abort_unless($application->status === 'admin_review', 422);
-        $data = $request->validate(['reason' => ['required', 'string'], 'action_date' => ['required', 'date']]);
-        // Menolak permohonan = kedua bagian kajian (administrasi & teknis) ditolak.
-        foreach (['administration', 'technical'] as $type) {
-            $review = $application->reviews()->where('review_type', $type)->latest()->first();
-            if ($review) {
-                $review->update(['status' => 'rejected', 'rejection_reason' => $data['reason'], 'completed_at' => now(), 'action_date' => $data['action_date']]);
-            }
-        }
-        $workflow->transition($application, 'rejected', 'admin_reject', $data['reason'], $request->user()->id, new \DateTime($data['action_date']));
-        $notifications->send($application->client_id, 'application_rejected', 'Permohonan ditolak', 'Permohonan '.$application->order_number.' tidak dapat dilanjutkan. Lihat alasan pada dashboard.', route('client.applications.show', $application));
-
-        return back()->with('success', 'Keputusan penolakan tersimpan dan klien telah diberi notifikasi.');
     }
 
     public function generatePdf(Request $request, CertificationApplication $application, ReviewPdfService $service)

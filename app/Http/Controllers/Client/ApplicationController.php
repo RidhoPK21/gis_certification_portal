@@ -95,6 +95,16 @@ class ApplicationController extends Controller
             ? \App\Models\SniProductGroup::with('categories')->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get()
             : null;
 
+        /*
+         * Ruang lingkup akreditasi KAN berlaku untuk seluruh skema, jadi tidak
+         * dibatasi review_template. Relasi activeNaceCodes dipakai supaya kode
+         * yang dinonaktifkan Superadmin tidak ikut ditawarkan ke klien.
+         */
+        $iafCodes = \App\Models\IafCode::with('activeNaceCodes')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
         $usesGisForms = $gisForms->schemeUsesGisForms($application->certification_scheme_id);
         $gisFormUnlocked = $gisForms->isUnlocked($application);
 
@@ -113,6 +123,7 @@ class ApplicationController extends Controller
             'applicableDocuments' => $forms->applicableDocuments($application->scheme, $forms->values($application)),
             'completion' => $forms->completion($application),
             'productGroups' => $productGroups,
+            'iafCodes' => $iafCodes,
             'usesGisForms' => $usesGisForms,
             'gisFormRequest' => $gisForms->latestRequest($application),
             'gisFormUnlocked' => $gisFormUnlocked,

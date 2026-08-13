@@ -9,6 +9,8 @@ use RuntimeException;
 
 class OrderNumberService
 {
+    use Concerns\FormatsRomanMonth;
+
     public function generate(CertificationApplication $application, ?\DateTimeInterface $date = null): string
     {
         $date ??= now();
@@ -51,10 +53,5 @@ class OrderNumberService
 
             return $order;
         }, 3);
-    }
-
-    private function romanMonth(int $month): string
-    {
-        return ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][$month] ?? '';
     }
 }

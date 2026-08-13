@@ -19,6 +19,13 @@ use Illuminate\Validation\Rule;
 
 class AuditController extends Controller
 {
+    /**
+     * Tahap audit yang memerlukan Surat Tugas sebelum boleh dikerjakan.
+     * corrective_action sengaja di luar daftar: tindakan koreksi adalah
+     * kelanjutan audit yang sama dan tidak punya suratnya sendiri.
+     */
+    private const LETTER_STAGES = ['stage_1', 'stage_2', 'qms'];
+
     public function index(Request $request)
     {
         $query = CertificationApplication::with(['scheme', 'client', 'auditStages', 'auditAssignments.auditor'])->latest();
@@ -58,6 +65,7 @@ class AuditController extends Controller
         $application->load([
             'scheme', 'client', 'auditAssignments.auditor', 'auditStages.files',
             'findings.correctiveActions.files', 'findings.correctiveActions.reviews',
+            'assignmentLetters',
         ]);
 
         return view('internal.audit.show', [
@@ -180,14 +188,9 @@ class AuditController extends Controller
 
     public function completeAudit(Request $request, CertificationApplication $application, WorkflowService $workflow, AuditLogger $audit, PortalNotificationService $notifications)
     {
-        if (!$request->user()->hasRole('superadmin')) {
-            $allowed = $application->auditAssignments()
-                ->where('auditor_id', $request->user()->id)
-                ->where('status', 'assigned')
-                ->whereIn('stage_code', ['all', 'qms'])
-                ->exists();
-            abort_unless($allowed, 403, 'Order ini belum ditugaskan kepada akun auditor Anda.');
-        }
+        // Pemeriksaan yang sama dengan aksi tahap QMS lainnya, termasuk syarat
+        // Surat Tugas — sebelumnya disalin inline di sini.
+        $this->ensureAssigned($request, $application, 'qms');
         $data = $request->validate([
             'notes' => ['nullable', 'string', 'max:3000'],
             'action_date' => ['nullable', 'date'],
@@ -297,5 +300,19 @@ class AuditController extends Controller
             $query->whereIn('stage_code', ['all', $stageCode]);
         }
         abort_unless($query->exists(), 403, 'Order ini belum ditugaskan kepada akun auditor Anda.');
+
+        /*
+         * Ditugaskan saja belum cukup: Surat Tugas tahap itu harus sudah
+         * diterbitkan Tim Teknis. Pemeriksaan hanya untuk tahap yang memang
+         * punya surat — tindakan koreksi tidak punya, dan bila ikut dijaga di
+         * sini prosesnya akan buntu.
+         */
+        if ($stageCode !== null && in_array($stageCode, self::LETTER_STAGES, true)) {
+            abort_unless(
+                $application->hasAssignmentLetter($stageCode),
+                403,
+                'Surat Tugas untuk tahap ini belum diterbitkan Tim Teknis. Hubungi Tim Teknis sebelum memulai audit.'
+            );
+        }
     }
 }

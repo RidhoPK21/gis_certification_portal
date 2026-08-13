@@ -14,8 +14,14 @@ class WorkflowService
     private const ALLOWED = [
         'draft' => ['submitted'],
         'submitted' => ['admin_review'],
-        'admin_review' => ['revision_requested', 'rejected', 'application_approved', 'technical_review'],
-        'technical_review' => ['admin_review'],
+        /*
+         * Keputusan akhir ada pada Tim Teknis, bukan Admin Permohonan: Admin
+         * mengkaji kelengkapan lalu meneruskan, dan hanya technical_review yang
+         * bisa mencapai application_approved maupun rejected. Keduanya tetap
+         * boleh meminta revisi ke klien.
+         */
+        'admin_review' => ['revision_requested', 'technical_review'],
+        'technical_review' => ['admin_review', 'revision_requested', 'rejected', 'application_approved'],
         'revision_requested' => ['client_revision'],
         'client_revision' => ['admin_review'],
         'application_approved' => ['invoice_process'],

@@ -73,14 +73,14 @@ class FinanceController extends Controller
             ['application_id' => $application->id],
             $data + ['payment_status' => $application->invoice?->payment_status ?? 'unpaid', 'file_path' => $path, 'created_by' => $request->user()->id]
         );
-        $this->applyStageWorkflow($application, $invoice, $data['payment_stage'], $workflow, $request);
+        $this->applyStageWorkflow($application, $invoice, $data['payment_stage'], $workflow, $request, $notifications);
         $audit->log('finance.invoice_saved', $invoice);
         $notifications->send($application->client_id, 'invoice_issued', 'Invoice diterbitkan', 'Invoice '.$invoice->invoice_number.' untuk order '.$application->order_number.' telah tersedia.', route('client.applications.show', $application));
 
         return $this->savedResponse($request, 'Invoice berhasil disimpan.');
     }
 
-    private function applyStageWorkflow(CertificationApplication $application, Invoice $invoice, string $stage, WorkflowService $workflow, Request $request): void
+    private function applyStageWorkflow(CertificationApplication $application, Invoice $invoice, string $stage, WorkflowService $workflow, Request $request, PortalNotificationService $notifications): void
     {
         $target = match ($stage) {
             'tahap_1', 'tahap_2', 'tahap_3' => 'payment_partial',
@@ -95,7 +95,28 @@ class FinanceController extends Controller
 
         if ($target && $workflow->allows($application->status, $target)) {
             $workflow->transition($application, $target, $target, 'Status pembayaran diperbarui ke '.Invoice::STAGES[$stage].'.', $request->user()->id);
+
+            // Jalur kedua menuju lunas — selain addPayment — sehingga Tim Teknis
+            // tetap diberi tahu bahwa Surat Tugas sudah bisa diterbitkan.
+            if ($target === 'payment_completed') {
+                $this->notifyTechnicalForAssignment($application->refresh(), $notifications);
+            }
         }
+    }
+
+    /**
+     * Beri tahu Tim Teknis bahwa order siap diterbitkan Surat Tugasnya.
+     * Auditor tidak dapat mulai bekerja sebelum surat itu terbit.
+     */
+    private function notifyTechnicalForAssignment(CertificationApplication $application, PortalNotificationService $notifications): void
+    {
+        $notifications->sendToRole(
+            'technical',
+            'assignment_letter_pending',
+            'Terbitkan Surat Tugas',
+            'Pembayaran order '.$application->order_number.' telah lunas. Terbitkan Surat Tugas agar auditor dapat bekerja.',
+            route('technical.assignments.show', $application)
+        );
     }
 
     public function addPayment(Request $request, CertificationApplication $application, WorkflowService $workflow, FileStorageService $files, PortalNotificationService $notifications, AuditLogger $audit)
@@ -139,6 +160,7 @@ class FinanceController extends Controller
         if ($status === 'paid' && in_array($application->status, ['invoice_process', 'payment_partial'], true)) {
             $workflow->transition($application, 'payment_completed', 'payment_completed', 'Pembayaran dinyatakan lunas.', $request->user()->id, new \DateTime($data['payment_date']));
             $notifications->sendToRole('admin_application', 'payment_completed', 'Pembayaran Selesai', 'Pembayaran order '.$application->order_number.' telah lunas. Audit siap dijadwalkan.', route('internal.applications.show', $application));
+            $this->notifyTechnicalForAssignment($application, $notifications);
         } elseif ($status === 'partial' && $application->status === 'invoice_process') {
             $workflow->transition($application, 'payment_partial', 'payment_partial', 'Pembayaran tahap '.$data['milestone'].' tercatat.', $request->user()->id, new \DateTime($data['payment_date']));
         }

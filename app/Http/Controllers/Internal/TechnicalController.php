@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Internal;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApplicationRevisionItem;
 use App\Models\CertificateDraft;
 use App\Models\CertificateFinal;
 use App\Models\CertificateShareLink;
@@ -16,7 +17,9 @@ use App\Services\FileStorageService;
 use App\Services\IspoReviewService;
 use App\Services\PortalNotificationService;
 use App\Services\QrCodeService;
+use App\Services\ReviewPdfService;
 use App\Services\ReviewService;
+use App\Services\RevisionRequestService;
 use App\Services\SurveillancePlannerService;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
@@ -86,7 +89,15 @@ class TechnicalController extends Controller
     public function reviewShow(CertificationApplication $application, DynamicFormService $forms, ReviewService $reviews)
     {
         abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
-        $application->load(['scheme.requiredDocuments', 'client', 'values', 'documents.currentVersion', 'reviews.items', 'auditAssignments.auditor']);
+        /*
+         * Tim Teknis kini memegang keputusan akhir, jadi halaman ini memuat
+         * seluruh isian dan dokumen klien — bukan lagi hanya subset teknis.
+         */
+        $application->load([
+            'scheme.sections.fields.options', 'scheme.requiredDocuments', 'client', 'values',
+            'documents.currentVersion', 'documents.versions', 'reviews.items', 'revisions',
+            'auditAssignments.auditor',
+        ]);
         $application->setRelation('scheme', $forms->schemeForApplication($application));
         $review = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first();
 
@@ -107,6 +118,11 @@ class TechnicalController extends Controller
             'ispoSaved' => $isIspo ? $ispo->savedItems($application, 'technical') : [],
             'panelistCandidates' => User::where('is_active', true)
                 ->whereHas('roles', fn ($query) => $query->whereIn('code', config('review.panelist_roles')))
+                ->orderBy('name')
+                ->get(),
+            // Penugasan tim auditor kini wewenang Tim Teknis, bukan Admin Permohonan.
+            'auditors' => User::where('is_active', true)
+                ->whereHas('roles', fn ($query) => $query->where('code', 'auditor'))
                 ->orderBy('name')
                 ->get(),
         ]);
@@ -192,21 +208,148 @@ class TechnicalController extends Controller
         $reviews->storeTechnicalAspects($application, $data['aspects'] ?? [], $request->user()->id);
         $audit->log('application.review_saved', $review, [], ['application_id' => $application->id, 'type' => 'technical']);
 
-        return back()->with('success', 'Tinjauan teknis berhasil disimpan. Klik "Selesai & Kirim ke Admin" bila sudah final.');
+        return back()->with('success', 'Tinjauan teknis berhasil disimpan. Ambil keputusan Setujui/Tolak bila sudah final.');
     }
 
-    public function completeTechnicalReview(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
+    /**
+     * Kembalikan permohonan ke Admin tanpa mengambil keputusan.
+     *
+     * Dipakai bila kelengkapan administrasi perlu dibereskan lebih dahulu —
+     * termasuk jalur LSPro yang memilih "kembalikan" pada verifikasi Fr.7201.
+     */
+    public function returnToAdmin(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
     {
         abort_unless($application->status === 'technical_review', 422, 'Permohonan belum berada pada tahap tinjauan teknis.');
         $review = $application->reviews()->where('review_type', 'technical')->latest()->first();
         abort_unless($review, 422, 'Isi dan simpan tinjauan teknis terlebih dahulu.');
 
         $review->update(['completed_at' => now(), 'reviewed_by' => $request->user()->id]);
-        $workflow->transition($application, 'admin_review', 'technical_review_done', 'Tinjauan teknis selesai, dikembalikan ke Admin untuk keputusan.', $request->user()->id);
-        $notifications->sendToRole('admin_application', 'technical_review_completed', 'Tinjauan Teknis Selesai', 'Tinjauan teknis untuk '.$application->order_number.' telah selesai dan siap disetujui.', route('internal.applications.show', $application));
+        $workflow->transition($application, 'admin_review', 'technical_review_done', 'Tinjauan teknis selesai, dikembalikan ke Admin.', $request->user()->id);
+        $notifications->sendToRole('admin_application', 'technical_review_completed', 'Tinjauan Teknis Selesai', 'Tinjauan teknis untuk '.$application->order_number.' telah dikembalikan oleh Tim Teknis.', route('internal.applications.show', $application));
         $audit->log('application.technical_review_completed', $application, [], ['application_id' => $application->id]);
 
-        return redirect()->route('technical.reviews.index')->with('success', 'Tinjauan teknis dikirim ke Admin untuk keputusan akhir.');
+        return redirect()->route('technical.reviews.index')->with('success', 'Permohonan dikembalikan ke Admin Permohonan.');
+    }
+
+    /**
+     * Keputusan akhir: setujui permohonan dan teruskan ke Finance.
+     *
+     * Tim auditor wajib sudah ditentukan (minimal satu Lead Auditor) karena tim
+     * itulah yang tercetak pada PDF tinjauan dan mengisi Surat Tugas nanti.
+     */
+    public function approve(Request $request, CertificationApplication $application, WorkflowService $workflow, ReviewPdfService $pdfs, PortalNotificationService $notifications, AuditLogger $audit)
+    {
+        abort_unless($application->status === 'technical_review', 422, 'Keputusan hanya dapat diambil pada tahap tinjauan teknis.');
+        $data = $request->validate(['notes' => ['nullable', 'string'], 'action_date' => ['required', 'date']]);
+
+        $open = $application->revisions()->whereIn('status', ['open', 'submitted'])->count();
+        abort_if($open > 0, 422, 'Masih ada item revisi terbuka. Tutup item sebelum menyetujui.');
+
+        $technicalReview = $application->reviews()->where('review_type', 'technical')->latest()->first();
+        abort_unless($technicalReview, 422, 'Isi dan simpan tinjauan teknis terlebih dahulu.');
+
+        $hasLeadAuditor = $application->auditAssignments()
+            ->where('status', 'assigned')
+            ->where('assignment_role', 'LA')
+            ->exists();
+        abort_unless($hasLeadAuditor, 422, 'Tentukan tim auditor — minimal satu Lead Auditor — sebelum menyetujui. Tim ini tercetak pada PDF tinjauan dan mengisi Surat Tugas.');
+
+        // Menyetujui permohonan = kedua bagian kajian (administrasi & teknis) diterima.
+        foreach (['administration', 'technical'] as $type) {
+            $review = $application->reviews()->where('review_type', $type)->latest()->first();
+            if ($review) {
+                $review->update(['status' => 'approved', 'completed_at' => now(), 'action_date' => $data['action_date'], 'notes' => $data['notes'] ?? $review->notes]);
+            }
+        }
+
+        $application = $workflow->transition($application, 'application_approved', 'technical_approve', $data['notes'] ?? 'Permohonan disetujui Tim Teknis.', $request->user()->id, new \DateTime($data['action_date']));
+        $application->update(['approved_at' => now()]);
+        $pdfs->generate($application, $request->user()->id);
+        $application = $workflow->transition($application->refresh(), 'invoice_process', 'open_finance', 'Permohonan diteruskan ke Finance.', $request->user()->id);
+
+        $notifications->send($application->client_id, 'application_approved', 'Permohonan disetujui', 'Permohonan '.$application->order_number.' disetujui dan masuk proses invoice.', route('client.applications.show', $application));
+        $notifications->sendToRole('finance', 'invoice_process', 'Order Baru untuk Invoice', 'Permohonan '.$application->order_number.' telah disetujui dan diteruskan untuk pembuatan invoice.', route('finance.show', $application));
+        $notifications->sendToRole('admin_application', 'application_decided', 'Permohonan Disetujui', 'Tim Teknis menyetujui permohonan '.$application->order_number.'.', route('internal.applications.show', $application));
+        $audit->log('application.approved', $application, [], ['application_id' => $application->id]);
+
+        return redirect()->route('technical.reviews.index')->with('success', 'Permohonan disetujui, PDF tinjauan dibuat, dan order diteruskan ke Finance.');
+    }
+
+    public function reject(Request $request, CertificationApplication $application, WorkflowService $workflow, PortalNotificationService $notifications, AuditLogger $audit)
+    {
+        abort_unless($application->status === 'technical_review', 422, 'Keputusan hanya dapat diambil pada tahap tinjauan teknis.');
+        $data = $request->validate(['reason' => ['required', 'string'], 'action_date' => ['required', 'date']]);
+
+        // Menolak permohonan = kedua bagian kajian (administrasi & teknis) ditolak.
+        foreach (['administration', 'technical'] as $type) {
+            $review = $application->reviews()->where('review_type', $type)->latest()->first();
+            if ($review) {
+                $review->update(['status' => 'rejected', 'rejection_reason' => $data['reason'], 'completed_at' => now(), 'action_date' => $data['action_date']]);
+            }
+        }
+
+        $workflow->transition($application, 'rejected', 'technical_reject', $data['reason'], $request->user()->id, new \DateTime($data['action_date']));
+        $notifications->send($application->client_id, 'application_rejected', 'Permohonan ditolak', 'Permohonan '.$application->order_number.' tidak dapat dilanjutkan. Lihat alasan pada dashboard.', route('client.applications.show', $application));
+        $notifications->sendToRole('admin_application', 'application_decided', 'Permohonan Ditolak', 'Tim Teknis menolak permohonan '.$application->order_number.'.', route('internal.applications.show', $application));
+        $audit->log('application.rejected', $application, [], ['application_id' => $application->id]);
+
+        return redirect()->route('technical.reviews.index')->with('success', 'Keputusan penolakan tersimpan dan klien telah diberi notifikasi.');
+    }
+
+    public function requestRevision(Request $request, CertificationApplication $application, RevisionRequestService $revisions)
+    {
+        abort_unless($application->status === 'technical_review', 422, 'Revisi hanya dapat diminta saat tinjauan teknis.');
+        $data = $request->validate(RevisionRequestService::rules(), RevisionRequestService::messages());
+
+        $revisions->request(
+            $application,
+            $data['targets'],
+            $data['due_date'] ?? null,
+            $request->user(),
+            'technical_request_revision',
+            'Tim Teknis'
+        );
+
+        return back()->with('success', 'Permintaan revisi telah dikirim ke klien. Perbaikannya kembali melalui Admin sebelum diteruskan lagi ke Anda.');
+    }
+
+    public function resolveRevision(Request $request, CertificationApplication $application, ApplicationRevisionItem $revision, RevisionRequestService $revisions)
+    {
+        abort_unless($revision->application_id === $application->id, 404);
+        abort_if($revision->status === 'resolved', 422, 'Item revisi sudah ditutup.');
+        $data = $request->validate(['resolution_note' => ['required', 'string', 'max:2000']]);
+
+        $revisions->resolve($revision, $data['resolution_note'], $request->user());
+
+        return back()->with('success', 'Item revisi ditandai selesai.');
+    }
+
+    /**
+     * Pilih ulang panelis setelah tahap tinjauan lewat.
+     *
+     * Endpoint tersendiri karena saveTechnicalReview menolak status selain
+     * technical_review, sedangkan halaman Surat Tugas dibuka jauh setelah itu.
+     */
+    public function updatePanelists(Request $request, CertificationApplication $application, AuditLogger $audit)
+    {
+        $data = $request->validate([
+            'panelist_ids' => ['nullable', 'array'],
+            'panelist_ids.*' => ['integer', 'exists:users,id'],
+        ]);
+
+        $review = $application->reviews()->where('review_type', 'technical')->latest()->first();
+        abort_unless($review, 422, 'Belum ada tinjauan teknis pada order ini.');
+
+        $allowed = User::whereIn('id', $data['panelist_ids'] ?? [])
+            ->where('is_active', true)
+            ->whereHas('roles', fn ($query) => $query->whereIn('code', config('review.panelist_roles')))
+            ->pluck('id')
+            ->all();
+
+        $review->update(['panelist_ids' => $allowed ?: null]);
+        $audit->log('application.panelists_updated', $review, [], ['application_id' => $application->id, 'panelist_ids' => $allowed]);
+
+        return back()->with('success', 'Daftar panelis diperbarui. Generate ulang PDF tinjauan agar perubahannya tercetak.');
     }
 
     public function uploadDraft(Request $request, CertificationApplication $application, FileStorageService $files, AuditLogger $audit)

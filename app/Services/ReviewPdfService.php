@@ -446,6 +446,30 @@ class ReviewPdfService
     }
 
     /**
+     * Kode ruang lingkup akreditasi beserta keterangannya, mis.
+     * "16 — Beton, semen, kapur, plester, dll".
+     *
+     * Keterangannya dibaca dari nilai yang tersimpan bersama permohonan, bukan
+     * dicari ulang ke tabel acuan: KAN sewaktu-waktu merevisi Lampiran 1, dan
+     * PDF tinjauan harus tetap memperlihatkan apa yang benar-benar dipilih
+     * klien saat itu.
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function kodeLingkup(array $values, string $kodeField, string $keteranganField): string
+    {
+        $kode = trim((string) ($values[$kodeField] ?? ''));
+
+        if ($kode === '') {
+            return '-';
+        }
+
+        $keterangan = trim((string) ($values[$keteranganField] ?? ''));
+
+        return $keterangan === '' ? $kode : $kode.' — '.$keterangan;
+    }
+
+    /**
      * Formulir FrM.9101/GIS untuk sistem manajemen lingkungan (ISO 14001).
      *
      * Bedanya dengan FrM.9107: blok identitas memakai NACE Code dan hanya satu
@@ -464,7 +488,7 @@ class ReviewPdfService
             ['Nama Perusahaan', $a['company_name']],
             ['Alamat Perusahaan', $v['company_address'] ?? '-'],
             ['Lingkup Usaha', $v['industry_scope'] ?? $v['business_sector'] ?? '-'],
-            ['NACE Code', $v['nace_code'] ?? '-'],
+            ['NACE Code', $this->kodeLingkup($v, 'nace_code', 'nace_description')],
             ['Lingkup Usaha Spesifik (Produk atau jasa yang dihasilkan)', $v['certification_scope'] ?? '-'],
             ['Kriteria Audit', $s['scheme']['standard'] ?? '-'],
         ], false);
@@ -579,7 +603,7 @@ class ReviewPdfService
             ['Nama Perusahaan', $a['company_name']],
             ['Alamat Perusahaan', $v['company_address'] ?? $v['head_office_address'] ?? '-'],
             ['Lingkup Industri', $v['industry_scope'] ?? $v['business_sector'] ?? '-'],
-            ['IAF Code', $v['iaf_code'] ?? '-'],
+            ['IAF Code', $this->kodeLingkup($v, 'iaf_code', 'iaf_description')],
             ['Lingkup Sertifikasi dan batasan : (Produk/Jasa/Proses pada perusahaan)', $v['certification_scope'] ?? '-'],
         ];
 

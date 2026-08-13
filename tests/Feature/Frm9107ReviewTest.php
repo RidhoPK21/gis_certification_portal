@@ -254,7 +254,7 @@ class Frm9107ReviewTest extends TestCase
             'audit_capability_choice' => 'dapat',
         ])->assertRedirect();
 
-        $this->actingAs($technical)->post(route('technical.reviews.complete', $application))->assertRedirect();
+        $this->actingAs($technical)->post(route('technical.reviews.return-admin', $application))->assertRedirect();
 
         $this->actingAs($admin)->post(route('internal.applications.review', $application->refresh()), [
             'review_type' => 'administration',

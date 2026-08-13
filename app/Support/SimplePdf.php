@@ -159,11 +159,33 @@ class SimplePdf
         $this->command("q {$width} 0 0 {$height} {$x} {$pdfY} cm /{$name} Do Q");
     }
 
-    public function line(float $x1, float $y1, float $x2, float $y2, float $width = 0.5): void
+    /**
+     * Garis lurus. $hexColor dipakai kop surat, yang garis pemisahnya berwarna
+     * seperti pada dokumen aslinya; warna dikembalikan ke hitam setelahnya agar
+     * garis berikutnya tidak ikut terwarnai.
+     */
+    public function line(float $x1, float $y1, float $x2, float $y2, float $width = 0.5, ?string $hexColor = null): void
     {
         $py1 = self::HEIGHT - $y1;
         $py2 = self::HEIGHT - $y2;
-        $this->command("{$width} w {$x1} {$py1} m {$x2} {$py2} l S");
+
+        $color = $hexColor ? self::strokeCommand($hexColor).' ' : '';
+        $reset = $hexColor ? ' 0 G' : '';
+
+        $this->command("{$color}{$width} w {$x1} {$py1} m {$x2} {$py2} l S{$reset}");
+    }
+
+    /**
+     * Warna heksadesimal menjadi operator warna garis (stroke) PDF.
+     */
+    private static function strokeCommand(string $hex): string
+    {
+        $hex = ltrim($hex, '#');
+        $r = round(hexdec(substr($hex, 0, 2)) / 255, 4);
+        $g = round(hexdec(substr($hex, 2, 2)) / 255, 4);
+        $b = round(hexdec(substr($hex, 4, 2)) / 255, 4);
+
+        return "{$r} {$g} {$b} RG";
     }
 
     public function rect(float $x, float $y, float $w, float $h, float $width = 0.5): void

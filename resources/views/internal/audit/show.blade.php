@@ -11,6 +11,17 @@
             return in_array('all', $userScopes, true) || in_array($s, $userScopes, true);
         };
 
+        /*
+         * Ditugaskan saja belum membuka pekerjaan: Surat Tugas tahap itu harus
+         * sudah diterbitkan Tim Teknis. Ordernya tetap terlihat agar auditor
+         * bisa membedakan "belum ditugaskan" dari "menunggu surat".
+         */
+        $letters = $application->assignmentLetters->keyBy('stage_code');
+        $hasLetter = function ($stage) use ($letters) {
+            return auth()->user()->hasRole('superadmin')
+                || (bool) $letters->get($stage)?->generated_pdf_id;
+        };
+
         $assignedTeam = $application->auditAssignments->where('status', 'assigned');
         $currentUserAssignment = $assignedTeam->where('auditor_id', auth()->id())->first();
         $auditorRoleLabel = $currentUserAssignment ? $currentUserAssignment->assignment_role : (auth()->user()->hasRole('superadmin') ? 'Superadmin' : '-');
@@ -123,6 +134,15 @@
         @if ($hasScope('stage_1'))
             <section class="card">
                 <h2>Pencatatan Audit Stage 1</h2>
+                @unless ($hasLetter('stage_1'))
+                    <div class="alert alert-warning">
+                        <strong>Menunggu Surat Tugas.</strong> Tim Teknis belum menerbitkan Surat Tugas untuk
+                        tahap ini, sehingga formulirnya masih terkunci. Hubungi Tim Teknis sebelum memulai audit.
+                    </div>
+                @endunless
+                {{-- fieldset disabled mematikan input sekaligus tombolnya, dan input
+                     disabled tidak ikut terkirim ke server. --}}
+                <fieldset @disabled(! $hasLetter('stage_1')) style="border:0;padding:0;margin:0">
                 <form method="post" action="{{ route('audit.stage', $application) }}" enctype="multipart/form-data" data-ajax>
                     @csrf
                     <input type="hidden" name="stage_code" value="stage_1">
@@ -158,6 +178,7 @@
                     </div>
                     <button class="btn btn-primary">Simpan Tahap Audit</button>
                 </form>
+                </fieldset>
 
                 @php
                     // Sengaja bentuk blok, bukan bentuk inline berargumen:
@@ -243,6 +264,15 @@
         @if ($hasScope('stage_2'))
             <section class="card">
                 <h2>Pencatatan Audit Stage 2</h2>
+                @unless ($hasLetter('stage_2'))
+                    <div class="alert alert-warning">
+                        <strong>Menunggu Surat Tugas.</strong> Tim Teknis belum menerbitkan Surat Tugas untuk
+                        tahap ini, sehingga formulirnya masih terkunci. Hubungi Tim Teknis sebelum memulai audit.
+                    </div>
+                @endunless
+                {{-- fieldset disabled mematikan input sekaligus tombolnya, dan input
+                     disabled tidak ikut terkirim ke server. --}}
+                <fieldset @disabled(! $hasLetter('stage_2')) style="border:0;padding:0;margin:0">
                 <form method="post" action="{{ route('audit.stage', $application) }}" enctype="multipart/form-data" data-ajax>
                     @csrf
                     <input type="hidden" name="stage_code" value="stage_2">
@@ -278,6 +308,7 @@
                     </div>
                     <button class="btn btn-primary">Simpan Tahap Audit</button>
                 </form>
+                </fieldset>
 
                 @php
                     $skipInfo = $stageSkip['stage_2'];
@@ -357,6 +388,15 @@
         @if ($hasScope('qms'))
             <section class="card">
                 <h2>Pencatatan Audit QMS / Audit Lapangan</h2>
+                @unless ($hasLetter('qms'))
+                    <div class="alert alert-warning">
+                        <strong>Menunggu Surat Tugas.</strong> Tim Teknis belum menerbitkan Surat Tugas untuk
+                        tahap ini, sehingga formulirnya masih terkunci. Hubungi Tim Teknis sebelum memulai audit.
+                    </div>
+                @endunless
+                {{-- fieldset disabled mematikan input sekaligus tombolnya, dan input
+                     disabled tidak ikut terkirim ke server. --}}
+                <fieldset @disabled(! $hasLetter('qms')) style="border:0;padding:0;margin:0">
                 <form method="post" action="{{ route('audit.stage', $application) }}" enctype="multipart/form-data" data-ajax>
                     @csrf
                     <input type="hidden" name="stage_code" value="qms">
@@ -392,6 +432,7 @@
                     </div>
                     <button class="btn btn-primary">Simpan Tahap Audit</button>
                 </form>
+                </fieldset>
             </section>
 
             <section class="card mt-2">

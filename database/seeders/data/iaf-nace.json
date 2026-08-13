@@ -1,0 +1,394 @@
+[
+  {
+    "code": "1",
+    "name_en": "Agriculture, forestry and fishing",
+    "name_id": "Pertanian, Kehutanan, dan Perikanan",
+    "nace": [
+      { "code": "01", "name_en": "Crop and animal production, hunting and related services activities", "name_id": "Pertanian tanaman, peternakan, perburuan dan kegiatan terkait" },
+      { "code": "02", "name_en": "Forestry and Logging", "name_id": "Kehutanan dan pemanenan kayu" },
+      { "code": "03", "name_en": "Fishing and aquaculture", "name_id": "Perikanan dan Budidaya Perikanan" }
+    ]
+  },
+  {
+    "code": "2",
+    "name_en": "Mining and quarrying",
+    "name_id": "Pertambangan dan Penggalian",
+    "nace": [
+      { "code": "05", "name_en": "Mining of Coal and lignite", "name_id": "Pertambangan batu bara dan lignit" },
+      { "code": "06", "name_en": "Extraction of Crude petroleum and natural gas", "name_id": "Pertambangan minyak bumi dan gas alam" },
+      { "code": "07", "name_en": "Mining of metal ores", "name_id": "Pertambangan bijih logam" },
+      { "code": "08", "name_en": "Other mining and quarrying", "name_id": "Pertambangan dan penggalian lainnya" },
+      { "code": "09", "name_en": "Mining support services activities", "name_id": "Aktivitas jasa penunjang pertambangan" }
+    ]
+  },
+  {
+    "code": "3",
+    "name_en": "Food products, beverages and tobacco",
+    "name_id": "Produk makanan, minuman dan tembakau",
+    "nace": [
+      { "code": "10", "name_en": "Manufacture of food products", "name_id": "Industri makanan" },
+      { "code": "11", "name_en": "Manufacture of beverages", "name_id": "Industri minuman" },
+      { "code": "12", "name_en": "Manufacture of tobacco products", "name_id": "Industri pengolahan tembakau" }
+    ]
+  },
+  {
+    "code": "4",
+    "name_en": "Textiles and textile products",
+    "name_id": "Tekstil dan produk tekstil",
+    "nace": [
+      { "code": "13", "name_en": "Manufacture of textiles", "name_id": "Industri tekstil" },
+      { "code": "14", "name_en": "Manufacture of wearing apparel", "name_id": "Industri pakaian jadi" }
+    ]
+  },
+  {
+    "code": "5",
+    "name_en": "Leather and leather products",
+    "name_id": "Kulit dan produk kulit",
+    "nace": [
+      { "code": "15", "name_en": "Manufacture of leather and related products", "name_id": "Industri kulit dan produk terkait" }
+    ]
+  },
+  {
+    "code": "6",
+    "name_en": "Wood and wood products",
+    "name_id": "Kayu dan produk kayu",
+    "nace": [
+      { "code": "16", "name_en": "Manufacture of wood and of products of wood and cork, except furniture, manufacture of articles of straw and plaiting materials", "name_id": "Industri kayu, barang dari kayu dan gabus (tidak termasuk furnitur) dan barang anyaman dari bambu, rotan dan sejenisnya" }
+    ]
+  },
+  {
+    "code": "7a",
+    "name_en": "Limited to \" Paper products\"",
+    "name_id": "Terbatas pada produk kertas",
+    "nace": [
+      { "code": "17", "name_en": "Manufacture of paper and paper products", "name_id": "Industri kertas dan barang dari kertas" }
+    ]
+  },
+  {
+    "code": "7b",
+    "name_en": "Limited to \" Pulp and paper manufacturing\"",
+    "name_id": "Terbatas pada industri pulp dan kertas",
+    "nace": [
+      { "code": "17", "name_en": "Manufacture of paper and paper products", "name_id": "Industri kertas dan barang dari kertas" }
+    ]
+  },
+  {
+    "code": "8",
+    "name_en": "Publishing companies",
+    "name_id": "Perusahaan penerbitan",
+    "nace": [
+      { "code": "58.1", "name_en": "Publishing of books, periodicals and other publishing activities", "name_id": "Penerbitan buku, majalah dan terbitan lainnya" },
+      { "code": "59.2", "name_en": "Sound recording and music publishing activities", "name_id": "Aktivitas perekaman suara dan penerbitan musik" }
+    ]
+  },
+  {
+    "code": "9",
+    "name_en": "Printing companies",
+    "name_id": "Perusahaan pencetakan",
+    "nace": [
+      { "code": "18", "name_en": "Printing and reproduction of recorded media", "name_id": "Industri pencetakan dan reproduksi media rekaman" }
+    ]
+  },
+  {
+    "code": "10",
+    "name_en": "Manufacture of coke and refined petroleum products",
+    "name_id": "Industri batu bara dan produk minyak suling",
+    "nace": [
+      { "code": "19", "name_en": "Manufacture of coke and refined petroleum products", "name_id": "Industri produk dari batu bara dan pengilangan minyak bumi" }
+    ]
+  },
+  {
+    "code": "11",
+    "name_en": "Nuclear fuel",
+    "name_id": "Bahan bakar nuklir",
+    "nace": [
+      { "code": "24.46", "name_en": "Processing of nuclear fuel", "name_id": "Pengolahan bahan bakar nuklir" }
+    ]
+  },
+  {
+    "code": "12",
+    "name_en": "Chemicals, chemical products and fibres",
+    "name_id": "Bahan kimia, produk kimia dan serat",
+    "nace": [
+      { "code": "20", "name_en": "Manufacture of chemicals and chemical products", "name_id": "Industri bahan kimia dan barang dari bahan kimia" }
+    ]
+  },
+  {
+    "code": "13",
+    "name_en": "Pharmaceuticals",
+    "name_id": "Obat-obatan",
+    "nace": [
+      { "code": "21", "name_en": "Manufacture of basic pharmaceutical products and pharmaceutical preparation", "name_id": "Industri produk obat-obatan dasar dan persiapan obat-obatan" }
+    ]
+  },
+  {
+    "code": "14",
+    "name_en": "Rubber and plastic products",
+    "name_id": "Karet dan produk plastik",
+    "nace": [
+      { "code": "22", "name_en": "Manufacture of rubber and plastic products", "name_id": "Industri karet, barang dari karet dan plastik" }
+    ]
+  },
+  {
+    "code": "15",
+    "name_en": "Nonmetallic mineral products",
+    "name_id": "Produk mineral bukan logam",
+    "nace": [
+      { "code": "23", "name_en": "Manufacture of other non-metallic mineral products except 23.5 (manufacture of cement, lime, and plaster) and 23.6 (manufacture of articles of concrete, cement, and plaster)", "name_id": "Industri barang galian bukan logam, kecuali 23.5 (Industri semen, kapur, dan gips) dan 23.6 (industri pembuatan beton, semen, dan gips)" }
+    ]
+  },
+  {
+    "code": "16",
+    "name_en": "Concrete, lime, plaster etc",
+    "name_id": "Beton, semen, kapur, plester, dll",
+    "nace": [
+      { "code": "23.5", "name_en": "Manufacture of cement, lime and plaster", "name_id": "Industri Semen, kapur dan gips" },
+      { "code": "23.6", "name_en": "Manufacture of articles of concrete, cement and plaster", "name_id": "Industri pembuatan beton, semen dan gips" }
+    ]
+  },
+  {
+    "code": "17",
+    "name_en": "Basic metals and fabricated metal products",
+    "name_id": "Logam dasar dan produk logam fabrikasi",
+    "nace": [
+      { "code": "24", "name_en": "Manufacture of basic metals except 24.46 (processing of nuclear fuel)", "name_id": "Industri logam dasar kecuali 24.46 (pengolahan bahan bakar nuklir)" },
+      { "code": "25", "name_en": "Manufacture of fabricated metal products, except machinery and equipment except 25.4 (manufacture of weapons and ammunitions)", "name_id": "Industri produk logam fabrikasi, kecuali mesin dan peralatannya kecuali 25.4 (Industri senjata dan amunisi)" },
+      { "code": "33.11", "name_en": "Repair of fabricated metal products", "name_id": "Reparasi produk logam fabrikasi" }
+    ]
+  },
+  {
+    "code": "18",
+    "name_en": "Machinery and equipment",
+    "name_id": "Mesin dan peralatan",
+    "nace": [
+      { "code": "25.4", "name_en": "Manufacture of weapons and ammunition", "name_id": "Industri senjata dan amunisi" },
+      { "code": "28", "name_en": "Manufacture of machinery and equipment n.e.c.", "name_id": "Industri mesin dan perlengkapan yang tidak diklasifikasikan" },
+      { "code": "30.4", "name_en": "Manufacture of military fighting vehicles", "name_id": "Industri kendaraan perang" },
+      { "code": "33.12", "name_en": "Repair of machinery", "name_id": "Reparasi mesin" },
+      { "code": "33.2", "name_en": "Installation of industrial machinery and equipment", "name_id": "Instalasi mesin dan peralatan industri" }
+    ]
+  },
+  {
+    "code": "19",
+    "name_en": "Electrical and optical equipment",
+    "name_id": "Kelistrikan dan peralatan optik",
+    "nace": [
+      { "code": "26", "name_en": "Manufacture of computer, electronic and optical products", "name_id": "Industri computer, produk elektronik dan optik" },
+      { "code": "27", "name_en": "Manufacture of electrical equipment", "name_id": "Industri peralatan kelistrikan" },
+      { "code": "33.13", "name_en": "Repair of electronic and optical equipment", "name_id": "Reparasi peralatan elektronik dan optik" },
+      { "code": "33.14", "name_en": "Repair of electrical equipment", "name_id": "Reparasi peralatan kelistrikan" },
+      { "code": "95.1", "name_en": "Repair of computers and communication equipment", "name_id": "Reparasi komputer dan peralatan komunikasi" }
+    ]
+  },
+  {
+    "code": "20",
+    "name_en": "Shipbuilding",
+    "name_id": "Perkapalan",
+    "nace": [
+      { "code": "30.1", "name_en": "Building of ships and boats", "name_id": "Industri pembuatan kapal dan perahu" },
+      { "code": "33.15", "name_en": "Repair and maintenance of ships and boats", "name_id": "Reparasi dan pemeliharaan kapal dan perahu" }
+    ]
+  },
+  {
+    "code": "21",
+    "name_en": "Aerospace",
+    "name_id": "Kedirgantaraan",
+    "nace": [
+      { "code": "30.3", "name_en": "Manufacture of air and spacecraft and related machinery", "name_id": "Industri pesawat terbang, pesawat ruang angkasa dan perlengkapannya" },
+      { "code": "33.16", "name_en": "Repair and maintenance of aircraft and spacecraft", "name_id": "Reparasi dan pemeliharaan pesawat terbang dan pesawat ruang angkasa" }
+    ]
+  },
+  {
+    "code": "22",
+    "name_en": "Other transport equipment",
+    "name_id": "Peralatan angkut lainnya",
+    "nace": [
+      { "code": "29", "name_en": "Manufacture of motor vehicles, trailers and semi-trailers", "name_id": "Industri kendaraan bermotor, trailer dan semi trailer" },
+      { "code": "30.2", "name_en": "Manufacture of railway locomotives and rolling stock", "name_id": "Industri lokomotif dan kendaraan menggunakan rel" },
+      { "code": "30.9", "name_en": "Manufacture of transport equipment n.e.c.", "name_id": "Industri alat angkutan lainnya yang tidak dapat diklasifikasikan" },
+      { "code": "33.17", "name_en": "Repair and maintenance of other transport equipment", "name_id": "Reparasi dan pemeliharaan alat angkut lainnya" }
+    ]
+  },
+  {
+    "code": "23",
+    "name_en": "Manufacturing not elsewhere classified",
+    "name_id": "Pabrik lainnya yang tidak diklasifikasikan",
+    "nace": [
+      { "code": "31", "name_en": "Manufacture of furniture", "name_id": "Industri furnitur" },
+      { "code": "32", "name_en": "Other manufacturing", "name_id": "industri lainnya" },
+      { "code": "33.19", "name_en": "Repair of other equipment", "name_id": "Reparasi peralatan lainnya" }
+    ]
+  },
+  {
+    "code": "24",
+    "name_en": "Recycling",
+    "name_id": "Proses daur ulang",
+    "nace": [
+      { "code": "38.3", "name_en": "Materials recovery", "name_id": "Daur ulang" }
+    ]
+  },
+  {
+    "code": "25",
+    "name_en": "Electricity supply",
+    "name_id": "Penyediaan listrik",
+    "nace": [
+      { "code": "35.1", "name_en": "Electric power generation, transmission and distribution", "name_id": "Pembangkit tenaga listrik, transmisi tenaga listrik, distribusi tenaga listrik" }
+    ]
+  },
+  {
+    "code": "26",
+    "name_en": "Gas supply",
+    "name_id": "Penyediaan gas",
+    "nace": [
+      { "code": "35.2", "name_en": "Manufacture of gas; distribution of gaseous fuels through mains", "name_id": "Industri dan distribusi gas" }
+    ]
+  },
+  {
+    "code": "27",
+    "name_en": "Water supply",
+    "name_id": "Penyediaan air",
+    "nace": [
+      { "code": "35.3", "name_en": "Steam and air conditioning supply", "name_id": "Pengadaan uap dan pendingin udara" },
+      { "code": "36", "name_en": "Water collection, treatment and supply", "name_id": "Penampungan, pengelolaan dan penyediaan air" }
+    ]
+  },
+  {
+    "code": "28",
+    "name_en": "Construction",
+    "name_id": "Konstruksi",
+    "nace": [
+      { "code": "41", "name_en": "Construction of buildings", "name_id": "Konstruksi gedung" },
+      { "code": "42", "name_en": "Civil engineering", "name_id": "Konstruksi bangunan sipil" },
+      { "code": "43", "name_en": "Specialised construction activities", "name_id": "Konstruksi khusus" }
+    ]
+  },
+  {
+    "code": "29",
+    "name_en": "Wholesale and retail trade; Repair of motor vehicles, motorcycles and personal and household goods",
+    "name_id": "Perdagangan grosir dan eceran; Perbaikan kendaraan bermotor, sepeda motor serta barang personal dan rumah tangga",
+    "nace": [
+      { "code": "45", "name_en": "Wholesale and retail trade and repair of motor vehicles and motorcycles", "name_id": "Perdagangan grosir dan eceran serta perbaikan kendaraan bermotor dan sepeda motor" },
+      { "code": "46", "name_en": "Wholesale trade, except of motor vehicles and motorcycles", "name_id": "Perdagangan grosir, kecuali kendaraan bermotor dan sepeda motor" },
+      { "code": "47", "name_en": "Retail trade, except of motor vehicles and motorcycles", "name_id": "Perdagangan eceran, kecuali kendaraan bermotor dan sepeda motor" },
+      { "code": "95.2", "name_en": "Repair of personal and household goods", "name_id": "Reparasi barang keperluan pribadi dan perlengkapan rumah tangga" }
+    ]
+  },
+  {
+    "code": "30",
+    "name_en": "Hotels and restaurants",
+    "name_id": "Hotel dan restoran",
+    "nace": [
+      { "code": "55", "name_en": "Accommodation", "name_id": "Penyediaan akomodasi" },
+      { "code": "56", "name_en": "Food and beverage service activities", "name_id": "Aktivitas penyediaan makanan dan minuman" }
+    ]
+  },
+  {
+    "code": "31",
+    "name_en": "Transport, storage and communication",
+    "name_id": "Pengangkutan, penyimpanan, dan komunikasi",
+    "nace": [
+      { "code": "49", "name_en": "Land transport and transport via pipelines", "name_id": "Angkutan darat dan angkutan melalui saluran pipa" },
+      { "code": "50", "name_en": "Water transport", "name_id": "Angkutan perairan" },
+      { "code": "51", "name_en": "Air transport", "name_id": "Angkutan udara" },
+      { "code": "52", "name_en": "Warehousing and support activities for transportation", "name_id": "Pergudangan dan aktivitas penunjang angkutan" },
+      { "code": "53", "name_en": "Postal and courier activities", "name_id": "Aktivitas pos dan kurir" },
+      { "code": "61", "name_en": "Telecommunications", "name_id": "Telekomunikasi" }
+    ]
+  },
+  {
+    "code": "32",
+    "name_en": "Financial intermediation; real estate; renting",
+    "name_id": "Intermediasi keuangan, real estate, penyewaan",
+    "nace": [
+      { "code": "64", "name_en": "Financial service activities, except insurance and pension funding", "name_id": "Aktivitas jasa keuangan, kecuali asuransi dan dana pensiun" },
+      { "code": "65", "name_en": "Insurance, reinsurance and pension funding, except compulsory social security", "name_id": "Asuransi, reasuransi dan dana pensiun, kecuali jaminan sosial wajib" },
+      { "code": "66", "name_en": "Activities auxiliary to financial services and insurance activities", "name_id": "Aktivitas penunjang jasa keuangan dan asuransi" },
+      { "code": "68", "name_en": "Real estate activities", "name_id": "Aktifitas real estate" },
+      { "code": "77", "name_en": "Rental and leasing activities", "name_id": "Aktivitas persewaan dan jual beli" }
+    ]
+  },
+  {
+    "code": "33",
+    "name_en": "Information technology",
+    "name_id": "Teknologi informasi",
+    "nace": [
+      { "code": "58.2", "name_en": "Software publishing", "name_id": "Penerbitan piranti lunak (software)" },
+      { "code": "62", "name_en": "Computer programming, consultancy and related activities", "name_id": "Aktivitas pemrograman computer, konsultasi dan kegiatan terkait" },
+      { "code": "63.1", "name_en": "Data processing, hosting and related activities; web portals", "name_id": "Aktivitas pengolahan data, hosting dan kegiatan terkait; portal web" }
+    ]
+  },
+  {
+    "code": "34",
+    "name_en": "Engineering services",
+    "name_id": "Jasa rekayasa",
+    "nace": [
+      { "code": "71", "name_en": "Architectural and engineering activities; technical testing and analysis", "name_id": "Aktivitas arsitektur dan rekayasa. analisis dan uji teknis" },
+      { "code": "72", "name_en": "Scientific research and development", "name_id": "Penelitian dan pengembangan ilmu pengetahuan" },
+      { "code": "74", "name_en": "Other professional, scientific and technical activities except 74.2 (Photographic activities) and 74.3 (Translation and interpretation activities)", "name_id": "Aktivitas profesional, ilmiah dan teknis lainnya kecuali 74.2 (aktifitas fotografi) dan 74.3 (aktifitas penerjemahan dan interpretasi)" }
+    ]
+  },
+  {
+    "code": "35",
+    "name_en": "Other services",
+    "name_id": "Jasa lainnya",
+    "nace": [
+      { "code": "69", "name_en": "Legal and accounting activities", "name_id": "Aktivitas hukum dan akuntansi" },
+      { "code": "70", "name_en": "Activities of head offices; management consultancy activities", "name_id": "Aktivitas kantor pusat dan konsultasi manajemen" },
+      { "code": "73", "name_en": "Advertising and market research", "name_id": "Periklanan dan penelitian pasar" },
+      { "code": "74.2", "name_en": "Photographic activities", "name_id": "Aktivitas fotografi" },
+      { "code": "74.3", "name_en": "Translation and interpretation activities", "name_id": "Aktivitas penerjemahan dan interpretasi" },
+      { "code": "78", "name_en": "Employment activities", "name_id": "Aktivitas ketenagakerjaan" },
+      { "code": "80", "name_en": "Security and investigation activities", "name_id": "Aktivitas keamanan dan penyelidikan" },
+      { "code": "81", "name_en": "Services to buildings and landscape activities", "name_id": "Aktivitas penyedia jasa untuk gedung dan pertamanan" },
+      { "code": "82", "name_en": "Office administrative, office support and other business support activities", "name_id": "Aktivitas administrasi kantor, aktivitas penunjang kantor dan aktivitas penunjang usaha lainnya" }
+    ]
+  },
+  {
+    "code": "36",
+    "name_en": "Public administration",
+    "name_id": "Administrasi umum",
+    "nace": [
+      { "code": "84", "name_en": "Public administration and defence; compulsory social security", "name_id": "Administrasi umum, pertahanan dan jaminan sosial wajib" }
+    ]
+  },
+  {
+    "code": "37",
+    "name_en": "Education",
+    "name_id": "Pendidikan",
+    "nace": [
+      { "code": "85", "name_en": "Education", "name_id": "Pendidikan" }
+    ]
+  },
+  {
+    "code": "38",
+    "name_en": "Health and social work",
+    "name_id": "Kesehatan dan tugas sosial",
+    "nace": [
+      { "code": "75", "name_en": "Veterinary activities", "name_id": "Aktivitas tentang kesehatan hewan" },
+      { "code": "86", "name_en": "Human health activities", "name_id": "Aktivitas tentang kesehatan manusia" },
+      { "code": "87", "name_en": "Residential care activities", "name_id": "Aktivitas sosial di dalam panti" },
+      { "code": "88", "name_en": "Social work activities without accommodation", "name_id": "Aktivitas sosial di luar panti" }
+    ]
+  },
+  {
+    "code": "39",
+    "name_en": "Other social services",
+    "name_id": "Jasa sosial lainnya",
+    "nace": [
+      { "code": "37", "name_en": "Sewerage", "name_id": "Pengelolaan air limbah" },
+      { "code": "38.1", "name_en": "Waste collection", "name_id": "Pengumpulan sampah" },
+      { "code": "38.2", "name_en": "Waste treatment and disposal", "name_id": "Pengelolaan dan pembuangan sampah" },
+      { "code": "39", "name_en": "Remediation activities and other waste management services", "name_id": "Aktivitas remediasi dan pengelolaan sampah lainnya" },
+      { "code": "59.1", "name_en": "Motion picture, video and television programme activities", "name_id": "Aktivitas produksi gambar bergerak, video dan program televisi" },
+      { "code": "60", "name_en": "Programming and broadcasting activities", "name_id": "Aktivitas penyiaran dan pemrograman" },
+      { "code": "63.9", "name_en": "Other information service activities", "name_id": "Aktivitas jasa informasi lainnya" },
+      { "code": "79", "name_en": "Travel agency, tour operator reservation service and related activities", "name_id": "Aktivitas biro perjalanan, penyelenggara tur dan jasa reservasi lainnya" },
+      { "code": "90", "name_en": "Creative, arts and entertainment activities", "name_id": "Aktivitas hiburan, kesenian dan kreativitas" },
+      { "code": "91", "name_en": "Libraries, archives, museums and other cultural activities", "name_id": "Perpustakaan, arsip, museum dan kegiatan kebudayaan lainnya" },
+      { "code": "92", "name_en": "Gambling and betting activities", "name_id": "Aktivitas perjudian dan pertaruhan" },
+      { "code": "93", "name_en": "Sports activities and amusement and recreation activities", "name_id": "Aktivitas olahraga dan reakreasi lainnya" },
+      { "code": "94", "name_en": "Activities of membership organisations", "name_id": "Aktivitas keanggotaan organisasi" },
+      { "code": "96", "name_en": "Other personal service activities", "name_id": "Aktivitas jasa perorangan lainnya" }
+    ]
+  }
+]

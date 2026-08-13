@@ -79,7 +79,7 @@ chmod -R 775 storage bootstrap/cache
 php artisan gis:install
 ```
 
-`gis:install` menjalankan migrasi, seeder inti (role & permission, katalog skema, workflow, taksonomi produk SNI), lalu membuat **satu akun superadmin** dari `.env`. Bila `GIS_ADMIN_PASSWORD` dikosongkan, password acak dicetak **sekali saja** — salin segera.
+`gis:install` menjalankan migrasi, seeder inti (role & permission, katalog skema, workflow, kode IAF & NACE, taksonomi produk SNI), lalu membuat **satu akun superadmin** dari `.env`. Bila `GIS_ADMIN_PASSWORD` dikosongkan, password acak dicetak **sekali saja** — salin segera.
 
 > Jalankan `gis:install` **sebelum** `config:cache`. Saat config di-cache, Laravel berhenti membaca `.env`, sehingga `GIS_ADMIN_*` tidak terbaca.
 
@@ -296,6 +296,7 @@ git pull origin main
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 php artisan db:seed --class=SchemeCatalogSeeder --force
+php artisan db:seed --class=IafNaceTaxonomySeeder --force
 php artisan db:seed --class=GisFormTemplateSeeder --force
 mkdir -p public/branding && chmod 775 public/branding
 php artisan cache:clear
@@ -307,6 +308,7 @@ Catatan tiap langkah:
 
 - **`migrate --force` jangan dilewatkan.** Identitas portal dibaca pada setiap halaman; bila ada migrasi baru yang belum dijalankan, aplikasi memang tetap hidup dengan nilai bawaan, tetapi menu *Pengaturan Sistem* tidak akan berfungsi.
 - **`SchemeCatalogSeeder`** memuat katalog skema dari `database/seeders/data/schemes.json`: skema, bagian formulir, field, dan daftar dokumen wajib. Wajib dijalankan setiap kali rilis menambah atau mengubah skema — tanpa ini skema baru tidak akan muncul di portal. Seeder ini **idempoten**: memakai `updateOrCreate`, jadi aman diulang. Skema yang digantikan versi baru ditandai `"active": false` (bukan dihapus), sehingga permohonan lama tetap bisa dibuka.
+- **`IafNaceTaxonomySeeder`** memuat ruang lingkup akreditasi KAN K-07.01 Rev.2 Lampiran 1 dari `database/seeders/data/iaf-nace.json` — 40 kode IAF dan 112 kode NACE yang mengisi dropdown bertingkat pada form permohonan **seluruh skema**. Tanpa ini pilihannya kosong dan klien tidak bisa menentukan ruang lingkup. Seeder ini **idempoten** dan **tidak menimpa** kolom `is_active`, jadi kode yang sengaja dinonaktifkan Superadmin tetap nonaktif setelah rilis berikutnya.
 - **`GisFormTemplateSeeder`** mendaftarkan berkas *Form Wajib GIS* yang diunduh klien. **Wajar bila lambat** (bisa beberapa menit): tiap berkas `.doc`/`.docx` disalin ke storage dan dihitung checksum-nya. Biarkan sampai selesai, jangan dihentikan di tengah.
 - **`mkdir public/branding`** memastikan unggahan logo tidak gagal karena folder belum ada.
 - **`cache:clear`** membuang cache pengaturan lama agar perubahan branding langsung terlihat.

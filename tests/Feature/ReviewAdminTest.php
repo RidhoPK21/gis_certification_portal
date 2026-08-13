@@ -10,6 +10,7 @@ use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SchemeCatalogSeeder;
 use Database\Seeders\WorkflowSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -58,11 +59,10 @@ class ReviewAdminTest extends TestCase
     }
 
     /**
-     * Menjalankan alur tinjauan teknis oleh Tim Teknis: admin menyimpan kajian
-     * administrasi, meneruskan ke teknis, lalu user teknis mengisi & menyelesaikan.
-     * Setelah ini status kembali ke admin_review dan siap disetujui admin.
+     * Tim Teknis mengembalikan permohonan ke Admin tanpa mengambil keputusan.
+     * Sesudah ini status kembali ke admin_review.
      */
-    private function completeTechnicalReview(CertificationApplication $app, User $admin): User
+    private function returnFromTechnical(CertificationApplication $app, User $admin): User
     {
         $tech = $this->user('technical');
 
@@ -83,10 +83,27 @@ class ReviewAdminTest extends TestCase
             ],
         ])->assertRedirect();
 
-        $this->actingAs($tech)->post(route('technical.reviews.complete', $app))->assertRedirect();
+        $this->actingAs($tech)->post(route('technical.reviews.return-admin', $app))->assertRedirect();
         $this->assertSame('admin_review', $app->refresh()->status);
 
         return $tech;
+    }
+
+    public function test_admin_tidak_lagi_memutus_permohonan(): void
+    {
+        $this->assertFalse(Route::has('internal.applications.approve'), 'Route persetujuan Admin seharusnya sudah dihapus.');
+        $this->assertFalse(Route::has('internal.applications.reject'), 'Route penolakan Admin seharusnya sudah dihapus.');
+    }
+
+    public function test_teknis_mengembalikan_permohonan_ke_admin(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $app = $this->applicationInReview($this->user('client'));
+
+        $this->returnFromTechnical($app, $admin);
+
+        $this->assertDatabaseHas('notifications', ['type' => 'technical_review_completed']);
     }
 
     public function test_admin_dapat_melihat_daftar_review(): void
@@ -143,47 +160,6 @@ class ReviewAdminTest extends TestCase
         $this->assertSame('revision_requested', $app->status);
         $this->assertDatabaseHas('application_revision_items', ['application_id' => $app->id, 'target_code' => 'company_name', 'status' => 'open']);
         $this->assertDatabaseHas('notifications', ['user_id' => $client->id, 'type' => 'revision_requested']);
-    }
-
-    public function test_admin_dapat_menyetujui_dan_generate_pdf(): void
-    {
-        Storage::fake('private');
-        $this->seedAll();
-        $admin = $this->user('admin_application');
-        $client = $this->user('client');
-        $app = $this->applicationInReview($client);
-        $this->completeTechnicalReview($app, $admin);
-
-        $this->actingAs($admin)
-            ->post(route('internal.applications.approve', $app), [
-                'action_date' => now()->format('Y-m-d'),
-                'notes' => 'Lengkap.',
-            ])
-            ->assertRedirect();
-
-        $app->refresh();
-        $this->assertSame('invoice_process', $app->status);
-        $this->assertNotNull($app->approved_at);
-        $this->assertDatabaseHas('generated_pdfs', ['application_id' => $app->id, 'document_type' => 'application_review']);
-        $this->assertDatabaseHas('notifications', ['user_id' => $client->id, 'type' => 'application_approved']);
-    }
-
-    public function test_admin_dapat_menolak(): void
-    {
-        $this->seedAll();
-        $admin = $this->user('admin_application');
-        $client = $this->user('client');
-        $app = $this->applicationInReview($client);
-
-        $this->actingAs($admin)
-            ->post(route('internal.applications.reject', $app), [
-                'action_date' => now()->format('Y-m-d'),
-                'reason' => 'Dokumen tidak memenuhi.',
-            ])
-            ->assertRedirect();
-
-        $this->assertSame('rejected', $app->refresh()->status);
-        $this->assertDatabaseHas('notifications', ['user_id' => $client->id, 'type' => 'application_rejected']);
     }
 
     public function test_admin_dapat_menyimpan_kajian_dokumen(): void
@@ -359,20 +335,4 @@ class ReviewAdminTest extends TestCase
         $this->assertDatabaseMissing('review_form_items', ['item_code' => 'process_information']);
     }
 
-    public function test_menyetujui_menandai_kajian_administrasi_dan_teknis_diterima(): void
-    {
-        Storage::fake('private');
-        $this->seedAll();
-        $admin = $this->user('admin_application');
-        $app = $this->applicationInReview($this->user('client'));
-        $this->completeTechnicalReview($app, $admin);
-
-        $this->actingAs($admin)->post(route('internal.applications.approve', $app), [
-            'action_date' => now()->format('Y-m-d'),
-            'notes' => 'Lengkap.',
-        ])->assertRedirect();
-
-        $this->assertDatabaseHas('application_reviews', ['application_id' => $app->id, 'review_type' => 'administration', 'status' => 'approved']);
-        $this->assertDatabaseHas('application_reviews', ['application_id' => $app->id, 'review_type' => 'technical', 'status' => 'approved']);
-    }
 }

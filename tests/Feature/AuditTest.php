@@ -56,15 +56,15 @@ class AuditTest extends TestCase
         ]);
     }
 
-    public function test_admin_dapat_menugaskan_auditor(): void
+    public function test_tim_teknis_dapat_menugaskan_auditor(): void
     {
         $this->seedAll();
-        $admin = $this->user('admin_application');
+        $technical = $this->user('technical');
         $auditor = $this->user('auditor');
         $app = $this->application($this->user('client'), 'admin_review');
 
-        $this->actingAs($admin)
-            ->post(route('internal.applications.audit-assignments.store', $app), [
+        $this->actingAs($technical)
+            ->post(route('technical.audit-assignments.store', $app), [
                 'auditor_id' => $auditor->id,
                 'assignment_role' => 'LA',
                 'stage_code' => 'all',
@@ -77,6 +77,45 @@ class AuditTest extends TestCase
             'auditor_id' => $auditor->id,
             'status' => 'assigned',
         ]);
+    }
+
+    public function test_admin_permohonan_tidak_lagi_menugaskan_auditor(): void
+    {
+        $this->seedAll();
+        $admin = $this->user('admin_application');
+        $auditor = $this->user('auditor');
+        $app = $this->application($this->user('client'), 'admin_review');
+
+        $this->assertFalse(
+            \Illuminate\Support\Facades\Route::has('internal.applications.audit-assignments.store'),
+            'Route penugasan auditor milik Admin seharusnya sudah dihapus.'
+        );
+
+        $this->actingAs($admin)
+            ->post(route('technical.audit-assignments.store', $app), [
+                'auditor_id' => $auditor->id,
+                'assignment_role' => 'LA',
+                'stage_code' => 'all',
+                'assigned_date' => now()->format('Y-m-d'),
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_tim_teknis_dapat_mengeluarkan_auditor_dari_penugasan(): void
+    {
+        $this->seedAll();
+        $technical = $this->user('technical');
+        $auditor = $this->user('auditor');
+        $app = $this->application($this->user('client'), 'admin_review');
+
+        $this->assignAuditor($app, $auditor);
+        $assignment = \App\Models\AuditAssignment::where('application_id', $app->id)->firstOrFail();
+
+        $this->actingAs($technical)
+            ->delete(route('technical.audit-assignments.destroy', $assignment))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('audit_assignments', ['id' => $assignment->id]);
     }
 
     public function test_auditor_tidak_bisa_membuka_order_yang_tidak_ditugaskan(): void
@@ -113,11 +152,57 @@ class AuditTest extends TestCase
         ]);
     }
 
-    private function assignAuditor(CertificationApplication $app, User $admin, User $auditor): void
+    /**
+     * Penugasan auditor kini wewenang Tim Teknis, bukan Admin Permohonan.
+     * Aktornya dibuat di dalam helper agar test yang hanya butuh "ada auditor
+     * yang ditugaskan" tidak perlu ikut menyiapkan akun teknis.
+     */
+    private function assignAuditor(CertificationApplication $app, User $auditor): void
     {
-        $this->actingAs($admin)->post(route('internal.applications.audit-assignments.store', $app), [
+        $this->actingAs($this->user('technical'))->post(route('technical.audit-assignments.store', $app), [
             'auditor_id' => $auditor->id, 'assignment_role' => 'LA', 'stage_code' => 'all', 'assigned_date' => now()->format('Y-m-d'),
         ])->assertRedirect();
+
+        $this->issueLetters($app);
+    }
+
+    /**
+     * Terbitkan Surat Tugas untuk tahap-tahap audit.
+     *
+     * Sejak penugasan auditor dipisah dari penerbitan surat, auditor baru boleh
+     * bekerja setelah suratnya terbit. Test di berkas ini menguji mekanika
+     * audit, bukan penerbitan surat, jadi prasyaratnya disiapkan langsung.
+     * Gerbangnya sendiri diuji di AuditorAssignmentLetterGateTest.
+     */
+    private function issueLetters(CertificationApplication $app, array $stages = ['stage_1', 'stage_2', 'qms']): void
+    {
+        foreach ($stages as $stage) {
+            $path = 'generated/assignment-letters/'.$app->id.'/ST_'.$stage.'.pdf';
+            \Illuminate\Support\Facades\Storage::disk('private')->put($path, '%PDF-1.4 surat');
+
+            $pdf = \App\Models\GeneratedPdf::create([
+                'application_id' => $app->id,
+                'document_type' => 'assignment_letter',
+                'template_code' => 'assignment_letter_lssm',
+                'document_version' => 1,
+                'file_path' => $path,
+                'checksum_sha256' => hash('sha256', '%PDF-1.4 surat'),
+                'source_snapshot' => [],
+            ]);
+
+            \App\Models\AssignmentLetter::updateOrCreate(
+                ['application_id' => $app->id, 'stage_code' => $stage, 'cycle' => 0],
+                [
+                    'template_code' => 'lssm',
+                    'number_family' => 'lssm',
+                    'letter_number' => '001/ST/GIS-LSSM/MT/VIII/2026',
+                    'letter_place' => 'Tangerang',
+                    'letter_date' => today(),
+                    'pdf_version' => 1,
+                    'generated_pdf_id' => $pdf->id,
+                ]
+            );
+        }
     }
 
     public function test_form_skip_dinonaktifkan_untuk_skema_yang_mewajibkan_stage(): void
@@ -126,7 +211,7 @@ class AuditTest extends TestCase
         $admin = $this->user('admin_application');
         $auditor = $this->user('auditor');
         $app = $this->application($this->user('client'));
-        $this->assignAuditor($app, $admin, $auditor);
+        $this->assignAuditor($app, $auditor);
 
         $html = $this->actingAs($auditor)->get(route('audit.show', $app))->assertOk()->getContent();
 
@@ -140,7 +225,7 @@ class AuditTest extends TestCase
         $admin = $this->user('admin_application');
         $auditor = $this->user('auditor');
         $app = $this->application($this->user('client'));
-        $this->assignAuditor($app, $admin, $auditor);
+        $this->assignAuditor($app, $auditor);
 
         $this->actingAs($auditor)->post(route('audit.stage.skip', $app), [
             'stage_code' => 'stage_1',
@@ -157,7 +242,7 @@ class AuditTest extends TestCase
         $admin = $this->user('admin_application');
         $auditor = $this->user('auditor');
         $app = $this->productApplication($this->user('client'));
-        $this->assignAuditor($app, $admin, $auditor);
+        $this->assignAuditor($app, $auditor);
         app(\App\Services\WorkflowService::class)->initialize($app);
 
         $this->actingAs($auditor)->post(route('audit.stage.skip', $app), [
@@ -180,7 +265,7 @@ class AuditTest extends TestCase
         // Sengaja tanpa WorkflowService::initialize(), meniru order lama yang
         // di-submit sebelum WorkflowSeeder pernah dijalankan.
         $app = $this->productApplication($this->user('client'));
-        $this->assignAuditor($app, $admin, $auditor);
+        $this->assignAuditor($app, $auditor);
 
         $this->assertDatabaseMissing('application_workflow_steps', ['application_id' => $app->id]);
 
@@ -204,10 +289,8 @@ class AuditTest extends TestCase
         $client = $this->user('client');
         $app = $this->application($client, 'payment_completed');
 
-        // Admin menugaskan auditor.
-        $this->actingAs($admin)->post(route('internal.applications.audit-assignments.store', $app), [
-            'auditor_id' => $auditor->id, 'assignment_role' => 'LA', 'stage_code' => 'all', 'assigned_date' => now()->format('Y-m-d'),
-        ])->assertRedirect();
+        // Tim Teknis menugaskan auditor.
+        $this->assignAuditor($app, $auditor);
 
         // Auditor menyimpan tahap QMS → status qms_audit.
         $this->actingAs($auditor)->post(route('audit.stage', $app), [
@@ -248,9 +331,7 @@ class AuditTest extends TestCase
         $client = $this->user('client');
         $app = $this->application($client, 'payment_completed');
 
-        $this->actingAs($admin)->post(route('internal.applications.audit-assignments.store', $app), [
-            'auditor_id' => $auditor->id, 'assignment_role' => 'LA', 'stage_code' => 'all', 'assigned_date' => now()->format('Y-m-d'),
-        ]);
+        $this->assignAuditor($app, $auditor);
         $this->actingAs($auditor)->post(route('audit.stage', $app), [
             'stage_code' => 'qms', 'status' => 'approved', 'audit_date' => now()->format('Y-m-d'), 'auditor_team' => 'LA',
         ]);
@@ -441,6 +522,8 @@ class AuditTest extends TestCase
                 'assigned_date' => today(),
             ]);
         }
+
+        $this->issueLetters($app);
 
         // 1. Auditor scope all dapat membuka seluruh tab
         $this->actingAs($auditorAll)
@@ -677,6 +760,8 @@ class AuditTest extends TestCase
             'status' => 'assigned',
             'assigned_date' => today(),
         ]);
+
+        $this->issueLetters($app, ['qms']);
 
         // 1. QMS belum dibuat tidak dapat diselesaikan, respons 422
         $this->actingAs($auditorQms)

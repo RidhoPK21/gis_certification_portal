@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             SchemeCatalogSeeder::class,
             WorkflowSeeder::class,
+            IafNaceTaxonomySeeder::class,
             SniProductTaxonomySeeder::class,
             GisFormTemplateSeeder::class,
         ]);

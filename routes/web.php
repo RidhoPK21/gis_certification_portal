@@ -10,6 +10,8 @@ use App\Http\Controllers\Client\GisFormRequestController as ClientGisFormRequest
 use App\Http\Controllers\CertificateShareController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Internal\ApplicationReviewController;
+use App\Http\Controllers\Internal\AssignmentLetterController;
+use App\Http\Controllers\Internal\AuditAssignmentController;
 use App\Http\Controllers\Internal\AuditController;
 use App\Http\Controllers\Internal\FinanceController;
 use App\Http\Controllers\Internal\GeneratedPdfController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\SecureFileController;
 use App\Http\Controllers\Superadmin\AuditTrailController;
 use App\Http\Controllers\Superadmin\FormBuilderController;
 use App\Http\Controllers\Superadmin\GisFormTemplateController;
+use App\Http\Controllers\Superadmin\IafNaceTaxonomyController;
 use App\Http\Controllers\Superadmin\SchemeController;
 use App\Http\Controllers\Superadmin\SettingController;
 use App\Http\Controllers\Superadmin\SniProductController;
@@ -132,6 +135,17 @@ Route::middleware([
         ->name('secure-files.corrective-action');
     Route::get('/secure-files/gis-form-template/{template}', [SecureFileController::class, 'gisFormTemplate'])
         ->name('secure-files.gis-form-template');
+    Route::get('/secure-files/assignment-letter-signature/{letter}', [SecureFileController::class, 'assignmentLetterSignature'])
+        ->name('secure-files.assignment-letter-signature');
+
+    /*
+     * PDF hasil generate sistem (tinjauan permohonan dan surat tugas) dipakai
+     * Admin Permohonan sekaligus Tim Teknis, jadi routenya tidak lagi berada di
+     * dalam grup peran mana pun. Otorisasinya ada di dalam controller.
+     * Nama route sengaja dipertahankan agar tautan yang sudah ada tetap valid.
+     */
+    Route::get('/internal/applications/generated-pdf/{pdf}/download', [GeneratedPdfController::class, 'download'])
+        ->name('internal.generated-pdf.download');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
@@ -178,12 +192,8 @@ Route::middleware([
             Route::post('/{application}/forward-technical', [ApplicationReviewController::class, 'forwardToTechnical'])->name('applications.forward-technical');
             Route::post('/{application}/request-revision', [ApplicationReviewController::class, 'requestRevision'])->name('applications.revision');
             Route::post('/{application}/revisions/{revision}/resolve', [ApplicationReviewController::class, 'resolveRevision'])->name('applications.revisions.resolve');
-            Route::post('/{application}/approve', [ApplicationReviewController::class, 'approve'])->name('applications.approve');
-            Route::post('/{application}/reject', [ApplicationReviewController::class, 'reject'])->name('applications.reject');
             Route::post('/{application}/generate-pdf', [ApplicationReviewController::class, 'generatePdf'])->name('applications.generate-pdf');
             Route::put('/{application}/order', [ApplicationReviewController::class, 'updateOrder'])->name('applications.order');
-            Route::get('/generated-pdf/{pdf}/download', [GeneratedPdfController::class, 'download'])->name('generated-pdf.download');
-            Route::post('/{application}/audit-assignments', [ApplicationReviewController::class, 'assignAuditor'])->name('applications.audit-assignments.store');
         });
 
     /*
@@ -231,8 +241,32 @@ Route::middleware([
             Route::get('/reviews', [TechnicalController::class, 'reviewIndex'])->name('reviews.index');
             Route::get('/reviews/{application}', [TechnicalController::class, 'reviewShow'])->name('reviews.show');
             Route::post('/reviews/{application}', [TechnicalController::class, 'saveTechnicalReview'])->name('reviews.save');
-            Route::post('/reviews/{application}/complete', [TechnicalController::class, 'completeTechnicalReview'])->name('reviews.complete');
-            Route::get('/{application}', [TechnicalController::class, 'show'])->name('show');
+            // Keputusan akhir permohonan ada pada Tim Teknis.
+            Route::post('/reviews/{application}/approve', [TechnicalController::class, 'approve'])->name('reviews.approve');
+            Route::post('/reviews/{application}/reject', [TechnicalController::class, 'reject'])->name('reviews.reject');
+            Route::post('/reviews/{application}/return-admin', [TechnicalController::class, 'returnToAdmin'])->name('reviews.return-admin');
+            Route::post('/reviews/{application}/request-revision', [TechnicalController::class, 'requestRevision'])->name('reviews.revision');
+            Route::post('/reviews/{application}/revisions/{revision}/resolve', [TechnicalController::class, 'resolveRevision'])->name('reviews.revisions.resolve');
+            Route::post('/reviews/{application}/panelists', [TechnicalController::class, 'updatePanelists'])->name('reviews.panelists');
+
+            // Penugasan tim auditor: dipakai halaman tinjauan teknis dan halaman Surat Tugas.
+            Route::post('/audit-assignments/{application}', [AuditAssignmentController::class, 'store'])->name('audit-assignments.store');
+            Route::delete('/audit-assignments/{assignment}', [AuditAssignmentController::class, 'destroy'])->name('audit-assignments.destroy');
+
+            /*
+             * Surat Tugas + monitoring. WAJIB berada di atas GET /{application}
+             * di bawah, karena route itu menangkap segmen apa pun.
+             */
+            Route::get('/penugasan', [AssignmentLetterController::class, 'index'])->name('assignments.index');
+            Route::get('/penugasan/{application}', [AssignmentLetterController::class, 'show'])->name('assignments.show');
+            Route::post('/penugasan/{application}/regenerate-review', [AssignmentLetterController::class, 'regenerateReview'])->name('assignments.regenerate-review');
+            Route::post('/penugasan/{application}/{stage}', [AssignmentLetterController::class, 'save'])->name('assignments.save');
+            Route::post('/penugasan/{application}/{stage}/signature', [AssignmentLetterController::class, 'uploadSignature'])->name('assignments.signature');
+            Route::post('/penugasan/{application}/{stage}/generate', [AssignmentLetterController::class, 'generate'])->name('assignments.generate');
+
+            // whereNumber wajib: tanpa itu segmen literal apa pun yang
+            // dideklarasikan setelah baris ini ikut tertangkap sebagai {application}.
+            Route::get('/{application}', [TechnicalController::class, 'show'])->whereNumber('application')->name('show');
             Route::post('/{application}/draft', [TechnicalController::class, 'uploadDraft'])->name('draft.upload');
             Route::post('/draft/{draft}/link', [TechnicalController::class, 'createDraftLink'])->name('draft.link');
             Route::post('/{application}/final', [TechnicalController::class, 'uploadFinal'])->name('final.upload');
@@ -295,6 +329,15 @@ Route::middleware([
             Route::put('/sni-taxonomy/groups/{group}', [SniProductTaxonomyController::class, 'updateGroup'])->name('sni-taxonomy.groups.update');
             Route::post('/sni-taxonomy/categories', [SniProductTaxonomyController::class, 'storeCategory'])->name('sni-taxonomy.categories.store');
             Route::put('/sni-taxonomy/categories/{category}', [SniProductTaxonomyController::class, 'updateCategory'])->name('sni-taxonomy.categories.update');
+
+            // Ruang lingkup akreditasi KAN K-07.01 Rev.2 Lampiran 1.
+            Route::get('/iaf-nace', [IafNaceTaxonomyController::class, 'index'])->name('iaf-nace.index');
+            Route::post('/iaf-nace/iaf', [IafNaceTaxonomyController::class, 'storeIaf'])->name('iaf-nace.iaf.store');
+            Route::put('/iaf-nace/iaf/{iaf}', [IafNaceTaxonomyController::class, 'updateIaf'])->name('iaf-nace.iaf.update');
+            Route::delete('/iaf-nace/iaf/{iaf}', [IafNaceTaxonomyController::class, 'destroyIaf'])->name('iaf-nace.iaf.destroy');
+            Route::post('/iaf-nace/nace', [IafNaceTaxonomyController::class, 'storeNace'])->name('iaf-nace.nace.store');
+            Route::put('/iaf-nace/nace/{nace}', [IafNaceTaxonomyController::class, 'updateNace'])->name('iaf-nace.nace.update');
+            Route::delete('/iaf-nace/nace/{nace}', [IafNaceTaxonomyController::class, 'destroyNace'])->name('iaf-nace.nace.destroy');
 
             Route::get('/audit-trail', [AuditTrailController::class, 'index'])->name('audit-trail.index');
 

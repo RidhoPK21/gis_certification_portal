@@ -3,7 +3,7 @@
         <span class="guide-icon">📋</span>
         <div>
             <h2>Panduan Admin Permohonan</h2>
-            <p>Pelajari langkah utama untuk memeriksa dokumen permohonan masuk, meminta revisi, dan menyetujui administrasi permohonan.</p>
+            <p>Pelajari langkah utama untuk memeriksa dokumen permohonan masuk, meminta revisi, dan meneruskannya ke Tim Teknis.</p>
         </div>
     </div>
 </div>
@@ -28,16 +28,11 @@
         </div>
         <div class="step-card">
             <span class="step-badge">Langkah 4</span>
-            <h4>Menyetujui Permohonan</h4>
-            <p>Jika seluruh persyaratan administrasi sudah lengkap dan valid, setujui permohonan agar dapat diproses oleh Finance.</p>
+            <h4>Meneruskan ke Tim Teknis</h4>
+            <p>Jika persyaratan administrasi sudah lengkap dan valid, teruskan permohonan agar ditinjau Tim Teknis.</p>
         </div>
         <div class="step-card">
             <span class="step-badge">Langkah 5</span>
-            <h4>Menugaskan Auditor &amp; Lingkup</h4>
-            <p>Tentukan tim Auditor yang bertugas serta tetapkan lingkup penugasan pemeriksaan yang relevan.</p>
-        </div>
-        <div class="step-card">
-            <span class="step-badge">Langkah 6</span>
             <h4>Memantau Perkembangan</h4>
             <p>Pantau kemajuan proses permohonan serta tindak lanjut yang sedang berjalan dari Klien dan tim lain.</p>
         </div>
@@ -73,7 +68,15 @@
     <div class="faq-accordion">
         <details class="faq-item">
             <summary>Mengapa tombol tertentu tidak muncul?</summary>
-            <p>Tombol persetujuan atau permintaan revisi hanya muncul apabila permohonan berada pada tahap pemeriksaan administrasi.</p>
+            <p>Tombol meneruskan atau meminta revisi hanya muncul apabila permohonan berada pada tahap pemeriksaan administrasi.</p>
+        </details>
+        <details class="faq-item">
+            <summary>Di mana tombol Setujui dan Tolak?</summary>
+            <p>Keputusan akhir permohonan kini diambil Tim Teknis pada halaman Tinjauan Teknis. Tugas Admin Permohonan adalah memastikan kelengkapan administrasi lalu meneruskannya.</p>
+        </details>
+        <details class="faq-item">
+            <summary>Di mana penugasan auditor?</summary>
+            <p>Penugasan tim auditor kini dilakukan Tim Teknis, baik saat tinjauan teknis maupun saat menyiapkan Surat Tugas setelah pembayaran lunas.</p>
         </details>
         <details class="faq-item">
             <summary>Mengapa data tidak dapat diedit?</summary>

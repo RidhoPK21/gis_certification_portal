@@ -118,6 +118,17 @@ return [
 
     [
         'section' => 'Tim Teknis',
+        'label' => 'Penugasan & Surat Tugas',
+        'route' => 'technical.assignments.index',
+        'active' => 'technical.assignments.*',
+        'roles' => [
+            'technical',
+            'superadmin',
+        ],
+    ],
+
+    [
+        'section' => 'Tim Teknis',
         'label' => 'Sertifikat',
         'route' => 'technical.index',
         'active' => [
@@ -168,6 +179,14 @@ return [
         'label' => 'Produk & Kategori SNI',
         'route' => 'superadmin.sni-taxonomy.index',
         'active' => 'superadmin.sni-taxonomy.*',
+        'roles' => ['superadmin'],
+    ],
+
+    [
+        'section' => 'Superadmin',
+        'label' => 'Kode IAF & NACE',
+        'route' => 'superadmin.iaf-nace.index',
+        'active' => 'superadmin.iaf-nace.*',
         'roles' => ['superadmin'],
     ],
     [

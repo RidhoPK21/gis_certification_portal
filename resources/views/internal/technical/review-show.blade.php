@@ -22,6 +22,11 @@
 
     @php($itemsByCode = $review ? $review->items->keyBy('item_code') : collect())
 
+    {{-- Konteks penuh permohonan: Tim Teknis memutuskan setuju/tolak, jadi
+         melihat data dan berkas yang sama persis dengan Admin Permohonan. --}}
+    @include('internal.partials.client-submission')
+    @include('internal.partials.client-documents')
+
     @if ($isIspo ?? false)
         @include('internal.partials.ispo-technical-review')
     @elseif ($isSni ?? false)
@@ -62,9 +67,10 @@
                     <label class="form-label">Tim Auditor yang ditugaskan (LA, A, TA)</label>
                     @php($assignments = $application->auditAssignments->where('status', 'assigned'))
                     @if ($assignments->isEmpty())
-                        <div class="alert alert-info small">
-                            Belum ada auditor yang ditugaskan. Penugasan dilakukan Admin Permohonan pada bagian
-                            <strong>Penugasan Auditor</strong> di halaman review, dan otomatis tercetak di formulir ini.
+                        <div class="alert alert-warning small">
+                            Belum ada auditor yang ditugaskan. Tentukan tim pada bagian
+                            <a href="#penugasan-auditor"><strong>Penugasan Tim Auditor</strong></a> di bawah;
+                            tim tersebut tercetak di formulir ini dan mengisi Surat Tugas nanti.
                         </div>
                     @else
                         <ol class="small" style="margin:0;padding-left:20px">
@@ -247,17 +253,88 @@
     </section>
     @endif
 
-    {{-- Di luar percabangan: langkah penyelesaian ini berlaku untuk semua skema,
-         termasuk ISPO yang memakai formulir FrO.7204. --}}
-    <section class="card mt-2">
-        <form method="post" action="{{ route('technical.reviews.complete', $application) }}"
-              data-confirm="Kirim hasil tinjauan teknis ke Admin untuk keputusan akhir? Pastikan penilaian sudah disimpan."
-              data-confirm-title="Selesai & Kirim ke Admin" data-confirm-yes="Ya, kirim">
+    {{-- Di luar percabangan: penugasan dan penyelesaian berlaku untuk semua
+         skema, termasuk ISPO yang memakai formulir FrO.7204. --}}
+    @include('internal.partials.auditor-assignment')
+
+    @php($hasLeadAuditor = $application->auditAssignments->where('status', 'assigned')->where('assignment_role', 'LA')->isNotEmpty())
+    @php($openRevisions = $application->revisions->whereIn('status', ['open', 'submitted'])->count())
+    @php($canApprove = $review && $hasLeadAuditor && $openRevisions === 0)
+
+    <section class="card mt-2" id="keputusan">
+        <h2>Keputusan Permohonan</h2>
+        <p class="muted">
+            Keputusan akhir ada pada Tim Teknis. Menyetujui akan membuat PDF tinjauan dan meneruskan order ke Finance.
+        </p>
+
+        @unless ($canApprove)
+            <div class="alert alert-warning small">
+                <strong>Belum dapat menyetujui:</strong>
+                <ul style="margin:6px 0 0;padding-left:18px">
+                    @unless ($review)
+                        <li>Tinjauan teknis belum disimpan.</li>
+                    @endunless
+                    @unless ($hasLeadAuditor)
+                        <li>Belum ada <strong>Lead Auditor</strong> pada <a href="#penugasan-auditor">Penugasan Tim Auditor</a>.</li>
+                    @endunless
+                    @if ($openRevisions > 0)
+                        <li>Masih ada {{ $openRevisions }} item revisi terbuka.</li>
+                    @endif
+                </ul>
+            </div>
+        @endunless
+
+        <div class="grid-2">
+            <form method="post" action="{{ route('technical.reviews.approve', $application) }}"
+                  data-confirm="Setujui permohonan dan teruskan ke Finance? PDF tinjauan akan digenerate."
+                  data-confirm-title="Setujui Permohonan" data-confirm-yes="Ya, setujui">
+                @csrf
+                <h3>Setujui</h3>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Keputusan</label>
+                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <textarea class="form-textarea" name="notes"></textarea>
+                </div>
+                <button class="btn btn-success" @disabled(! $canApprove)>Setujui &amp; Teruskan ke Finance</button>
+            </form>
+
+            <form method="post" action="{{ route('technical.reviews.reject', $application) }}"
+                  data-confirm="Tolak permohonan ini? Tindakan ini menghentikan proses sertifikasi."
+                  data-confirm-title="Tolak Permohonan" data-confirm-type="danger" data-confirm-yes="Ya, tolak">
+                @csrf
+                <h3>Tolak</h3>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Keputusan</label>
+                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Alasan Penolakan <span class="required">*</span></label>
+                    <textarea class="form-textarea" name="reason" required></textarea>
+                </div>
+                <button class="btn btn-danger">Tolak Permohonan</button>
+            </form>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+        <form method="post" action="{{ route('technical.reviews.return-admin', $application) }}"
+              data-confirm="Kembalikan permohonan ke Admin tanpa mengambil keputusan? Pastikan penilaian sudah disimpan."
+              data-confirm-title="Kembalikan ke Admin" data-confirm-yes="Ya, kembalikan">
             @csrf
-            <button class="btn btn-success" @disabled(! $review)>Selesai &amp; Kirim ke Admin</button>
-            @unless ($review)
-                <div class="small muted mt-1">Simpan tinjauan teknis lebih dahulu sebelum mengirim ke Admin.</div>
-            @endunless
+            <button class="btn btn-light" @disabled(! $review)>Kembalikan ke Admin</button>
+            <div class="small muted mt-1">
+                Dipakai bila kelengkapan administrasi perlu dibereskan Admin lebih dahulu. Permohonan akan
+                dikirim ulang ke Anda setelah Admin meneruskannya kembali.
+            </div>
         </form>
     </section>
+
+    @include('internal.partials.revision-request-form', [
+        'action' => route('technical.reviews.revision', $application),
+        'resolveRoute' => 'technical.reviews.revisions.resolve',
+        'sectionId' => 'revisi-teknis',
+        'intro' => 'Perbaikan klien akan kembali melalui Admin Permohonan sebelum diteruskan lagi ke Anda.',
+    ])
 @endsection

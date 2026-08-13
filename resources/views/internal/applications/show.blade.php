@@ -55,120 +55,7 @@
         </div>
     </section>
 
-    <section class="card mt-2" id="audit-assignment">
-        <div class="page-head">
-            <div>
-                <h2>Penugasan Auditor</h2>
-                <p>Auditor hanya dapat membuka dan memproses order yang ditugaskan kepadanya.</p>
-            </div>
-        </div>
-        <div class="grid-2">
-            <form method="post" action="{{ route('internal.applications.audit-assignments.store', $application) }}">
-                @csrf
-                <div class="form-group">
-                    <label class="form-label">Auditor</label>
-                    <select class="form-select" name="auditor_id" required>
-                        <option value="">Pilih auditor</option>
-                        @foreach ($auditors as $auditor)
-                            <option value="{{ $auditor->id }}">{{ $auditor->name }} · {{ $auditor->email }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="grid-3">
-                    <div class="form-group">
-                        <label class="form-label">Peran Tim</label>
-                        <select class="form-select" name="assignment_role">
-                            <option value="LA">Lead Auditor</option>
-                            <option value="A">Auditor</option>
-                            <option value="TA">Tenaga Ahli</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Lingkup Penugasan Auditor</label>
-                        <select class="form-select" name="stage_code">
-                            <option value="all">Semua Tahap</option>
-                            <option value="stage_1">Stage 1</option>
-                            <option value="stage_2">Stage 2</option>
-                            <option value="qms">QMS/Lapangan</option>
-                            <option value="corrective_action">Corrective Action</option>
-                        </select>
-                        <small class="text-muted d-block mt-1">Lingkup menentukan bagian proses yang dapat dilihat dan dikerjakan oleh Auditor yang ditugaskan.</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tanggal Penugasan</label>
-                        <input class="form-control" type="date" name="assigned_date" value="{{ now()->format('Y-m-d') }}" required>
-                    </div>
-                </div>
-                <button class="btn btn-primary">Simpan Penugasan</button>
-            </form>
-            <div>
-                <h3>Tim yang Ditugaskan</h3>
-                <div class="table-wrap">
-                    <table class="table">
-                        <thead>
-                            <tr><th>Nama</th><th>Peran</th><th>Lingkup Penugasan Auditor</th><th>Tanggal</th></tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($application->auditAssignments as $assignment)
-                                <tr>
-                                    <td>{{ $assignment->auditor?->name ?: '-' }}</td>
-                                    <td>{{ $assignment->assignment_role }}</td>
-                                    <td>{{ $assignment->stage_code }}</td>
-                                    <td>{{ optional($assignment->assigned_date)->format('d M Y') }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="4" class="empty">Belum ada auditor yang ditugaskan.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="card mt-2" id="data-form">
-        <h2>Data Form Klien</h2>
-        @foreach ($application->scheme->sections as $section)
-            <h3>{{ $section->title }}</h3>
-            <div class="table-wrap">
-                <table class="table">
-                    <tbody>
-                        @foreach ($section->fields as $field)
-                            @php
-                                $row = $application->values->firstWhere('field_code', $field->code);
-                                $val = $row?->value_json ?? $row?->value_text;
-                            @endphp
-                            @if (filled($val))
-                                <tr>
-                                    <th style="width:35%">{{ $field->label }}</th>
-                                    <td>
-                                        @if ($field->type === 'file')
-                                            @php
-                                                $fileData = is_array($val) ? $val : (is_string($val) && str_starts_with($val, '{') ? json_decode($val, true) : null);
-                                                $fileName = $fileData['original_name'] ?? (is_string($val) ? $val : null);
-                                                $filePath = $fileData['path'] ?? null;
-                                            @endphp
-                                            @if ($filePath)
-                                                <a class="btn btn-light btn-sm" href="{{ route('secure-files.application-field-file', ['application' => $application, 'code' => $field->code]) }}" target="_blank">
-                                                    ✓ {{ $fileName }}
-                                                </a>
-                                            @elseif ($fileName)
-                                                <span>{{ $fileName }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        @else
-                                            @include('internal.partials.value-display', ['field' => $field, 'val' => $val])
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endforeach
-    </section>
+    @include('internal.partials.client-submission')
 
     @if ($isIspo ?? false)
         @include('internal.partials.ispo-admin-review')
@@ -338,10 +225,16 @@
     @php($techReview = $application->reviews->where('review_type', 'technical')->sortByDesc('round')->first())
     <section class="card mt-2" id="tinjauan">
         <h2>Tinjauan Teknis &amp; PDF Otomatis</h2>
-        <p class="muted">Bagian teknis diisi oleh Tim Teknis. Admin meneruskan permohonan, lalu menyetujui setelah tinjauan teknis selesai.</p>
+        <p class="muted">
+            Bagian teknis diisi oleh Tim Teknis. Tugas Admin adalah mengkaji kelengkapan administrasi lalu
+            meneruskan permohonan; <strong>keputusan Setujui/Tolak diambil Tim Teknis</strong>.
+        </p>
 
         @if ($techReview && $techReview->completed_at)
-            <div class="alert alert-success">Tinjauan teknis selesai oleh <strong>{{ $techReview->signed_name }}</strong> pada {{ $techReview->completed_at->format('d M Y') }}.</div>
+            <div class="alert alert-info">
+                Tinjauan teknis dikembalikan oleh <strong>{{ $techReview->signed_name }}</strong> pada {{ $techReview->completed_at->format('d M Y') }}.
+                Lengkapi yang diperlukan lalu kirim ulang ke Tim Teknis untuk keputusan akhir.
+            </div>
             <div class="table-wrap">
                 <table class="table">
                     <thead><tr><th>Aspek Teknis</th><th>Hasil</th><th>Keterangan</th></tr></thead>
@@ -359,7 +252,7 @@
                 </table>
             </div>
         @elseif ($application->status === 'technical_review')
-            <div class="alert alert-warning">Sedang ditinjau oleh Tim Teknis. Persetujuan tersedia setelah tinjauan teknis selesai.</div>
+            <div class="alert alert-warning">Sedang ditinjau oleh Tim Teknis. Keputusan Setujui/Tolak diambil di sana.</div>
         @else
             <p class="muted">Belum ditinjau Tim Teknis. Simpan kajian administrasi lalu klik "Teruskan ke Tinjauan Teknis".</p>
         @endif
@@ -385,142 +278,11 @@
         </div>
     </section>
 
-    <section class="card mt-2" id="revisi">
-        <h2>Revisi Spesifik</h2>
-        <p class="muted">Pilih hanya field/dokumen yang benar-benar perlu diperbaiki. Klien diarahkan langsung ke item tersebut.</p>
-        <form method="post" action="{{ route('internal.applications.revision', $application) }}" id="revision-form">
-            @csrf
-            <div class="table-wrap">
-                <table class="table">
-                    <thead>
-                        <tr><th>Pilih</th><th>Item</th><th>Catatan Revisi</th></tr>
-                    </thead>
-                    <tbody>
-                        @php($idx = 0)
-                        @foreach ($application->scheme->sections as $section)
-                            @foreach ($section->fields as $field)
-                                <tr>
-                                    <td><input type="checkbox" class="revision-check" data-index="{{ $idx }}"></td>
-                                    <td>
-                                        <span class="badge badge-neutral">Field</span> {{ $field->label }}
-                                        <input disabled class="revision-input-{{ $idx }}" type="hidden" name="targets[{{ $idx }}][type]" value="field">
-                                        <input disabled class="revision-input-{{ $idx }}" type="hidden" name="targets[{{ $idx }}][code]" value="{{ $field->code }}">
-                                        <input disabled class="revision-input-{{ $idx }}" type="hidden" name="targets[{{ $idx }}][label]" value="{{ $field->label }}">
-                                    </td>
-                                    <td><input disabled class="form-control revision-input-{{ $idx }}" name="targets[{{ $idx }}][note]" placeholder="Jelaskan perbaikan yang dibutuhkan"></td>
-                                </tr>
-                                @php($idx++)
-                            @endforeach
-                        @endforeach
-                        @foreach ($application->scheme->requiredDocuments as $required)
-                            <tr>
-                                <td><input type="checkbox" class="revision-check" data-index="{{ $idx }}"></td>
-                                <td>
-                                    <span class="badge badge-warning">Dokumen</span> {{ $required->name }}
-                                    <input disabled class="revision-input-{{ $idx }}" type="hidden" name="targets[{{ $idx }}][type]" value="document">
-                                    <input disabled class="revision-input-{{ $idx }}" type="hidden" name="targets[{{ $idx }}][code]" value="{{ $required->code }}">
-                                    <input disabled class="revision-input-{{ $idx }}" type="hidden" name="targets[{{ $idx }}][label]" value="{{ $required->name }}">
-                                </td>
-                                <td><input disabled class="form-control revision-input-{{ $idx }}" name="targets[{{ $idx }}][note]" placeholder="Jelaskan dokumen yang harus diperbaiki"></td>
-                            </tr>
-                            @php($idx++)
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="grid-2 mt-2">
-                <div class="form-group">
-                    <label class="form-label">Batas Perbaikan</label>
-                    <input class="form-control" type="date" name="due_date">
-                </div>
-                <div style="align-self:end">
-                    <button class="btn btn-warning">Kirim Permintaan Revisi</button>
-                </div>
-            </div>
-        </form>
-        @if ($application->revisions->count())
-            <h3>Riwayat Revisi</h3>
-            @foreach ($application->revisions->groupBy('revision_round') as $round => $items)
-                <div class="alert alert-info">
-                    <strong>Putaran {{ $round }}</strong>
-                    <div class="table-wrap mt-1">
-                        <table class="table">
-                            <thead>
-                                <tr><th>Item</th><th>Catatan</th><th>Status</th><th>Tindakan Admin</th></tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($items as $item)
-                                    <tr>
-                                        <td>{{ $item->target_label }}</td>
-                                        <td>{{ $item->revision_note }}</td>
-                                        <td><span class="badge badge-{{ $item->status === 'resolved' ? 'success' : 'warning' }}">{{ $item->status }}</span></td>
-                                        <td>
-                                            @if ($item->status !== 'resolved')
-                                                <form method="post" action="{{ route('internal.applications.revisions.resolve', [$application, $item]) }}">
-                                                    @csrf
-                                                    <div class="flex gap-1 wrap">
-                                                        <input class="form-control" style="min-width:220px" name="resolution_note" placeholder="Hasil verifikasi perbaikan" required>
-                                                        <button class="btn btn-success btn-sm">Tandai Selesai</button>
-                                                    </div>
-                                                </form>
-                                            @else
-                                                <span class="small muted">Selesai {{ optional($item->resolved_at)->format('d M Y H:i') }}</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @endforeach
-        @endif
-    </section>
-
-    @if ($application->status === 'admin_review')
-        <section class="grid-2 mt-2">
-            @if ($techReview && $techReview->completed_at)
-                <form class="card" method="post" action="{{ route('internal.applications.approve', $application) }}"
-                      data-confirm="Setujui permohonan dan teruskan ke Finance? PDF keputusan akan digenerate."
-                      data-confirm-title="Setujui Permohonan"
-                      data-confirm-yes="Ya, setujui">
-                    @csrf
-                    <h2>Setujui Permohonan</h2>
-                    <div class="form-group">
-                        <label class="form-label">Tanggal Keputusan</label>
-                        <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Catatan</label>
-                        <textarea class="form-textarea" name="notes"></textarea>
-                    </div>
-                    <button class="btn btn-success">Setujui &amp; Generate PDF</button>
-                </form>
-            @else
-                <div class="card">
-                    <h2>Setujui Permohonan</h2>
-                    <p class="muted">Persetujuan tersedia setelah Tim Teknis menyelesaikan tinjauan teknis. Klik "Teruskan ke Tinjauan Teknis" pada bagian di atas.</p>
-                </div>
-            @endif
-            <form class="card" method="post" action="{{ route('internal.applications.reject', $application) }}"
-                  data-confirm="Tolak permohonan ini? Tindakan ini menghentikan proses sertifikasi."
-                  data-confirm-title="Tolak Permohonan"
-                  data-confirm-type="danger"
-                  data-confirm-yes="Ya, tolak">
-                @csrf
-                <h2>Tolak Permohonan</h2>
-                <div class="form-group">
-                    <label class="form-label">Tanggal Keputusan</label>
-                    <input class="form-control" type="date" name="action_date" value="{{ now()->format('Y-m-d') }}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Alasan Penolakan <span class="required">*</span></label>
-                    <textarea class="form-textarea" name="reason" required></textarea>
-                </div>
-                <button class="btn btn-danger">Tolak Permohonan</button>
-            </form>
-        </section>
-    @endif
+    @include("internal.partials.revision-request-form", [
+        "action" => route("internal.applications.revision", $application),
+        "resolveRoute" => "internal.applications.revisions.resolve",
+        "sectionId" => "revisi",
+    ])
 
     <section class="card mt-2" id="timeline">
         <h2>Timeline &amp; Audit Trail Order</h2>
@@ -538,27 +300,3 @@
         </div>
     </section>
 @endsection
-
-@push('scripts')
-<script>
-document.querySelectorAll('.revision-check').forEach(c=>c.addEventListener('change',()=>{document.querySelectorAll('.revision-input-'+c.dataset.index).forEach(i=>{i.disabled=!c.checked;i.required=c.checked&&i.name.endsWith('[note]')})}));
-document.getElementById('revision-form')?.addEventListener('submit', function(e) {
-    if (this.querySelectorAll('.revision-check:checked').length === 0) {
-        e.preventDefault();
-        if (typeof window.Swal !== 'undefined') {
-            window.Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian',
-                text: 'Pilih minimal 1 item (field atau dokumen) yang harus direvisi oleh klien dengan mencentang kotak di sebelah kiri.',
-                confirmButtonText: 'Mengerti',
-                confirmButtonColor: '#b42318'
-            });
-        } else if (typeof window.flashError === 'function' || typeof flashError === 'function') {
-            (window.flashError || flashError)('Pilih minimal 1 item (field atau dokumen) yang harus direvisi oleh klien dengan mencentang kotak di sebelah kiri.');
-        } else {
-            alert('Pilih minimal 1 item (field atau dokumen) yang harus direvisi.');
-        }
-    }
-});
-</script>
-@endpush
