@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureSchemeOwnership;
 use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\PreventProxyTransform;
 use App\Http\Middleware\RoleMiddleware;
@@ -26,6 +27,7 @@ return Application::configure(
                 'active' => EnsureActiveUser::class,
                 'role' => RoleMiddleware::class,
                 'permission' => PermissionMiddleware::class,
+                'scheme.owner' => EnsureSchemeOwnership::class,
             ]);
         }
     )

@@ -25,6 +25,22 @@ class RolePermissionSeeder extends Seeder
                     'Melakukan review, revisi, approval, dan penolakan permohonan.',
                 'sort_order' => 20,
             ],
+            /*
+             * Tim Sustain adalah cerminan Admin Permohonan dan Tim Teknis,
+             * tetapi hanya menangani skema ISPO. Pembagiannya diatur di
+             * config/scheme_ownership.php, bukan di sini.
+             *
+             * sort_order sengaja tepat di bawah pasangannya: DashboardController
+             * memilih role utama berdasarkan sort_order terkecil, sehingga akun
+             * yang memegang dua role tetap mendapat dashboard yang masuk akal.
+             */
+            [
+                'code' => 'admin_sustain',
+                'name' => 'Tim Admin Sustain',
+                'description' =>
+                    'Melakukan review, revisi, dan penerusan permohonan khusus skema ISPO.',
+                'sort_order' => 21,
+            ],
             [
                 'code' => 'finance',
                 'name' => 'Finance',
@@ -45,6 +61,13 @@ class RolePermissionSeeder extends Seeder
                 'description' =>
                     'Mengelola draft dan sertifikat final.',
                 'sort_order' => 50,
+            ],
+            [
+                'code' => 'technical_sustain',
+                'name' => 'Tim Teknis Sustain',
+                'description' =>
+                    'Menangani seluruh rantai teknis skema ISPO: tinjauan, keputusan, penugasan auditor, Surat Tugas, sertifikat, hingga surveillance.',
+                'sort_order' => 51,
             ],
             [
                 'code' => 'superadmin',
@@ -150,6 +173,23 @@ class RolePermissionSeeder extends Seeder
                 'applications.assign_auditor',
             ],
 
+            /*
+             * Izin Tim Sustain identik dengan pasangannya; yang membatasi
+             * mereka pada ISPO adalah kepemilikan skema, bukan daftar izin.
+             */
+            'admin_sustain' => [
+                'dashboard.view',
+                'notifications.view',
+                'profile.manage',
+                'applications.review',
+                'applications.request_revision',
+                'applications.approve',
+                'applications.reject',
+                'applications.generate_review_pdf',
+                'applications.edit_order',
+                'applications.assign_auditor',
+            ],
+
             'finance' => [
                 'dashboard.view',
                 'notifications.view',
@@ -170,6 +210,17 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'technical' => [
+                'dashboard.view',
+                'notifications.view',
+                'profile.manage',
+                'technical.view',
+                'technical.manage_draft_certificate',
+                'technical.manage_final_certificate',
+                'technical.manage_share_links',
+                'technical.manage_surveillance',
+            ],
+
+            'technical_sustain' => [
                 'dashboard.view',
                 'notifications.view',
                 'profile.manage',

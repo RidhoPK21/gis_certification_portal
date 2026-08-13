@@ -89,7 +89,7 @@ return [
      * di sini karena diambil dari penugasan auditor (audit_assignments) beserta
      * peran LA/A/TA-nya.
      */
-    'panelist_roles' => ['technical', 'superadmin'],
+    'panelist_roles' => ['technical', 'technical_sustain', 'superadmin'],
 
     /*
      * Kolom "Kompetensi spesifik auditor untuk SNI ISO 14001:2015 yang

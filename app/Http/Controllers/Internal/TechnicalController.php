@@ -34,6 +34,7 @@ class TechnicalController extends Controller
     public function index(Request $request)
     {
         $query = CertificationApplication::whereIn('status', self::TECHNICAL_STATUSES)
+            ->handledBy($request->user())
             ->with(['scheme', 'client', 'certificateDrafts', 'certificateFinal']);
 
         if ($request->filled('q')) {
@@ -66,6 +67,7 @@ class TechnicalController extends Controller
     public function reviewIndex(Request $request)
     {
         $query = CertificationApplication::where('status', 'technical_review')
+            ->handledBy($request->user())
             ->with(['scheme', 'client']);
 
         if ($request->filled('q')) {
@@ -225,7 +227,7 @@ class TechnicalController extends Controller
 
         $review->update(['completed_at' => now(), 'reviewed_by' => $request->user()->id]);
         $workflow->transition($application, 'admin_review', 'technical_review_done', 'Tinjauan teknis selesai, dikembalikan ke Admin.', $request->user()->id);
-        $notifications->sendToRole('admin_application', 'technical_review_completed', 'Tinjauan Teknis Selesai', 'Tinjauan teknis untuk '.$application->order_number.' telah dikembalikan oleh Tim Teknis.', route('internal.applications.show', $application));
+        $notifications->sendToSchemeOwner($application, 'admin', 'technical_review_completed', 'Tinjauan Teknis Selesai', 'Tinjauan teknis untuk '.$application->order_number.' telah dikembalikan oleh Tim Teknis.', route('internal.applications.show', $application));
         $audit->log('application.technical_review_completed', $application, [], ['application_id' => $application->id]);
 
         return redirect()->route('technical.reviews.index')->with('success', 'Permohonan dikembalikan ke Admin Permohonan.');
@@ -269,7 +271,7 @@ class TechnicalController extends Controller
 
         $notifications->send($application->client_id, 'application_approved', 'Permohonan disetujui', 'Permohonan '.$application->order_number.' disetujui dan masuk proses invoice.', route('client.applications.show', $application));
         $notifications->sendToRole('finance', 'invoice_process', 'Order Baru untuk Invoice', 'Permohonan '.$application->order_number.' telah disetujui dan diteruskan untuk pembuatan invoice.', route('finance.show', $application));
-        $notifications->sendToRole('admin_application', 'application_decided', 'Permohonan Disetujui', 'Tim Teknis menyetujui permohonan '.$application->order_number.'.', route('internal.applications.show', $application));
+        $notifications->sendToSchemeOwner($application, 'admin', 'application_decided', 'Permohonan Disetujui', 'Tim Teknis menyetujui permohonan '.$application->order_number.'.', route('internal.applications.show', $application));
         $audit->log('application.approved', $application, [], ['application_id' => $application->id]);
 
         return redirect()->route('technical.reviews.index')->with('success', 'Permohonan disetujui, PDF tinjauan dibuat, dan order diteruskan ke Finance.');
@@ -290,7 +292,7 @@ class TechnicalController extends Controller
 
         $workflow->transition($application, 'rejected', 'technical_reject', $data['reason'], $request->user()->id, new \DateTime($data['action_date']));
         $notifications->send($application->client_id, 'application_rejected', 'Permohonan ditolak', 'Permohonan '.$application->order_number.' tidak dapat dilanjutkan. Lihat alasan pada dashboard.', route('client.applications.show', $application));
-        $notifications->sendToRole('admin_application', 'application_decided', 'Permohonan Ditolak', 'Tim Teknis menolak permohonan '.$application->order_number.'.', route('internal.applications.show', $application));
+        $notifications->sendToSchemeOwner($application, 'admin', 'application_decided', 'Permohonan Ditolak', 'Tim Teknis menolak permohonan '.$application->order_number.'.', route('internal.applications.show', $application));
         $audit->log('application.rejected', $application, [], ['application_id' => $application->id]);
 
         return redirect()->route('technical.reviews.index')->with('success', 'Keputusan penolakan tersimpan dan klien telah diberi notifikasi.');

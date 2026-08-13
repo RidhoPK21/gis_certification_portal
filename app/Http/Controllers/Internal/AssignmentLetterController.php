@@ -36,6 +36,7 @@ class AssignmentLetterController extends Controller
     public function index(Request $request)
     {
         $query = CertificationApplication::whereIn('status', self::MONITORED_STATUSES)
+            ->handledBy($request->user())
             ->with(['scheme', 'client', 'auditAssignments.auditor', 'assignmentLetters.generatedPdf'])
             ->latest('updated_at');
 

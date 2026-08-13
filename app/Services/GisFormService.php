@@ -96,8 +96,9 @@ class GisFormService
 
         $application->unsetRelation('gisFormRequests');
 
-        $this->notifications->sendToRole(
-            'admin_application',
+        $this->notifications->sendToSchemeOwner(
+            $application,
+            'admin',
             'gis_form_requested',
             'Permintaan Formulir Wajib GIS',
             $application->company_name . ' meminta template Formulir Wajib GIS untuk permohonan '

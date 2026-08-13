@@ -256,7 +256,12 @@ class AssignmentLetterSignatureTest extends TestCase
                 ->assertOk();
         }
 
-        foreach (['finance', 'auditor', 'client'] as $role) {
+        /*
+         * Tim Sustain ikut ditolak: ordernya ISO9001, di luar skema yang
+         * mereka tangani. Peran yang benar saja tidak cukup — berkas surat
+         * mengikuti pembagian skema, sama seperti halaman ordernya.
+         */
+        foreach (['finance', 'auditor', 'client', 'admin_sustain', 'technical_sustain'] as $role) {
             $this->actingAs($this->user($role))
                 ->get(route('secure-files.assignment-letter-signature', $letter))
                 ->assertForbidden();

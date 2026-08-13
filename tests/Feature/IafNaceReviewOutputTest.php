@@ -35,15 +35,25 @@ class IafNaceReviewOutputTest extends TestCase
         $this->seed(IafNaceTaxonomySeeder::class);
     }
 
+    /**
+     * Peran Sustain ikut dilekatkan karena test ini menelusuri ISPO bersama
+     * skema lain dengan satu akun; ISPO kini milik tim Sustain.
+     */
     private function user(string $roleCode): User
     {
+        $codes = match ($roleCode) {
+            'admin_application' => ['admin_application', 'admin_sustain'],
+            'technical' => ['technical', 'technical_sustain'],
+            default => [$roleCode],
+        };
+
         $user = User::create([
             'name' => ucfirst($roleCode).' '.Str::random(3),
             'email' => $roleCode.Str::random(4).'@example.com',
             'password' => 'RahasiaKuat123',
             'is_active' => true,
         ]);
-        $user->roles()->attach(Role::where('code', $roleCode)->value('id'));
+        $user->roles()->attach(Role::whereIn('code', $codes)->pluck('id'));
 
         return $user;
     }

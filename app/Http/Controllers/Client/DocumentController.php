@@ -78,10 +78,15 @@ class DocumentController extends Controller
 
         /*
          * Tim Teknis mengkaji dokumen ber-review_group 'technical' pada tahap
-         * tinjauan teknis, jadi harus bisa membuka berkasnya.
+         * tinjauan teknis, jadi harus bisa membuka berkasnya. isHandledBy
+         * menahan tim non-pemilik skema: dokumen ISPO hanya untuk tim Sustain.
          */
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical']);
+            || ($request->user()->hasRole([
+                'admin_application', 'admin_sustain',
+                'technical', 'technical_sustain',
+                'superadmin',
+            ]) && $application->isHandledBy($request->user()));
 
         /*
          * Auditor hanya boleh membuka order yang ditugaskan kepadanya. Cabang

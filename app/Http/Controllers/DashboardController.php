@@ -138,15 +138,25 @@ class DashboardController extends Controller
         }
 
         $role = (string) ($user->roles->sortBy('sort_order')->pluck('code')->first() ?? 'client');
+        /*
+         * Tim Sustain memakai daftar status yang sama dengan pasangannya; yang
+         * membedakan hanyalah skema yang mereka pegang, dan itu ditangani scope
+         * handledBy di bawah.
+         */
         $statuses = match ($role) {
-            'admin_application' => ['submitted', 'admin_review', 'technical_review', 'revision_requested', 'application_approved'],
+            'admin_application', 'admin_sustain' => ['submitted', 'admin_review', 'technical_review', 'revision_requested', 'application_approved'],
             'finance' => ['application_approved', 'invoice_process', 'payment_partial', 'payment_completed'],
             'auditor' => ['stage_1_audit', 'stage_2_audit', 'qms_audit', 'corrective_action', 'corrective_revision'],
-            'technical' => ['technical_review', 'certificate_review', 'final_certificate', 'completed'],
+            'technical', 'technical_sustain' => ['technical_review', 'certificate_review', 'final_certificate', 'completed'],
             default => [],
         };
 
-        $query = CertificationApplication::query();
+        /*
+         * Disaring sebelum statistik dihitung, supaya angka pada kartu ringkasan
+         * ikut mencerminkan skema yang benar-benar menjadi tanggung jawab
+         * pengguna — bukan seluruh order di sistem.
+         */
+        $query = CertificationApplication::query()->handledBy($user);
 
         /*
          * Auditor hanya boleh melihat permohonan yang ditugaskan kepadanya.

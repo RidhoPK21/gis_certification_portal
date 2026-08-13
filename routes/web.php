@@ -90,9 +90,11 @@ Route::middleware([
         $allRoles = [
             'client' => 'Klien',
             'admin_application' => 'Admin Permohonan',
+            'admin_sustain' => 'Tim Admin Sustain',
             'finance' => 'Finance',
             'auditor' => 'Auditor',
             'technical' => 'Tim Teknis',
+            'technical_sustain' => 'Tim Teknis Sustain',
             'superadmin' => 'Superadmin',
         ];
 
@@ -182,7 +184,12 @@ Route::middleware([
             Route::post('/findings/{finding}/corrective-actions', [ClientCorrectiveActionController::class, 'store'])->name('corrective-actions.store');
         });
 
-    Route::middleware('role:admin_application,superadmin')
+    /*
+     * Tim Admin Sustain memakai modul yang sama, hanya untuk skema ISPO.
+     * Pembatasannya bukan di sini melainkan pada scheme.owner — middleware itu
+     * yang memastikan tiap tim hanya membuka permohonan miliknya.
+     */
+    Route::middleware(['role:admin_application,admin_sustain,superadmin', 'scheme.owner'])
         ->prefix('internal/applications')
         ->name('internal.')
         ->group(function (): void {
@@ -201,7 +208,7 @@ Route::middleware([
      * sehari-hari memegang antrean permohonan; superadmin ikut agar tidak
      * tertahan saat admin berhalangan.
      */
-    Route::middleware('role:admin_application,superadmin')
+    Route::middleware(['role:admin_application,admin_sustain,superadmin', 'scheme.owner'])
         ->prefix('internal/gis-form-requests')
         ->name('internal.gis-form-requests.')
         ->group(function (): void {
@@ -233,7 +240,7 @@ Route::middleware([
             Route::post('/corrective-actions/{correctiveAction}/review', [AuditController::class, 'reviewCorrectiveAction'])->name('corrective-actions.review');
         });
 
-    Route::middleware('role:technical,superadmin')
+    Route::middleware(['role:technical,technical_sustain,superadmin', 'scheme.owner'])
         ->prefix('internal/technical')
         ->name('technical.')
         ->group(function (): void {

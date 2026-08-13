@@ -17,11 +17,19 @@ class GeneratedPdfController extends Controller
      * middleware grup: routenya dipakai bersama Admin Permohonan dan Tim Teknis
      * sehingga tidak lagi berada di grup yang hanya berisi satu peran.
      */
-    private const ALLOWED_ROLES = ['admin_application', 'technical', 'superadmin'];
+    private const ALLOWED_ROLES = [
+        'admin_application', 'admin_sustain',
+        'technical', 'technical_sustain',
+        'superadmin',
+    ];
 
     public function download(Request $request, GeneratedPdf $pdf, FileStorageService $files, AuditLogger $audit)
     {
         abort_unless($request->user()->hasRole(self::ALLOWED_ROLES), 403);
+
+        // Peran yang benar belum cukup: PDF ISPO hanya milik tim Sustain.
+        $pdf->loadMissing('application');
+        abort_unless($pdf->application?->isHandledBy($request->user()), 403);
 
         $prefix = $pdf->document_type === 'assignment_letter'
             ? 'Surat-Tugas'

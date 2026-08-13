@@ -56,15 +56,15 @@
                             </td>
                             <td>{{ $app->updated_at->diffForHumans() }}</td>
                             <td>
-                                @if (auth()->user()->hasRole(['admin_application', 'superadmin']))
+                                @if (auth()->user()->hasRole(['admin_application', 'admin_sustain', 'superadmin']))
                                     <a class="btn btn-light btn-sm" href="{{ route('internal.applications.show', $app) }}">Buka</a>
                                 @elseif (auth()->user()->hasRole('finance') && Route::has('finance.show'))
                                     <a class="btn btn-light btn-sm" href="{{ route('finance.show', $app) }}">Buka</a>
                                 @elseif (auth()->user()->hasRole('auditor') && Route::has('audit.show'))
                                     <a class="btn btn-light btn-sm" href="{{ route('audit.show', $app) }}">Buka</a>
-                                @elseif (auth()->user()->hasRole('technical') && $app->status === 'technical_review')
+                                @elseif (auth()->user()->hasRole(['technical', 'technical_sustain']) && $app->status === 'technical_review')
                                     <a class="btn btn-light btn-sm" href="{{ route('technical.reviews.show', $app) }}">Tinjau</a>
-                                @elseif (auth()->user()->hasRole('technical') && Route::has('technical.show'))
+                                @elseif (auth()->user()->hasRole(['technical', 'technical_sustain']) && Route::has('technical.show'))
                                     <a class="btn btn-light btn-sm" href="{{ route('technical.show', $app) }}">Buka</a>
                                 @endif
                             </td>

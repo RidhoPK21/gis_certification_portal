@@ -183,8 +183,9 @@ class ApplicationSubmissionService
                 'Permohonan ' . $application->order_number . ' sudah masuk ke tahap review Admin.',
                 route('client.applications.show', $application)
             );
-            $this->notifications->sendToRole(
-                'admin_application',
+            $this->notifications->sendToSchemeOwner(
+                $application,
+                'admin',
                 'application_received',
                 'Permohonan Baru/Revisi Masuk',
                 'Permohonan ' . $application->order_number . ' dari ' . $application->company_name . ' telah disubmit dan butuh review.',

@@ -9,9 +9,11 @@ return [
         'roles' => [
             'client',
             'admin_application',
+            'admin_sustain',
             'finance',
             'auditor',
             'technical',
+            'technical_sustain',
             'superadmin',
         ],
     ],
@@ -23,9 +25,11 @@ return [
         'roles' => [
             'client',
             'admin_application',
+            'admin_sustain',
             'finance',
             'auditor',
             'technical',
+            'technical_sustain',
             'superadmin',
         ],
     ],
@@ -69,8 +73,10 @@ return [
         'active' => 'internal.applications.*',
         'roles' => [
             'admin_application',
+            'admin_sustain',
             'superadmin',
         ],
+        'section_by_role' => ['admin_sustain' => 'Tim Admin Sustain'],
     ],
     [
         'section' => 'Admin Permohonan',
@@ -79,8 +85,10 @@ return [
         'active' => 'internal.gis-form-requests.*',
         'roles' => [
             'admin_application',
+            'admin_sustain',
             'superadmin',
         ],
+        'section_by_role' => ['admin_sustain' => 'Tim Admin Sustain'],
     ],
 
     [
@@ -112,8 +120,10 @@ return [
         'active' => 'technical.reviews.*',
         'roles' => [
             'technical',
+            'technical_sustain',
             'superadmin',
         ],
+        'section_by_role' => ['technical_sustain' => 'Tim Teknis Sustain'],
     ],
 
     [
@@ -123,8 +133,10 @@ return [
         'active' => 'technical.assignments.*',
         'roles' => [
             'technical',
+            'technical_sustain',
             'superadmin',
         ],
+        'section_by_role' => ['technical_sustain' => 'Tim Teknis Sustain'],
     ],
 
     [
@@ -142,8 +154,10 @@ return [
         ],
         'roles' => [
             'technical',
+            'technical_sustain',
             'superadmin',
         ],
+        'section_by_role' => ['technical_sustain' => 'Tim Teknis Sustain'],
     ],
 
     [
@@ -212,9 +226,11 @@ return [
         'roles' => [
             'client',
             'admin_application',
+            'admin_sustain',
             'finance',
             'auditor',
             'technical',
+            'technical_sustain',
             'superadmin',
         ],
     ],

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SchemeOwnershipService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -94,6 +95,37 @@ class CertificationApplication extends Model
     public function assignmentLetters(): HasMany
     {
         return $this->hasMany(AssignmentLetter::class, 'application_id');
+    }
+
+    /**
+     * Batasi pada permohonan yang skemanya menjadi tanggung jawab pengguna ini.
+     *
+     * ISPO dikerjakan Tim Sustain, skema lain oleh Admin Permohonan dan Tim
+     * Teknis. Pemegang dua role melihat gabungannya. Pengguna yang tidak
+     * memiliki skema apa pun tidak melihat apa-apa — bukan melihat semuanya,
+     * karena kegagalan penyaringan harus menutup, bukan membuka.
+     */
+    public function scopeHandledBy(Builder $query, User $user): Builder
+    {
+        $templates = app(SchemeOwnershipService::class)->templatesOwnedBy($user);
+
+        if ($templates === null) {
+            return $query;
+        }
+
+        if ($templates === []) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas(
+            'scheme',
+            fn (Builder $sub) => $sub->whereIn('review_template', $templates)
+        );
+    }
+
+    public function isHandledBy(User $user): bool
+    {
+        return app(SchemeOwnershipService::class)->handles($user, $this->scheme);
     }
 
     /**

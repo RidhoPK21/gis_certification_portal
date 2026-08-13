@@ -16,6 +16,32 @@ use Illuminate\Http\Request;
 class SecureFileController extends Controller
 {
     /**
+     * Peran internal yang berkepentingan atas berkas sebuah order.
+     *
+     * Sustain ikut karena seluruh rantai ISPO — tinjauan sampai sertifikat —
+     * dikerjakan tim itu. Daftar ini hanya menyatakan "peran yang berurusan
+     * dengan order"; pembatasan skemanya ditegakkan internalCanAccess().
+     */
+    private const INTERNAL_ROLES = [
+        'admin_application', 'admin_sustain',
+        'technical', 'technical_sustain',
+        'superadmin',
+    ];
+
+    /**
+     * Internal boleh mengunduh berkas hanya pada skema yang ditanganinya.
+     *
+     * Tanpa pemeriksaan kepemilikan di sini, order ISPO tetap dapat diambil
+     * berkasnya lewat URL berkas oleh tim non-Sustain — halaman ordernya
+     * dijaga middleware scheme.owner, tetapi route berkas berada di luar grup itu.
+     */
+    private function internalCanAccess(Request $request, CertificationApplication $application): bool
+    {
+        return $request->user()->hasRole(self::INTERNAL_ROLES)
+            && $application->isHandledBy($request->user());
+    }
+
+    /**
      * Apakah pengguna adalah auditor yang ditugaskan pada permohonan ini.
      *
      * Sengaja dipisah dan selalu di-OR-kan dengan hak akses peran lain: bentuk
@@ -36,7 +62,8 @@ class SecureFileController extends Controller
     {
         $invoice->load('application');
         $allowed = $invoice->application->client_id === $request->user()->id
-            || $request->user()->hasRole(['finance', 'admin_application', 'superadmin']);
+            || $request->user()->hasRole('finance')
+            || $this->internalCanAccess($request, $invoice->application);
         abort_unless($allowed && filled($invoice->file_path), 403);
         $audit->log('file.invoice_downloaded', $invoice);
 
@@ -47,7 +74,7 @@ class SecureFileController extends Controller
     {
         $file->load('auditStage.application');
         $application = $file->auditStage->application;
-        $allowed = $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+        $allowed = $this->internalCanAccess($request, $application)
             || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
         $audit->log('file.audit_report_downloaded', $file, [], ['application_id' => $application->id]);
@@ -60,7 +87,7 @@ class SecureFileController extends Controller
         $file->load('correctiveAction.finding.application');
         $application = $file->correctiveAction->finding->application;
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->internalCanAccess($request, $application)
             || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
         $audit->log('file.corrective_action_downloaded', $file, [], ['application_id' => $application->id]);
@@ -74,8 +101,12 @@ class SecureFileController extends Controller
      */
     public function gisFormTemplate(Request $request, GisFormTemplate $template, FileStorageService $files, AuditLogger $audit, GisFormService $gisForms)
     {
+        /*
+         * Tanpa penyaringan skema: berkas ini template kosong milik skema,
+         * bukan data order, jadi seluruh internal boleh mengunduhnya.
+         */
         $user = $request->user();
-        $allowed = $user->hasRole(['admin_application', 'superadmin', 'technical']);
+        $allowed = $user->hasRole(self::INTERNAL_ROLES);
 
         if (! $allowed && $user->hasRole('client')) {
             $allowed = CertificationApplication::query()
@@ -99,7 +130,8 @@ class SecureFileController extends Controller
      */
     public function assignmentLetterSignature(Request $request, AssignmentLetter $letter, FileStorageService $files, AuditLogger $audit)
     {
-        abort_unless($request->user()->hasRole(['technical', 'admin_application', 'superadmin']), 403);
+        $letter->load('application');
+        abort_unless($this->internalCanAccess($request, $letter->application), 403);
         abort_unless(filled($letter->signature_path), 404);
 
         $audit->log('file.assignment_letter_signature_viewed', $letter, [], [
@@ -117,7 +149,7 @@ class SecureFileController extends Controller
     public function fieldFile(Request $request, CertificationApplication $application, string $code, FileStorageService $files, AuditLogger $audit)
     {
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->internalCanAccess($request, $application)
             || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
 
@@ -143,7 +175,7 @@ class SecureFileController extends Controller
     public function applicationSignature(Request $request, CertificationApplication $application, int $index, FileStorageService $files, AuditLogger $audit)
     {
         $allowed = $application->client_id === $request->user()->id
-            || $request->user()->hasRole(['admin_application', 'superadmin', 'technical'])
+            || $this->internalCanAccess($request, $application)
             || $this->isAssignedAuditor($request, $application);
         abort_unless($allowed, 403);
 

@@ -110,7 +110,8 @@ class FinanceController extends Controller
      */
     private function notifyTechnicalForAssignment(CertificationApplication $application, PortalNotificationService $notifications): void
     {
-        $notifications->sendToRole(
+        $notifications->sendToSchemeOwner(
+            $application,
             'technical',
             'assignment_letter_pending',
             'Terbitkan Surat Tugas',
@@ -159,7 +160,7 @@ class FinanceController extends Controller
         });
         if ($status === 'paid' && in_array($application->status, ['invoice_process', 'payment_partial'], true)) {
             $workflow->transition($application, 'payment_completed', 'payment_completed', 'Pembayaran dinyatakan lunas.', $request->user()->id, new \DateTime($data['payment_date']));
-            $notifications->sendToRole('admin_application', 'payment_completed', 'Pembayaran Selesai', 'Pembayaran order '.$application->order_number.' telah lunas. Audit siap dijadwalkan.', route('internal.applications.show', $application));
+            $notifications->sendToSchemeOwner($application, 'admin', 'payment_completed', 'Pembayaran Selesai', 'Pembayaran order '.$application->order_number.' telah lunas. Audit siap dijadwalkan.', route('internal.applications.show', $application));
             $this->notifyTechnicalForAssignment($application, $notifications);
         } elseif ($status === 'partial' && $application->status === 'invoice_process') {
             $workflow->transition($application, 'payment_partial', 'payment_partial', 'Pembayaran tahap '.$data['milestone'].' tercatat.', $request->user()->id, new \DateTime($data['payment_date']));

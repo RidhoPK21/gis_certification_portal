@@ -90,16 +90,22 @@ Semua akun memakai password yang kamu isi di `SYSTEMGIS_DEMO_PASSWORD` (contoh: 
 | Peran | Email | Fungsi utama |
 |-------|-------|--------------|
 | Klien | `client@systemgis.local` | Mengisi & submit permohonan, upload dokumen, tindakan koreksi |
-| Admin Permohonan | `admin.application@systemgis.local` | Review permohonan, revisi, approve/reject → teruskan ke Finance |
+| Admin Permohonan | `admin.application@systemgis.local` | Kelengkapan administrasi & kajian awal, minta revisi → teruskan ke Tim Teknis (**selain ISPO**) |
+| Tim Admin Sustain | `admin.sustain@systemgis.local` | Sama seperti Admin Permohonan, **khusus ISPO** |
 | Finance | `finance@systemgis.local` | Terbitkan invoice, catat pembayaran, atur status pembayaran |
 | Auditor | `auditor@systemgis.local` | Input tahap audit, temuan, review tindakan koreksi |
-| Teknis | `technical@systemgis.local` | Sertifikat (draft/final), review, jadwal surveillance |
+| Tim Teknis | `technical@systemgis.local` | Tinjauan teknis, keputusan Setujui/Tolak, penugasan auditor, Surat Tugas, sertifikat, surveillance (**selain ISPO**) |
+| Tim Teknis Sustain | `technical.sustain@systemgis.local` | Sama seperti Tim Teknis, **khusus ISPO** |
 | Superadmin | `superadmin@systemgis.local` | Kelola skema/Form Builder, produk SNI, user & role, audit trail |
 
-### Alur uji singkat klien → Finance (2 klik saja)
+> **Pembagian skema.** Seluruh permohonan **ISPO** menjadi milik tim Sustain; Admin Permohonan dan Tim Teknis tidak melihatnya, begitu pula sebaliknya. Bila satu orang perlu menangani ISPO **dan** skema lain, beri akunnya dua role sekaligus (mis. `technical` + `technical_sustain`) — antreannya menjadi gabungan keduanya, dan tiap order tetap menghasilkan satu notifikasi.
+
+### Alur uji singkat klien → Finance
 1. Login **client** → `/client/applications/schemes` → pilih skema → isi draft → **Submit** (status: draft → admin_review otomatis).
-2. Login **admin.application** → `/internal/applications` → buka order → **Setujui & Generate PDF** (status → invoice_process).
-3. Login **finance** → `/internal/finance` → **Proses** order → terbitkan invoice & atur status pembayaran.
+2. Login **admin.application** (atau **admin.sustain** bila skemanya ISPO) → `/internal/applications` → buka order → isi kajian administrasi → **Teruskan ke Tim Teknis** (status → technical_review).
+3. Login **technical** (atau **technical.sustain** untuk ISPO) → `/internal/technical/tinjauan` → isi tinjauan teknis, tentukan tim auditor → **Setujui & Generate PDF** (status → invoice_process).
+4. Login **finance** → `/internal/finance` → **Proses** order → terbitkan invoice & atur status pembayaran sampai lunas.
+5. Kembali ke **technical** → `/internal/technical/penugasan` → terbitkan **Surat Tugas** agar auditor dapat mulai bekerja.
 
 ---
 
@@ -174,10 +180,11 @@ Buat database `gis_portal` di MySQL, lalu jalankan ulang `php artisan gis:instal
 
 ## 8. Struktur singkat & catatan
 
-- **Seeder inti** (aman di semua environment): `RolePermissionSeeder`, `SchemeCatalogSeeder`, `WorkflowSeeder`. Akun demo dari `SystemAccountsSeeder` hanya jalan di local/testing bila diaktifkan di `.env`.
+- **Seeder inti** (aman di semua environment): `RolePermissionSeeder`, `SchemeCatalogSeeder`, `WorkflowSeeder`, `IafNaceTaxonomySeeder`, `SniProductTaxonomySeeder`. Akun demo dari `SystemAccountsSeeder` hanya jalan di local/testing bila diaktifkan di `.env`.
 - **Definisi form permohonan** ada di `database/seeders/data/schemes.json` — setelah diubah, jalankan `php artisan db:seed --class=SchemeCatalogSeeder` agar tersimpan ke database.
+- **Pembagian skema antar tim** ada di `config/scheme_ownership.php` — satu berkas yang memetakan `review_template` skema ke role pemiliknya. Menambah pembagian baru (mis. skema lain diserahkan ke tim tersendiri) cukup menyunting berkas itu; antrean, penjagaan halaman, notifikasi, dan langkah workflow semuanya membacanya.
 - **File privat** (dokumen, invoice, sertifikat, backup) disimpan di `storage/app/private/...` dan diakses lewat route aman, bukan URL publik.
-- **Test**: 56 test (PHPUnit). Jalankan `php artisan test` sebelum push.
+- **Test**: 336 test (PHPUnit). Jalankan `php artisan test` sebelum push — **jangan pernah di server**, karena `RefreshDatabase` mengosongkan database dan menghapus dokumen klien.
 
 ---
 

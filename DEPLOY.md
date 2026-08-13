@@ -295,7 +295,9 @@ cd ~/gis_app            # VPS: cd /var/www/gis_app
 git pull origin main
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
+php artisan db:seed --class=RolePermissionSeeder --force
 php artisan db:seed --class=SchemeCatalogSeeder --force
+php artisan db:seed --class=WorkflowSeeder --force
 php artisan db:seed --class=IafNaceTaxonomySeeder --force
 php artisan db:seed --class=GisFormTemplateSeeder --force
 mkdir -p public/branding && chmod 775 public/branding
@@ -307,12 +309,16 @@ php artisan route:cache && php artisan view:cache
 Catatan tiap langkah:
 
 - **`migrate --force` jangan dilewatkan.** Identitas portal dibaca pada setiap halaman; bila ada migrasi baru yang belum dijalankan, aplikasi memang tetap hidup dengan nilai bawaan, tetapi menu *Pengaturan Sistem* tidak akan berfungsi.
+- **`RolePermissionSeeder`** mendaftarkan role beserta izinnya. Wajib dijalankan pada rilis yang menambah role — mis. *Tim Admin Sustain* dan *Tim Teknis Sustain*; tanpa ini kedua role itu tidak muncul di Superadmin → **User & Role** dan tidak ada yang bisa ditugaskan ke sana. Seeder ini **idempoten** dan tidak menyentuh penugasan role pengguna yang sudah ada.
+- **`WorkflowSeeder`** menulis ulang langkah workflow tiap skema, termasuk role penanggung jawabnya. Sejak ISPO dipegang tim Sustain, langkah `admin_review`, `certificate_review`, dan `final_certificate` pada skema ISPO berpindah ke `admin_sustain`/`technical_sustain` — instalasi lama masih menyimpan nilai lama sampai seeder ini dijalankan. **Idempoten** (`updateOrCreate` per kode langkah).
 - **`SchemeCatalogSeeder`** memuat katalog skema dari `database/seeders/data/schemes.json`: skema, bagian formulir, field, dan daftar dokumen wajib. Wajib dijalankan setiap kali rilis menambah atau mengubah skema — tanpa ini skema baru tidak akan muncul di portal. Seeder ini **idempoten**: memakai `updateOrCreate`, jadi aman diulang. Skema yang digantikan versi baru ditandai `"active": false` (bukan dihapus), sehingga permohonan lama tetap bisa dibuka.
 - **`IafNaceTaxonomySeeder`** memuat ruang lingkup akreditasi KAN K-07.01 Rev.2 Lampiran 1 dari `database/seeders/data/iaf-nace.json` — 40 kode IAF dan 112 kode NACE yang mengisi dropdown bertingkat pada form permohonan **seluruh skema**. Tanpa ini pilihannya kosong dan klien tidak bisa menentukan ruang lingkup. Seeder ini **idempoten** dan **tidak menimpa** kolom `is_active`, jadi kode yang sengaja dinonaktifkan Superadmin tetap nonaktif setelah rilis berikutnya.
 - **`GisFormTemplateSeeder`** mendaftarkan berkas *Form Wajib GIS* yang diunduh klien. **Wajar bila lambat** (bisa beberapa menit): tiap berkas `.doc`/`.docx` disalin ke storage dan dihitung checksum-nya. Biarkan sampai selesai, jangan dihentikan di tengah.
 - **`mkdir public/branding`** memastikan unggahan logo tidak gagal karena folder belum ada.
 - **`cache:clear`** membuang cache pengaturan lama agar perubahan branding langsung terlihat.
 - Urutan `config:clear` lalu `config:cache` — jangan dibalik.
+
+> **Sampaikan ke tim sebelum rilis yang membawa Tim Sustain.** Begitu rilis naik, **seluruh order ISPO yang sedang berjalan langsung berpindah antrean** ke Tim Admin Sustain dan Tim Teknis Sustain. Admin Permohonan dan Tim Teknis tidak lagi melihatnya — bukan hilang, hanya pindah pemilik. Pastikan sudah ada akun yang memegang kedua role baru sebelum rilis, kalau tidak order ISPO akan menganggur tanpa penanggung jawab. Bila satu orang perlu menangani ISPO **dan** skema lain, beri akunnya dua role sekaligus (mis. `admin_application` + `admin_sustain`) — antreannya menjadi gabungan keduanya.
 
 > **Jangan pernah menjalankan `php artisan test` di server.** Sebagian test memakai `RefreshDatabase` (mengosongkan seluruh database) dan menghapus direktori `applications/{id}` pada disk `private` — sementara ID permohonan ikut tereset ke 1, sehingga **dokumen klien yang sudah diunggah bisa ikut terhapus**. Test hanya dijalankan di mesin pengembang.
 
@@ -433,6 +439,9 @@ Beberapa hal yang mungkin ditanyakan pengguna:
 | Unggah logo gagal / logo tidak muncul | Folder `public/branding` belum ada atau tidak bisa ditulis: `mkdir -p public/branding && chmod 775 public/branding`. Pada VPS, pastikan pemiliknya `www-data`. |
 | Logo sudah diganti tapi tampilan lama | Cache pengaturan: `php artisan cache:clear`. |
 | Skema baru tidak muncul di portal | `SchemeCatalogSeeder` belum dijalankan setelah `git pull`: `php artisan db:seed --class=SchemeCatalogSeeder --force`. |
+| Role baru (mis. Tim Sustain) tidak ada di **User & Role** | `RolePermissionSeeder` belum dijalankan setelah `git pull`: `php artisan db:seed --class=RolePermissionSeeder --force`. |
+| Order ISPO hilang dari antrean Admin Permohonan / Tim Teknis | **Bukan hilang — pindah pemilik.** Sejak rilis Tim Sustain, seluruh ISPO menjadi milik `admin_sustain`/`technical_sustain`. Buatkan akun Sustain di **User & Role**, atau tambahkan role Sustain pada akun yang sudah ada bila satu orang memang menangani keduanya. |
+| Order ISPO tidak tertangani siapa pun | Belum ada akun yang memegang role Sustain. Superadmin tetap bisa membuka semua order sebagai jalan sementara. |
 | Tanda tangan tidak muncul di PDF (kotaknya kosong, nama tetap tercetak) | `gd` tidak mendukung PNG. PDF hanya menerima JPEG, jadi unggahan PNG/GIF/WEBP dikonversi lebih dulu; bila `imagecreatefrompng` tidak ada, gambar dilewati diam-diam agar PDF tetap terbit. Cek: `php -r "var_dump(function_exists('imagecreatefrompng'));"` |
 
 > **Jangan pernah** menyalakan `APP_DEBUG=true` di server publik — halaman error Laravel menampilkan seluruh isi `.env`, termasuk password.

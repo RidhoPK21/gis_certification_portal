@@ -203,7 +203,7 @@ class AuditController extends Controller
         abort_unless($qmsStage->status === 'approved', 422, 'Tahap QMS/Lapangan harus berstatus Disetujui sebelum audit diselesaikan.');
         abort_if($application->findings()->where('status', '!=', 'closed')->exists(), 422, 'Masih ada temuan terbuka. Selesaikan tindakan koreksi terlebih dahulu.');
         $workflow->transition($application, 'certificate_review', 'audit_completed_without_open_findings', $data['notes'], $request->user()->id, new \DateTime($data['action_date']));
-        $notifications->sendToRole('technical', 'certificate_review', 'Audit Selesai', 'Order '.$application->order_number.' telah selesai audit. Silakan mulai proses penerbitan sertifikat.', route('technical.show', $application));
+        $notifications->sendToSchemeOwner($application, 'technical', 'certificate_review', 'Audit Selesai', 'Order '.$application->order_number.' telah selesai audit. Silakan mulai proses penerbitan sertifikat.', route('technical.show', $application));
         $audit->log('audit.completed', $application, [], ['notes' => $data['notes']]);
 
         return back()->with('success', 'Audit selesai dan order diteruskan ke Tim Teknis.');
@@ -260,7 +260,8 @@ class AuditController extends Controller
             $finding->update(['status' => 'closed']);
             if ($application->findings()->where('status', '!=', 'closed')->doesntExist() && $application->status === 'corrective_action') {
                 $workflow->transition($application, 'certificate_review', 'corrective_actions_closed', 'Seluruh tindakan koreksi diterima.', $request->user()->id);
-                $notifications->sendToRole(
+                $notifications->sendToSchemeOwner(
+                    $application,
                     'technical',
                     'certificate_review',
                     'Audit Selesai',

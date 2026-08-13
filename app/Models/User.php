@@ -31,7 +31,11 @@ class User extends Authenticatable
      * Role internal yang menandatangani dokumen resmi dan boleh
      * mengelola tanda tangan elektronik di profil.
      */
-    public const SIGNATURE_ROLES = ['admin_application', 'technical', 'auditor', 'superadmin'];
+    public const SIGNATURE_ROLES = [
+        'admin_application', 'admin_sustain',
+        'technical', 'technical_sustain',
+        'auditor', 'superadmin',
+    ];
 
     protected $hidden = [
         'password',

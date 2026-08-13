@@ -89,7 +89,7 @@ class IafNaceTaxonomyTest extends TestCase
             ->assertOk()
             ->assertSee('Kode IAF');
 
-        foreach (['admin_application', 'technical', 'client'] as $role) {
+        foreach (['admin_application', 'admin_sustain', 'technical', 'technical_sustain', 'client'] as $role) {
             $this->actingAs($this->user($role))
                 ->get(route('superadmin.iaf-nace.index'))
                 ->assertForbidden();

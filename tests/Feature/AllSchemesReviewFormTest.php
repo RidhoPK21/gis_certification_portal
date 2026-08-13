@@ -77,8 +77,13 @@ class AllSchemesReviewFormTest extends TestCase
 
         // Tanpa tanda kurung pada nama: PDF mengescape "(" sehingga nama seperti
         // "Helvina (Admin)" tidak akan pernah cocok saat diperiksa pada berkasnya.
-        $admin = $this->user('admin_application', 'Helvina Admin Permohonan');
-        $technical = $this->user('technical', 'Rangga Tim Teknis');
+        /*
+         * Kedua peran sekaligus: test ini menelusuri seluruh skema dengan satu
+         * akun, sedangkan ISPO kini milik tim Sustain. Akun berperan ganda
+         * memang melihat gabungan keduanya — persis kasus yang dirancang.
+         */
+        $admin = $this->user(['admin_application', 'admin_sustain'], 'Helvina Admin Permohonan');
+        $technical = $this->user(['technical', 'technical_sustain'], 'Rangga Tim Teknis');
         $panelist = $this->user('technical', 'Dewi Panelis');
         $auditor = $this->user('auditor', 'Bayu Lead Auditor');
         $client = $this->user('client', 'PT Contoh Sejahtera');
@@ -435,15 +440,20 @@ class AllSchemesReviewFormTest extends TestCase
         $application->unsetRelation('values');
     }
 
-    private function user(string $roleCode, string $name): User
+    /**
+     * @param  string|array<int, string>  $roleCode
+     */
+    private function user(string|array $roleCode, string $name): User
     {
+        $codes = (array) $roleCode;
+
         $user = User::create([
             'name' => $name,
-            'email' => $roleCode.Str::random(6).'@example.test',
+            'email' => $codes[0].Str::random(6).'@example.test',
             'password' => 'RahasiaKuat123',
             'is_active' => true,
         ]);
-        $user->roles()->attach(Role::where('code', $roleCode)->value('id'));
+        $user->roles()->attach(Role::whereIn('code', $codes)->pluck('id'));
 
         return $user;
     }

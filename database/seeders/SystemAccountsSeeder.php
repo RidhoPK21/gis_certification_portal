@@ -50,6 +50,11 @@ class SystemAccountsSeeder extends Seeder
                 'email' => 'admin.application@systemgis.local',
             ],
             [
+                'role' => 'admin_sustain',
+                'name' => 'Tim Admin Sustain GIS',
+                'email' => 'admin.sustain@systemgis.local',
+            ],
+            [
                 'role' => 'finance',
                 'name' => 'Finance GIS',
                 'email' => 'finance@systemgis.local',
@@ -63,6 +68,11 @@ class SystemAccountsSeeder extends Seeder
                 'role' => 'technical',
                 'name' => 'Tim Teknis GIS',
                 'email' => 'technical@systemgis.local',
+            ],
+            [
+                'role' => 'technical_sustain',
+                'name' => 'Tim Teknis Sustain GIS',
+                'email' => 'technical.sustain@systemgis.local',
             ],
             [
                 'role' => 'superadmin',

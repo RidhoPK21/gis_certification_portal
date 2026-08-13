@@ -20,7 +20,10 @@ class ApplicationReviewController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CertificationApplication::with(['scheme', 'client'])->latest();
+        // Tiap tim hanya melihat skema yang menjadi tanggung jawabnya.
+        $query = CertificationApplication::with(['scheme', 'client'])
+            ->handledBy($request->user())
+            ->latest();
         if ($request->filled('status')) {
             $query->where('status', $request->string('status'));
         }
@@ -147,7 +150,7 @@ class ApplicationReviewController extends Controller
         $application->reviews()->where('review_type', 'technical')->whereNotNull('completed_at')->update(['completed_at' => null]);
 
         $workflow->transition($application, 'technical_review', 'admin_forward_technical', 'Diteruskan ke Tim Teknis untuk tinjauan teknis.', $request->user()->id);
-        $notifications->sendToRole('technical', 'technical_review_pending', 'Tinjauan Teknis Baru', 'Permohonan '.$application->order_number.' menunggu tinjauan teknis.', route('technical.reviews.show', $application));
+        $notifications->sendToSchemeOwner($application, 'technical', 'technical_review_pending', 'Tinjauan Teknis Baru', 'Permohonan '.$application->order_number.' menunggu tinjauan teknis.', route('technical.reviews.show', $application));
         $audit->log('application.forwarded_technical', $application, [], ['application_id' => $application->id]);
 
         return back()->with('success', 'Permohonan diteruskan ke Tim Teknis untuk tinjauan teknis.');

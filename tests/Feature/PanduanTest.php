@@ -105,6 +105,25 @@ class PanduanTest extends TestCase
             ->assertDontSee('Panduan Superadmin');
     }
 
+    /**
+     * Tanpa partial sendiri, halaman Panduan diam-diam jatuh ke panduan Klien —
+     * tampil normal, tetapi isinya salah untuk peran ini.
+     */
+    public function test_tim_sustain_melihat_panduannya_sendiri(): void
+    {
+        $this->actingAs($this->makeUserWithRoles(['admin_sustain']))
+            ->get(route('panduan'))
+            ->assertOk()
+            ->assertSee('Panduan Tim Admin Sustain')
+            ->assertDontSee('Panduan Klien');
+
+        $this->actingAs($this->makeUserWithRoles(['technical_sustain']))
+            ->get(route('panduan'))
+            ->assertOk()
+            ->assertSee('Panduan Tim Teknis Sustain')
+            ->assertDontSee('Panduan Klien');
+    }
+
     public function test_akun_multi_role_hanya_dapat_buka_panduan_role_yang_dimiliki(): void
     {
         $user = $this->makeUserWithRoles(['finance', 'auditor']);

@@ -1258,6 +1258,27 @@
                     )
                 ) > 0;
             })
+            ->map(function (array $item) use ($userRoles) {
+                /*
+                 * Judul kelompok mengikuti tim penggunanya: akun Sustain
+                 * membaca "Tim Admin Sustain", bukan "Admin Permohonan",
+                 * meski menunya sama. Akun berperan ganda tetap memakai judul
+                 * bawaan supaya satu menu tidak muncul di dua kelompok.
+                 */
+                $alias = $item['section_by_role'] ?? [];
+                $peranBawaan = array_diff($item['roles'], array_keys($alias));
+
+                if ($alias !== [] && array_intersect($userRoles, $peranBawaan) === []) {
+                    foreach ($alias as $kode => $judul) {
+                        if (in_array($kode, $userRoles, true)) {
+                            $item['section'] = $judul;
+                            break;
+                        }
+                    }
+                }
+
+                return $item;
+            })
             ->groupBy('section');
 
         $headerNotifications = \App\Models\PortalNotification::where('user_id', $user->id)

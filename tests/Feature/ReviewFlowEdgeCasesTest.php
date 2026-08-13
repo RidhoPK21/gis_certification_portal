@@ -40,14 +40,24 @@ class ReviewFlowEdgeCasesTest extends TestCase
         $this->seed(WorkflowSeeder::class);
         Storage::fake('private');
 
-        foreach (['admin_application' => 'admin', 'technical' => 'technical', 'client' => 'client'] as $role => $property) {
+        /*
+         * Akun admin dan teknis memegang peran Sustain juga: sebagian kasus di
+         * berkas ini menjalankan ISPO, yang kini milik tim Sustain.
+         */
+        $peran = [
+            'admin' => ['admin_application', 'admin_sustain'],
+            'technical' => ['technical', 'technical_sustain'],
+            'client' => ['client'],
+        ];
+
+        foreach ($peran as $property => $codes) {
             $user = User::create([
-                'name' => 'Uji '.$role,
-                'email' => $role.'@uji.test',
+                'name' => 'Uji '.$codes[0],
+                'email' => $codes[0].'@uji.test',
                 'password' => 'RahasiaKuat123',
                 'is_active' => true,
             ]);
-            $user->roles()->attach(Role::where('code', $role)->value('id'));
+            $user->roles()->attach(Role::whereIn('code', $codes)->pluck('id'));
             $this->{$property} = $user;
         }
     }
