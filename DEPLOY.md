@@ -411,6 +411,8 @@ Batas kirim ulang OTP (1×/menit, 5×/jam) dan batas percobaan login (5×/menit)
    ```bash
    php artisan db:seed --class=SniProductTaxonomySeeder --force
    ```
+8. **Siapkan tim Sustain sebelum ada order ISPO masuk.** Buka **User & Role** → pastikan *Tim Admin Sustain* dan *Tim Teknis Sustain* muncul sebagai pilihan role. Bila belum, `RolePermissionSeeder` belum dijalankan. Lalu undang minimal satu akun untuk masing-masing role — tanpa itu seluruh permohonan ISPO tidak punya penanggung jawab dan hanya Superadmin yang bisa membukanya. Bila satu orang memang menangani ISPO sekaligus skema lain, centang dua role sekaligus pada akunnya (mis. *Admin Permohonan* + *Tim Admin Sustain*); antreannya menjadi gabungan keduanya.
+9. Masuk sebagai akun Sustain → buka **Panduan Penggunaan** → isinya harus panduan Sustain, bukan panduan Klien. Bila yang muncul panduan Klien, `php artisan view:clear` lalu `view:cache`.
 
 Akun staf **tidak dibuat lewat seeder**. Superadmin mengundang lewat **User & Role → Tambah Akun**; staf menerima kode aktivasi dan menentukan kata sandinya sendiri.
 
