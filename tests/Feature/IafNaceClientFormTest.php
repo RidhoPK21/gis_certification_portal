@@ -7,6 +7,7 @@ use App\Models\CertificationScheme;
 use App\Models\IafCode;
 use App\Models\NaceCode;
 use App\Models\Role;
+use App\Models\SchemeField;
 use App\Models\User;
 use Database\Seeders\IafNaceTaxonomySeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -80,6 +81,25 @@ class IafNaceClientFormTest extends TestCase
             $this->assertStringContainsString('js-nace-code', $html, $konteks.'dropdown NACE tidak dirender.');
             $this->assertStringContainsString('data-iaf="16"', $html, $konteks.'opsi NACE tidak membawa penanda IAF induknya.');
             $this->assertStringContainsString('Industri pembuatan beton, semen dan gips', $html, $konteks.'keterangan NACE tidak tersedia.');
+
+            /*
+             * Pengisian otomatis Lingkup industri ikut diperiksa di sini karena
+             * yang menyalakannya adalah dropdown NACE. Lima skema (HACCP, tiga
+             * SNI, ISPO) memang tidak punya field industry_scope — di sana
+             * penyalurnya harus diam, bukan menabrak field lain.
+             */
+            $this->assertStringContainsString('isiLingkupIndustri', $html, $konteks.'pengisian otomatis Lingkup industri hilang.');
+
+            $punyaLingkup = SchemeField::whereHas(
+                'section',
+                fn ($q) => $q->where('certification_scheme_id', $scheme->id)
+            )->where('code', 'industry_scope')->exists();
+
+            $this->assertSame(
+                $punyaLingkup,
+                str_contains($html, 'id="input-industry_scope"'),
+                $konteks.'keberadaan field Lingkup industri tidak sesuai katalog.'
+            );
         }
     }
 

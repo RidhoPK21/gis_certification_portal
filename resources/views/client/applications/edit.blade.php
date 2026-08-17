@@ -828,6 +828,7 @@ document.querySelectorAll('.js-iaf-code').forEach(function(iafSel){
     const keterangan=cari('.js-nace-keterangan');
     const iafHidden=cari('.js-iaf-description');
     const naceHidden=cari('.js-nace-description');
+    const lingkup=document.getElementById('input-industry_scope');
     const opsi=Array.from(naceSel.querySelectorAll('option[data-iaf]'));
     const tersimpan=naceSel.getAttribute('data-selected')||'';
 
@@ -842,7 +843,26 @@ document.querySelectorAll('.js-iaf-code').forEach(function(iafSel){
         return sel.selectedIndex>=0?sel.options[sel.selectedIndex]:null;
     }
 
-    function segarkanKeterangan(){
+    /*
+     * Lingkup industri diisikan dari nama kode NACE: itu memang lingkup usaha
+     * menurut acuan KAN, jadi pemohon tidak perlu mengetik ulang. Tetap bisa
+     * disunting karena sebagian pemohon perlu menyebut lingkupnya lebih rinci.
+     *
+     * Hanya ditimpa ketika pemohon benar-benar mengganti kode NACE. Pada
+     * pemuatan halaman isian lama dipertahankan, supaya suntingan manual tidak
+     * hilang setiap kali draft dibuka kembali.
+     *
+     * HACCP, ketiga skema SNI, dan ISPO tidak punya field industry_scope —
+     * di sana penyalur ini harus diam, bukan menabrak field lain.
+     */
+    function isiLingkupIndustri(namaNace,timpa){
+        if(!lingkup||!namaNace)return;
+        if(!timpa&&lingkup.value.trim()!=='')return;
+        lingkup.value=namaNace;
+        lingkup.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+
+    function segarkanKeterangan(timpaLingkup){
         const optIaf=terpilih(iafSel);
         const optNace=terpilih(naceSel);
         const namaIaf=optIaf&&optIaf.value?(optIaf.getAttribute('data-name-id')||''):'';
@@ -851,6 +871,7 @@ document.querySelectorAll('.js-iaf-code').forEach(function(iafSel){
         if(iafHidden)iafHidden.value=namaIaf;
         if(naceHidden)naceHidden.value=namaNace;
         if(keterangan)keterangan.textContent=namaNace;
+        isiLingkupIndustri(namaNace,timpaLingkup===true);
     }
 
     function saring(pertahankan){
@@ -873,7 +894,7 @@ document.querySelectorAll('.js-iaf-code').forEach(function(iafSel){
     else saring(false);
 
     iafSel.addEventListener('change',function(){saring(false);});
-    naceSel.addEventListener('change',segarkanKeterangan);
+    naceSel.addEventListener('change',function(){segarkanKeterangan(true);});
 });
 
 /* Hapus pesan error di bawah field ketika pengguna mulai mengisi/memilih. */
