@@ -1,0 +1,113 @@
+// Modul Sertifikat dan Surveillance, dokumen SW-KP-26-06-A Gambar 4.14.
+// Tabel applications ditulis ringkas sebagai entitas acuan.
+
+Table applications {
+  id bigint [pk, increment]
+  order_number varchar(255)
+  status varchar(60)
+}
+
+Table certificate_drafts {
+  id bigint [pk, increment]
+  application_id bigint
+  version int
+  original_name varchar(255)
+  file_path varchar(255)
+  checksum_sha256 varchar(64)
+  status varchar(30)
+  notes text
+  uploaded_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table certificate_finals {
+  id bigint [pk, increment]
+  application_id bigint
+  certificate_number varchar(255)
+  original_name varchar(255)
+  file_path varchar(255)
+  checksum_sha256 varchar(64)
+  issued_date date
+  expiry_date date
+  status varchar(30)
+  uploaded_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table certificate_share_links {
+  id bigint [pk, increment]
+  application_id bigint
+  certificate_draft_id bigint
+  certificate_final_id bigint
+  link_type varchar(20)
+  token_hash varchar(64)
+  password_hash varchar(255)
+  expires_at datetime
+  is_active boolean
+  max_access int
+  access_count int
+  created_by bigint
+  revoked_at timestamp
+  revoked_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table certificate_access_logs {
+  id bigint [pk, increment]
+  certificate_share_link_id bigint
+  user_id bigint
+  email varchar(255)
+  ip_address varchar(45)
+  user_agent text
+  action varchar(30)
+  is_success boolean
+  failure_reason varchar(255)
+  accessed_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table certificate_download_logs {
+  id bigint [pk, increment]
+  certificate_final_id bigint
+  certificate_share_link_id bigint
+  user_id bigint
+  ip_address varchar(45)
+  user_agent text
+  downloaded_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table surveillance_schedules {
+  id bigint [pk, increment]
+  application_id bigint
+  certificate_final_id bigint
+  cycle tinyint
+  planned_date date
+  scheduled_date date
+  actual_date date
+  status varchar(30)
+  calculation_source varchar(40)
+  formula_version varchar(30)
+  calculation_snapshot json
+  notes text
+  created_by bigint
+  updated_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: certificate_drafts.application_id > applications.id
+Ref: certificate_finals.application_id > applications.id
+Ref: certificate_share_links.application_id > applications.id
+Ref: certificate_share_links.certificate_draft_id > certificate_drafts.id
+Ref: certificate_share_links.certificate_final_id > certificate_finals.id
+Ref: certificate_access_logs.certificate_share_link_id > certificate_share_links.id
+Ref: certificate_download_logs.certificate_share_link_id > certificate_share_links.id
+Ref: certificate_download_logs.certificate_final_id > certificate_finals.id
+Ref: surveillance_schedules.application_id > applications.id
+Ref: surveillance_schedules.certificate_final_id > certificate_finals.id

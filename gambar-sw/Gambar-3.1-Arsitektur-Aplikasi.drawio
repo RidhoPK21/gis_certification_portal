@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="Arsitektur Aplikasi SystemGIS Baru" id="arsitektur-aplikasi-systemgis-baru">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="peramban" value="Peramban Pengguna
+Klien · Admin Permohonan · Tim Admin Sustain · Finance ·
+Auditor · Tim Teknis · Tim Teknis Sustain · Superadmin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="30" width="380" height="54" as="geometry"/></mxCell>
+        <mxCell id="rute" value="Routing dan Middleware
+routes/web.php · autentikasi · verifikasi email ·
+pemeriksaan izin peran · pemeriksaan kepemilikan skema" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="130" width="380" height="54" as="geometry"/></mxCell>
+        <mxCell id="controller" value="Controller
+Auth · Client · Internal · Superadmin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="230" width="380" height="54" as="geometry"/></mxCell>
+        <mxCell id="service" value="Service
+WorkflowService · OrderNumberService · ReviewPdfService ·
+CertificateLinkService · AuditLogger · OtpService" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="330" width="380" height="54" as="geometry"/></mxCell>
+        <mxCell id="model" value="Model Eloquent
+58 tabel aplikasi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="430" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="db" value="Basis Data MySQL / MariaDB" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="150" y="520" width="380" height="44" as="geometry"/></mxCell>
+        <mxCell id="storage" value="Penyimpanan Privat
+berkas di luar direktori publik" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="620" y="330" width="210" height="44" as="geometry"/></mxCell>
+        <mxCell id="smtp" value="SMTP Perusahaan
+kode OTP dan notifikasi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="620" y="400" width="210" height="44" as="geometry"/></mxCell>
+        <mxCell id="turnstile" value="Cloudflare Turnstile
+verifikasi formulir publik" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#000000;fontFamily=Helvetica;fontSize=10;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="1"><mxGeometry x="620" y="130" width="210" height="44" as="geometry"/></mxCell>
+        <mxCell id="e_peramban_rute_7920" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="peramban" target="rute"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_rute_controller_9328" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="rute" target="controller"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_controller_service_7232" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="controller" target="service"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_service_model_4096" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="service" target="model"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_model_db_80" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="model" target="db"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_service_storage_208" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="service" target="storage"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_service_smtp_4704" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=1;exitY=0.8;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="service" target="smtp"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="e_rute_turnstile_4640" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;orthogonalLoop=1;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="rute" target="turnstile"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell>
+        <mxCell id="cat0" value="Controller hanya menerima permintaan, memvalidasi masukan, dan memanggil service." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="150" y="596" width="528" height="20" as="geometry"/></mxCell>
+        <mxCell id="cat1" value="Aturan bisnis lintas modul ditempatkan pada service agar tidak digandakan." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;" vertex="1" parent="1"><mxGeometry x="150" y="618" width="484" height="20" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

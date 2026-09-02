@@ -1,0 +1,118 @@
+// Modul Master Data Referensi, Notifikasi, dan Audit Trail,
+// dokumen SW-KP-26-06-A Gambar 4.15.
+// Tabel users ditulis ringkas sebagai entitas acuan.
+
+Table sni_product_groups {
+  id bigint [pk, increment]
+  name varchar(255)
+  mandatory_type varchar(20)
+  sort_order int
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table sni_product_categories {
+  id bigint [pk, increment]
+  sni_product_group_id bigint
+  name varchar(255)
+  sort_order int
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table sni_product_master {
+  id bigint [pk, increment]
+  product_code varchar(255)
+  product_name varchar(255)
+  category varchar(255)
+  sni_number varchar(255)
+  certification_system varchar(255)
+  metadata json
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table sni_product_document_rules {
+  id bigint [pk, increment]
+  sni_product_master_id bigint
+  document_code varchar(255)
+  document_name varchar(255)
+  is_required boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table iaf_codes {
+  id bigint [pk, increment]
+  code varchar(10)
+  name_en varchar(255)
+  name_id varchar(255)
+  sort_order int
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table nace_codes {
+  id bigint [pk, increment]
+  iaf_code_id bigint
+  code varchar(20)
+  name_en varchar(500)
+  name_id text
+  sort_order int
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table settings {
+  id bigint [pk, increment]
+  key varchar(100)
+  value text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table notifications {
+  id uuid [pk, increment]
+  user_id bigint
+  type varchar(80)
+  title varchar(255)
+  message text
+  action_url varchar(255)
+  data json
+  read_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table activity_logs {
+  id bigint [pk, increment]
+  user_id bigint
+  event varchar(100)
+  subject_type varchar(255)
+  subject_id bigint
+  ip_address varchar(45)
+  user_agent text
+  old_values json
+  new_values json
+  metadata json
+  occurred_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table users {
+  id bigint [pk, increment]
+  name varchar(255)
+  email varchar(255)
+}
+
+Ref: sni_product_categories.sni_product_group_id > sni_product_groups.id
+Ref: sni_product_document_rules.sni_product_master_id > sni_product_master.id
+Ref: nace_codes.iaf_code_id > iaf_codes.id
+Ref: notifications.user_id > users.id
+Ref: activity_logs.user_id > users.id

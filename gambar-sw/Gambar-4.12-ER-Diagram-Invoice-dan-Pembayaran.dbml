@@ -1,0 +1,57 @@
+// Modul Invoice dan Pembayaran, dokumen SW-KP-26-06-A Gambar 4.12.
+// Tabel applications ditulis ringkas sebagai entitas acuan.
+
+Table applications {
+  id bigint [pk, increment]
+  order_number varchar(255)
+  status varchar(60)
+}
+
+Table invoices {
+  id bigint [pk, increment]
+  application_id bigint
+  invoice_number varchar(255)
+  amount decimal(18,2)
+  currency varchar(3)
+  invoice_date date
+  due_date date
+  payment_status varchar(30)
+  payment_stage varchar(20)
+  current_milestone tinyint
+  file_path varchar(255)
+  notes text
+  created_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table invoice_payments {
+  id bigint [pk, increment]
+  invoice_id bigint
+  milestone tinyint
+  amount decimal(18,2)
+  payment_date date
+  status varchar(30)
+  proof_path varchar(255)
+  notes text
+  recorded_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table payment_status_history {
+  id bigint [pk, increment]
+  invoice_id bigint
+  from_status varchar(30)
+  to_status varchar(30)
+  milestone tinyint
+  action_date datetime
+  notes text
+  performed_by bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: invoices.application_id > applications.id
+Ref: invoice_payments.invoice_id > invoices.id
+Ref: payment_status_history.invoice_id > invoices.id
